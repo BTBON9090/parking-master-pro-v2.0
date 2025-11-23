@@ -1,0 +1,5 @@
+{
+  "name": "Parking Master Pro v2.0",
+  "description": "A realistic 2D top-down parking simulator with day/night cycles, weather, and complex parking scenarios.",
+  "requestFramePermissions": []
+}
