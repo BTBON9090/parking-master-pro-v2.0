@@ -1,0 +1,4 @@
+Browser tab: 1, Title: "停车大师 Pro · Driving Academy", URL: "http://127.0.0.1:3000/".
+The following is a diff from the previous accessibility tree with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.
+~			94 text 车速 0 km/h 转速 0 / 18000 档位 N 前轮转角 δ 0.0° 有效轨迹转角 0.0° 方向盘 0° / ±540° 转弯半径 R ∞ 横摆率 ω 0.000 rad/s 纵向加速度 0.00 g 横向加速度 0.00 g 换挡接合 100% 帧间隔 mean/p95 22.6 / 57.2 ms 单帧位移/速度跃变 0.00 u / 0.000 u 音频素材 7/7 · ACTIVE 地形 / 升沉 0.00 / 0.00 u 头部偏移 左/上/前 0.00 / 0.00 / 0.00 cm 碰撞 法向/剩余速度/旋转 0.0 / 0.0 km/h / 0.00 rad/s 俯仰 / 侧倾 0.0° / 1.7° 四轮行程 1.30 / -1.30 / 1.30 / -1.30 四轮接地 G / G / G / G · 2.60 / 0.00 / 2.60 / 0.00 轮底-路面间隙 0.00 / 0.00 / 0.00 / 0.00 u 路面层 asphalt 实际油门 / 刹车 0% / 100% 纵向 g / 动态俯仰 0.00g / 0.00° 路面高度 / NPC 0.00u / 30 后轮转向 0.00°
+The focused UI element is 183 button 单侧路缘 734.45,667.14 · 左侧轮胎贴路缘；停车时检查胎面、侧壁与独立悬架, Help: 734.45, 667.14 · 左侧轮胎贴路缘；停车时检查胎面、侧壁与独立悬架

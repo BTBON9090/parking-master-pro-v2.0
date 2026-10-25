@@ -1,0 +1,153 @@
+{
+  "noCreep": [
+    {
+      "gear": 1,
+      "kmh": 0
+    },
+    {
+      "gear": -1,
+      "kmh": 0
+    }
+  ],
+  "frameRate": [
+    {
+      "fps": 30,
+      "kmh": 25.561866442293546
+    },
+    {
+      "fps": 60,
+      "kmh": 25.561866442293546
+    },
+    {
+      "fps": 120,
+      "kmh": 25.561866442293546
+    }
+  ],
+  "slopeBrakes": [
+    {
+      "grade": -0.07,
+      "heldKmh": 0,
+      "releasedKmh": 3.8978331881064863,
+      "latchedKmh": 0,
+      "lightBrakeKmh": 0
+    },
+    {
+      "grade": 0.07,
+      "heldKmh": 0,
+      "releasedKmh": -3.8978331881064863,
+      "latchedKmh": 0,
+      "lightBrakeKmh": 0
+    },
+    {
+      "grade": -0.18,
+      "heldKmh": 0,
+      "releasedKmh": 11.545790043109932,
+      "latchedKmh": 0,
+      "lightBrakeKmh": 6.459873259540007
+    },
+    {
+      "grade": 0.18,
+      "heldKmh": 0,
+      "releasedKmh": -11.545790043109932,
+      "latchedKmh": 0,
+      "lightBrakeKmh": -6.459873259540007
+    }
+  ],
+  "hillStart": {
+    "grade": 0.195,
+    "kmh": 13.634880801779092,
+    "maxPerFrameJumpKmh": 0.10697698902826441
+  },
+  "engineBraking": [
+    {
+      "gear": 0,
+      "kmh": 38.36577152471556,
+      "maxSpeedJumpKmh": 0.009132556332556163
+    },
+    {
+      "gear": 1,
+      "kmh": 24.689214428676046,
+      "maxSpeedJumpKmh": 0.10388438653118337
+    },
+    {
+      "gear": 2,
+      "kmh": 32.06406099060383,
+      "maxSpeedJumpKmh": 0.04625274812661617
+    },
+    {
+      "gear": 4,
+      "kmh": 36.14621116201496,
+      "maxSpeedJumpKmh": 0.0217352222162992
+    }
+  ],
+  "highSpeedLowGear": {
+    "state": {
+      "speed": 4.98135062174327,
+      "throttle": 0,
+      "brakePedal": 0,
+      "shiftProgress": 1,
+      "overRevBlend": 1,
+      "ignitionBlend": 1,
+      "launchBlend": 1,
+      "prevLongAccelMs2": -2.4075239362315592,
+      "pendingFrames": 0,
+      "holdFrames": 0,
+      "stallTimer": 0,
+      "engineForce": 0,
+      "brakeForce": 0,
+      "emergencyBraking": false,
+      "gravityAlongSlope": 0,
+      "clutchBlend": 1,
+      "targetThrottle": 0,
+      "longitudinalAcceleration": -0.009630095744926237,
+      "autoHold": false,
+      "stalled": false
+    },
+    "kmh": 74.72025932614905,
+    "maxSpeedJumpKmh": 0.14457822272729626
+  },
+  "centerDistance": [
+    {
+      "frontDeg": 0,
+      "traveled": 99.9999999999986
+    },
+    {
+      "frontDeg": 11.459155902616464,
+      "traveled": 99.99999732755491
+    },
+    {
+      "frontDeg": 34.37746770784939,
+      "traveled": 99.99997260739222
+    }
+  ],
+  "leftRightSteering": "physical-angle bounds, mirrored inner/outer wheels and equal radii passed",
+  "steeringGeometry": [
+    {
+      "id": "SEDAN",
+      "frontDeg": 38.13000000000001,
+      "rearDeg": -7,
+      "centerRadiusM": 3.516184973351042,
+      "outerFrontWheelRadiusM": 4.949628383153254,
+      "targetM": 4.95,
+      "definition": "outer-front-wheel"
+    },
+    {
+      "id": "SU7",
+      "frontDeg": 36.83,
+      "rearDeg": 0,
+      "centerRadiusM": 4.277440812499638,
+      "outerFrontWheelRadiusM": 5.699285727159746,
+      "targetM": 5.7,
+      "definition": "outer-front-wheel"
+    },
+    {
+      "id": "YU7",
+      "frontDeg": 35.32000000000001,
+      "rearDeg": 0,
+      "centerRadiusM": 4.491776556487478,
+      "outerFrontWheelRadiusM": 5.903068374172148,
+      "targetM": 5.9,
+      "definition": "outer-front-wheel"
+    }
+  ]
+}

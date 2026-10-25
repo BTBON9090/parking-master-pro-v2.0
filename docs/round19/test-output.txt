@@ -1,0 +1,591 @@
+
+> parking-master-pro-v2.0@0.0.0 test
+> tsx tests/driving.test.ts && tsx tests/systems.test.ts && tsx tests/obstacles.test.ts && tsx tests/presentation.test.ts && tsx scripts/probe-curb-start.ts && tsx tests/openWorld.test.ts && tsx tests/expansionVehicles.test.ts && tsx tests/round14.test.ts && tsx tests/crashDebris.test.ts && tsx tests/wheelArch.test.ts && tsx tests/chassisSupport.test.ts && tsx tests/vehicleAudio.test.ts && tsx tests/vehicleDamage.test.ts && tsx tests/suspensionDynamics.test.ts && tsx scripts/probe-terrain18.ts && tsx tests/round19.test.ts
+
+TAI7: road-wheel lock 35.1°, gear redlines 235 km/h, shift 120 km/h, sim-0-100 4.82s
+LI_I9: road-wheel lock 39.6°, gear redlines 257 km/h, shift 120 km/h, sim-0-100 5.30s
+N90: road-wheel lock 36.1°, gear redlines 263 km/h, shift 120 km/h, sim-0-100 6.42s
+SEDAN training: 1st 43km/h redline / shift 20; 2nd 79 / shift 38; 20km/h pull 1st=0.0247 vs 2nd=0.0152.
+SEDAN: road-wheel lock 40.0°, gear redlines 43,79,125,170,273 km/h, shift 20/38/58/85/120 km/h, sim-0-100 8.52s
+SEAL08: road-wheel lock 40.0°, gear redlines 271 km/h, shift 120 km/h, sim-0-100 5.78s
+SUV: road-wheel lock 37.6°, gear redlines 317 km/h, shift 120 km/h, sim-0-100 6.92s
+SPORTS: road-wheel lock 37.4°, gear redlines 58,90,129,178,303 km/h, shift 35/65/100/150/200 km/h, sim-0-100 4.37s
+TRUCK: road-wheel lock 32.5°, gear redlines 36,64,98,135,169 km/h, shift 16/32/50/75/95 km/h, sim-0-100 8.75s
+SU7: road-wheel lock 36.8°, gear redlines 299 km/h, shift 120 km/h, sim-0-100 3.92s
+YU7: road-wheel lock 35.3°, gear redlines 304 km/h, shift 120 km/h, sim-0-100 4.22s
+ZUNJIE: road-wheel lock 38.5°, gear redlines 42,75,122,184,371 km/h, shift 28/55/90/130/180 km/h, sim-0-100 4.35s
+TAI7: exported complete car 7424 triangles (limit 8000)
+TAI7: body 19.9x50.0 top 18.3 vs cfg 19.950000000000003x49.989999999999995/18.65; half-track 8.6 (full 17.2)
+TAI7: 4 wheels / 2 steering pivots bound correctly; axle z=14.8,14.8,-14.4,-14.4, spec ±14.6
+LI_I9: exported complete car 7532 triangles (limit 8000)
+LI_I9: body 19.7x52.3 top 17.2 vs cfg 19.7x52.25/17.52; half-track 8.5 (full 17.0)
+LI_I9: 4 wheels / 2 steering pivots bound correctly; axle z=16.3,16.3,-15.4,-15.4, spec ±15.8
+N90: exported complete car 7506 triangles (limit 8000)
+N90: body 20.0x52.9 top 17.9 vs cfg 19.98x52.85/18.25; half-track 8.6 (full 17.2)
+N90: 4 wheels / 2 steering pivots bound correctly; axle z=15.7,15.7,-15.1,-15.1, spec ±15.4
+SEDAN: exported complete car 7852 triangles (limit 8000)
+SEDAN: body 20.0x51.5 top 14.8 vs cfg 19.99x51.5/15.05; half-track 8.6 (full 17.2)
+SEDAN: 4 wheels / 2 steering pivots bound correctly; axle z=16.1,16.1,-14.2,-14.2, spec ±15.2
+SEAL08: exported complete car 7852 triangles (limit 8000)
+SEAL08: body 20.0x51.5 top 14.8 vs cfg 19.99x51.5/15.05; half-track 8.6 (full 17.2)
+SEAL08: 4 wheels / 2 steering pivots bound correctly; axle z=16.1,16.1,-14.2,-14.2, spec ±15.2
+SUV: exported complete car 7864 triangles (limit 8000)
+SUV: body 20.0x51.4 top 17.3 vs cfg 19.98x51.45/17.66; half-track 8.6 (full 17.2)
+SUV: 4 wheels / 2 steering pivots bound correctly; axle z=16.0,16.0,-15.1,-15.1, spec ±15.6
+SPORTS: body 24.5x45.7 top 12.0 vs cfg 24.52x45.7/12.05; half-track 10.3 (full 20.5)
+SPORTS: 4 wheels / 2 steering pivots bound correctly; axle z=13.1,13.1,-16.3,-16.3, spec ±14.7
+TRUCK: body 19.7x54.5 top 19.3 vs cfg 19.7x54.6/19.3; half-track 8.0 (full 16.0)
+TRUCK: 4 wheels / 2 steering pivots bound correctly; axle z=18.8,18.8,-14.0,-14.0, spec ±16.3
+SU7: body 21.3x50.1 top 14.4 vs cfg 19.63x49.97/14.4; half-track 8.4 (full 16.8)
+SU7: 4 wheels / 2 steering pivots bound correctly; axle z=15.0,15.0,-15.0,-15.0, spec ±15.0
+YU7: body 21.5x50.1 top 16.1 vs cfg 19.96x49.99/16.08; half-track 8.5 (full 16.9)
+YU7: 4 wheels / 2 steering pivots bound correctly; axle z=15.0,15.0,-15.0,-15.0, spec ±15.0
+ZUNJIE: body 21.7x55.1 top 15.4 vs cfg 20x54.8/15.36; half-track 8.5 (full 17.0)
+ZUNJIE: 4 wheels / 2 steering pivots bound correctly; axle z=16.9,16.9,-16.9,-16.9, spec ±16.9
+Driving, collision, spawn and actual vehicle binding regressions passed.
+Camera: plain left-drag orbit preserves distance, 360° azimuth, 0.16–1.46 rad polar; head look +10/−15° pitch, ±80° yaw.
+Terrain: centre 17.20u, relief 17.37u, max grade 11.8%, 3m gate, gravel entry + pothole field.
+Audio lifecycle: persistent blur/visibility/UI pause, stale-load generation guard.
+Audio assets: 7 local CC0-derived WAV files, zero-crossing loop endpoints, peaks below 0 dBFS.
+Suspension: 15/30/60/120 Hz peaks 0.174/0.176/0.169/0.165/0.162/0.165/0.180/0.162/0.177/0.170/0.166 by car; mesh error <=0.068u.
+Cockpit source audit (hood/frame): SEDAN:native-authored SEAL08:native-authored SUV:native-authored TAI7:native-authored LI_I9:native-authored N90:native-authored SPORTS:10985/124674 TRUCK:94/951 SU7:152/5907 YU7:152/6238 ZUNJIE:158/6812.
+Keyboard pedals: W=0.15 Shift+W=0.3 S=0.12 Shift+S=1, brake priority; Space handbrake priority.
+Pitch: light<0.025rad, heavy 0.02..0.051rad, 30/60/120 Hz convergent.
+NPC/bridge: 30 fixed cars; deck 65u, 88 profile rails, pier interval 0..65u; reset positions identical.
+Movable props: local terrain floor support enforced above Cannon ground plane.
+Airborne: normal slope stays grounded; front/rear edge pitch signs + ballistic landing.
+Curb: 2.6u top enters wheel sampling; low curb is traversable.
+Parking: all-four-corners, speed<0.5km/h, no NPC, 1s stability.
+Cockpit materials: paint on window-named Concept meshes stays opaque; only Glass is transparent.
+Rear steer: outer-front radius 4.95m at 39.95° lock, ±7° rear; actual trajectory radius tested.
+Steering continuity: exact equal-delay return through zero, no 12-step quantisation, input-release 2.2° centre magnet independent of knob/auto-centre.
+Steering clock: throttle/gear-independent 200ms grace; 1s return crawl 132.0°, road 87.8°.
+SEAL08 authored GLB: 23.2x52.1x15.4u, wheelbase 30.3u, curb gaps side 0.00/-0.00/0.00/-0.00 corner 0.00/0.00/0.00/0.00.
+SUV authored GLB: 23.2x52.0x17.6u, wheelbase 31.1u, curb gaps side -0.00/0.00/-0.00/0.00 corner 0.00/0.00/0.00/0.00.
+SEDAN authored GLB: 23.2x52.1x15.4u, wheelbase 30.3u, curb gaps side 0.00/-0.00/0.00/-0.00 corner 0.00/-0.00/-0.00/-0.00.
+Cockpit: source geometry classifies measured hood/frame; lower fascia and floor are discarded.
+Parked wheel: static assembly 2.80x6.40x6.40, open 5-spoke rim, shared geometry/material.
+Marking colour: dark tyre wear/seams keep authored colours; white/yellow paint remain distinct.
+HUD layout: 1153px -> 459.3px gap, 375.6px cluster; no horizontal root minimum.
+Focus guard: input/textarea/select/contenteditable isolated; canvas still drives.
+Time response: exponential/linear steps compose exactly at 30/60/120 fps; pause/gap clock is deterministic.
+Steering: displacement-preserving smoothing, flush, auto-centre and non-conflicting key fallback.
+Steering arcs: right y=16.07, left y=-16.07, reverse-right y=2.24; driver wheel sign correct.
+Gear guard: reverse/direction reasons remain; high downshift emits warning without clamping speed.
+Longitudinal throttle 3 s: 15fps=2.8655, 30=2.8655, 60=2.8655, 120=2.8655 speed units
+Travel distance 3 s: 30fps=165.981, 60=165.964, 120=165.467 world units
+Integrated accumulator (12% jitter): 15fps=165.14u, 30fps=165.73u, 60fps=165.79u, 120fps=165.36u; max single-render step 8.25u, max speed step 0.092u.
+Terrain grade: 18% slope, 1st speed 1.616 > 4th 0.972 after 1s.
+Torque take-up: continuous first-gear curve across speed 1.5/2 and throttle-independent force.
+Longitudinal braking 0.6 s from 6 units: 30=4.7872, 60=4.7872, 120=4.7872
+Flat no-creep: 8 s in gear with no throttle stays exactly at 0 speed (30/60/120 fps).
+Throttle: light=0.15, shift=0.30, released=0.15.
+Coast: 2.00 -> 1.675 speed units after 1 s.
+Stall: 4th-gear start stalls after the delay; single-speed EV never stalls.
+3rd gear integration: 7s Shift+W=10.0 km/h, 1s=0.89 km/h, no stall.
+Slope: brake/hold=0, released=-0.287, handbrake=0, neutral rollback=-0.440.
+Climb/brake: 30% 1st=0.206, gentle light brake=0, steep light=-0.154, hard=0.
+NPC: follows path, stops behind player, honks 1 time(s) with cooldown, separates on contact.
+Beijing scene: 31 large buildings (old dense buildings 850 / total wall pieces 853 per review; new building count -96.4%), 0 NPCs, 4 curved roads, 1122 curb segments, 11 targets; building/road SAT clear, roadside bays off carriageway.
+Cannon bridge: speed 1 -> 40.71 u/s, 1/30 s step moves 1.365 units.
+System regressions passed: focus isolation, time-step composition, steering plumbing, gear feedback, slope hold and Cannon units.
+SUV: actual roof-edge height correct on left/right/flat ground at four headings and 15–120fps.
+SUV 90 0 [{"fps":15,"endY":131.422,"speed":3.3,"minGap":0.0003},{"fps":30,"endY":131.392,"speed":3.299,"minGap":0.0003},{"fps":60,"endY":131.463,"speed":3.301,"minGap":0},{"fps":120,"endY":131.465,"speed":3.301,"minGap":0}]
+SUV 60 0 [{"fps":15,"endY":109.308,"speed":3.301,"minGap":0.0002},{"fps":30,"endY":109.308,"speed":3.301,"minGap":0},{"fps":60,"endY":109.334,"speed":3.302,"minGap":0},{"fps":120,"endY":109.309,"speed":3.301,"minGap":0}]
+SUV 120 0 [{"fps":15,"endY":109.307,"speed":3.301,"minGap":0.0001},{"fps":30,"endY":109.307,"speed":3.301,"minGap":0.0002},{"fps":60,"endY":109.334,"speed":3.302,"minGap":0},{"fps":120,"endY":109.309,"speed":3.301,"minGap":0}]
+SUV 90 0.5 [{"fps":15,"endY":131.397,"speed":3.3,"minGap":0.0009},{"fps":30,"endY":131.37,"speed":3.299,"minGap":0.0002},{"fps":60,"endY":131.46,"speed":3.302,"minGap":0},{"fps":120,"endY":131.444,"speed":3.301,"minGap":0}]
+SUV 90 -0.5 [{"fps":15,"endY":131.397,"speed":3.3,"minGap":0},{"fps":30,"endY":131.37,"speed":3.299,"minGap":0.0001},{"fps":60,"endY":131.46,"speed":3.302,"minGap":0},{"fps":120,"endY":131.444,"speed":3.301,"minGap":0.0001}]
+SEAL08: actual roof-edge height correct on left/right/flat ground at four headings and 15–120fps.
+SEAL08 90 0 [{"fps":15,"endY":131.276,"speed":3.298,"minGap":0.0009},{"fps":30,"endY":131.393,"speed":3.301,"minGap":0.0001},{"fps":60,"endY":131.365,"speed":3.301,"minGap":0.0002},{"fps":120,"endY":131.398,"speed":3.301,"minGap":0}]
+SEAL08 60 0 [{"fps":15,"endY":109.236,"speed":3.3,"minGap":0},{"fps":30,"endY":109.287,"speed":3.302,"minGap":0},{"fps":60,"endY":109.28,"speed":3.302,"minGap":0},{"fps":120,"endY":109.247,"speed":3.301,"minGap":0}]
+SEAL08 120 0 [{"fps":15,"endY":109.235,"speed":3.3,"minGap":0.0001},{"fps":30,"endY":109.287,"speed":3.302,"minGap":0.0001},{"fps":60,"endY":109.28,"speed":3.302,"minGap":0},{"fps":120,"endY":109.247,"speed":3.301,"minGap":0}]
+SEAL08 90 0.5 [{"fps":15,"endY":131.221,"speed":3.298,"minGap":0.0031},{"fps":30,"endY":131.353,"speed":3.301,"minGap":0},{"fps":60,"endY":131.35,"speed":3.301,"minGap":0},{"fps":120,"endY":131.355,"speed":3.301,"minGap":0}]
+SEAL08 90 -0.5 [{"fps":15,"endY":131.221,"speed":3.298,"minGap":0},{"fps":30,"endY":131.353,"speed":3.301,"minGap":0},{"fps":60,"endY":131.35,"speed":3.301,"minGap":0},{"fps":120,"endY":131.355,"speed":3.301,"minGap":0}]
+TAI7: actual roof-edge height correct on left/right/flat ground at four headings and 15–120fps.
+TAI7 90 0 [{"fps":15,"endY":131.494,"speed":3.301,"minGap":0},{"fps":30,"endY":131.474,"speed":3.301,"minGap":0.0002},{"fps":60,"endY":131.512,"speed":3.302,"minGap":0.0001},{"fps":120,"endY":131.487,"speed":3.301,"minGap":0}]
+TAI7 60 0 [{"fps":15,"endY":109.363,"speed":3.301,"minGap":0},{"fps":30,"endY":109.334,"speed":3.301,"minGap":0.0001},{"fps":60,"endY":109.311,"speed":3.3,"minGap":0},{"fps":120,"endY":109.311,"speed":3.301,"minGap":0}]
+TAI7 120 0 [{"fps":15,"endY":109.362,"speed":3.301,"minGap":0.0001},{"fps":30,"endY":109.333,"speed":3.301,"minGap":0.0001},{"fps":60,"endY":109.31,"speed":3.3,"minGap":0},{"fps":120,"endY":109.311,"speed":3.301,"minGap":0}]
+TAI7 90 0.5 [{"fps":15,"endY":131.495,"speed":3.302,"minGap":0.0001},{"fps":30,"endY":131.468,"speed":3.301,"minGap":0.0001},{"fps":60,"endY":131.455,"speed":3.301,"minGap":0.0001},{"fps":120,"endY":131.446,"speed":3.301,"minGap":0}]
+TAI7 90 -0.5 [{"fps":15,"endY":131.495,"speed":3.302,"minGap":0.0001},{"fps":30,"endY":131.468,"speed":3.301,"minGap":0},{"fps":60,"endY":131.455,"speed":3.301,"minGap":0},{"fps":120,"endY":131.446,"speed":3.301,"minGap":0}]
+LI_I9: actual roof-edge height correct on left/right/flat ground at four headings and 15–120fps.
+LI_I9 90 0 [{"fps":15,"endY":131.484,"speed":3.302,"minGap":0.001},{"fps":30,"endY":131.478,"speed":3.301,"minGap":0},{"fps":60,"endY":131.509,"speed":3.302,"minGap":0.0003},{"fps":120,"endY":131.486,"speed":3.301,"minGap":0}]
+LI_I9 60 0 [{"fps":15,"endY":109.362,"speed":3.302,"minGap":0},{"fps":30,"endY":109.338,"speed":3.301,"minGap":0},{"fps":60,"endY":109.32,"speed":3.301,"minGap":0},{"fps":120,"endY":109.319,"speed":3.301,"minGap":0}]
+LI_I9 120 0 [{"fps":15,"endY":109.362,"speed":3.302,"minGap":0},{"fps":30,"endY":109.338,"speed":3.301,"minGap":0},{"fps":60,"endY":109.32,"speed":3.301,"minGap":0},{"fps":120,"endY":109.319,"speed":3.301,"minGap":0}]
+LI_I9 90 0.5 [{"fps":15,"endY":131.495,"speed":3.302,"minGap":0.0012},{"fps":30,"endY":131.491,"speed":3.302,"minGap":0.0003},{"fps":60,"endY":131.449,"speed":3.301,"minGap":0},{"fps":120,"endY":131.452,"speed":3.301,"minGap":0}]
+LI_I9 90 -0.5 [{"fps":15,"endY":131.495,"speed":3.302,"minGap":0.0001},{"fps":30,"endY":131.491,"speed":3.302,"minGap":0},{"fps":60,"endY":131.449,"speed":3.301,"minGap":0},{"fps":120,"endY":131.452,"speed":3.301,"minGap":0}]
+N90: actual roof-edge height correct on left/right/flat ground at four headings and 15–120fps.
+N90 90 0 [{"fps":15,"endY":131.619,"speed":3.304,"minGap":0.0025},{"fps":30,"endY":131.497,"speed":3.301,"minGap":0.0002},{"fps":60,"endY":131.504,"speed":3.301,"minGap":0},{"fps":120,"endY":131.502,"speed":3.301,"minGap":0}]
+N90 60 0 [{"fps":15,"endY":109.399,"speed":3.302,"minGap":0.0008},{"fps":30,"endY":109.353,"speed":3.301,"minGap":0.0001},{"fps":60,"endY":109.339,"speed":3.301,"minGap":0},{"fps":120,"endY":109.311,"speed":3.3,"minGap":0}]
+N90 120 0 [{"fps":15,"endY":109.399,"speed":3.302,"minGap":0},{"fps":30,"endY":109.353,"speed":3.301,"minGap":0.0002},{"fps":60,"endY":109.339,"speed":3.301,"minGap":0.0001},{"fps":120,"endY":109.311,"speed":3.3,"minGap":0}]
+N90 90 0.5 [{"fps":15,"endY":131.488,"speed":3.302,"minGap":0.0008},{"fps":30,"endY":131.402,"speed":3.299,"minGap":0.0001},{"fps":60,"endY":131.457,"speed":3.301,"minGap":0.0001},{"fps":120,"endY":131.473,"speed":3.301,"minGap":0}]
+N90 90 -0.5 [{"fps":15,"endY":131.488,"speed":3.302,"minGap":0.0014},{"fps":30,"endY":131.402,"speed":3.299,"minGap":0.0002},{"fps":60,"endY":131.457,"speed":3.301,"minGap":0.0001},{"fps":120,"endY":131.473,"speed":3.301,"minGap":0.0001}]
+Dynamic wheel-volume, kerb work, reverse and frame-rate regressions passed.
+SUV {
+  eye: [ 3.6499999463558197, 14.800000259449426, -1.1997973173856735 ],
+  rimClearanceM: 0.22348925536044284,
+  triangles: 7874,
+  linerBounds: Box3 {
+    isBox3: true,
+    min: Vector3 {
+      x: -8.491500169038773,
+      y: 3.6000008793377316,
+      z: -21.49979829788208
+    },
+    max: Vector3 {
+      x: 8.491499871015549,
+      y: 10.500000259449425,
+      z: 10.200202465057373
+    }
+  }
+}
+SEAL08 {
+  eye: [ 3.5499997437000275, 12.650000751374591, -1.0002610832452774 ],
+  rimClearanceM: 0.15390756038357356,
+  triangles: 7862,
+  linerBounds: Box3 {
+    isBox3: true,
+    min: Vector3 {
+      x: -8.495749980211258,
+      y: 2.900000572560657,
+      z: -17.000261545181274
+    },
+    max: Vector3 {
+      x: 8.495749682188034,
+      y: 8.600000799058307,
+      z: 10.19973874092102
+    }
+  }
+}
+TAI7 {
+  eye: [ 3.6499999463558197, 15.200000197725162, -1.2002383917570114 ],
+  rimClearanceM: 0.1984893125809018,
+  triangles: 7434,
+  linerBounds: Box3 {
+    isBox3: true,
+    min: Vector3 {
+      x: -8.478750139474869,
+      y: 3.6000008652971838,
+      z: -21.500239372253418
+    },
+    max: Vector3 {
+      x: 8.478749841451645,
+      y: 11.200000769929751,
+      z: 10.199761390686035
+    }
+  }
+}
+LI_I9 {
+  eye: [ 3.6499999463558197, 14.100001244482831, -1.2002872675657272 ],
+  rimClearanceM: 0.15348935549624604,
+  triangles: 7542,
+  linerBounds: Box3 {
+    isBox3: true,
+    min: Vector3 {
+      x: -8.372500091791153,
+      y: 3.6000008630131046,
+      z: -21.500288248062134
+    },
+    max: Vector3 {
+      x: 8.372499793767929,
+      y: 10.200000529227093,
+      z: 10.19971251487732
+    }
+  }
+}
+N90 {
+  eye: [ 3.6499999463558197, 14.100001244482831, -1.2000691145658493 ],
+  rimClearanceM: 0.15348935549624604,
+  triangles: 7516,
+  linerBounds: Box3 {
+    isBox3: true,
+    min: Vector3 {
+      x: -8.491500169038773,
+      y: 3.6000008630131046,
+      z: -21.500070095062256
+    },
+    max: Vector3 {
+      x: 8.491499871015549,
+      y: 10.200000529227093,
+      z: 10.199930667877197
+    }
+  }
+}
+Camera/input/cockpit regression checks passed.
+SEAL08 curb-one-side 30 {"travelM":56.32,"speedKmh":47.68,"blocked":0}
+SEAL08 curb-one-side 60 {"travelM":56.33,"speedKmh":47.68,"blocked":0}
+SEAL08 curb-one-side 120 {"travelM":56.27,"speedKmh":47.68,"blocked":0}
+SEAL08 curb-contact 30 {"travelM":54.07,"speedKmh":46.62,"blocked":0}
+SEAL08 curb-contact 60 {"travelM":54.07,"speedKmh":46.62,"blocked":0}
+SEAL08 curb-contact 120 {"travelM":54.02,"speedKmh":46.62,"blocked":0}
+SEAL08 single-wheel 30 {"travelM":52.05,"speedKmh":46.36,"blocked":0}
+SEAL08 single-wheel 60 {"travelM":52.06,"speedKmh":46.36,"blocked":0}
+SEAL08 single-wheel 120 {"travelM":52,"speedKmh":46.36,"blocked":0}
+SUV curb-one-side 30 {"travelM":47.98,"speedKmh":40.93,"blocked":0}
+SUV curb-one-side 60 {"travelM":47.97,"speedKmh":40.92,"blocked":0}
+SUV curb-one-side 120 {"travelM":47.93,"speedKmh":40.93,"blocked":0}
+SUV curb-contact 30 {"travelM":45.23,"speedKmh":39.9,"blocked":0}
+SUV curb-contact 60 {"travelM":45.23,"speedKmh":39.9,"blocked":0}
+SUV curb-contact 120 {"travelM":45.18,"speedKmh":39.9,"blocked":0}
+SUV single-wheel 30 {"travelM":42.54,"speedKmh":39.01,"blocked":0}
+SUV single-wheel 60 {"travelM":42.55,"speedKmh":39.01,"blocked":0}
+SUV single-wheel 120 {"travelM":42.5,"speedKmh":39.01,"blocked":0}
+{"routes":4,"lengthKm":2.6008113432682185,"maxGrade":0.17558767692073066,"minRadiusM":9.803670814211092,"railColliders":1632}
+{
+  maxAsphaltContactErrorCm: 1.2345296611880485,
+  maxGravelContactErrorCm: 4.824081638633686
+}
+{ maxShoulderAndOffRoadErrorCm: 1.3540784156560903 }
+TAI7 {
+  zeroTo100Seconds: 4.45,
+  outerTurningRadiusM: 5.8,
+  uphillKmh: 33.438942639536855
+}
+LI_I9 {
+  zeroTo100Seconds: 4.883333333333334,
+  outerTurningRadiusM: 5.3,
+  uphillKmh: 27.89180014219462
+}
+N90 {
+  zeroTo100Seconds: 5.916666666666667,
+  outerTurningRadiusM: 5.95,
+  uphillKmh: 19.514858168605798
+}
+Round14: bridge width/direction + underpass + ring lanes + exact defaults + impact impulses + head dynamics + EV mix PASS
+Authored mesh breakup + connected driver + stable settling + disposal PASS [
+  {
+    hz: 30,
+    maxVelocity: 207.6194796479696,
+    maxReach: 393.3474069924144
+  },
+  {
+    hz: 60,
+    maxVelocity: 207.91397558310612,
+    maxReach: 393.3474069924144
+  },
+  {
+    hz: 120,
+    maxVelocity: 208.0661350252438,
+    maxReach: 393.3474069924144
+  }
+]
+All five actual GLBs: fixed axle through ±35° grades, steered slope contact, and full-travel/steering sill clearance PASS [
+  {
+    id: 'SUV',
+    cases: 21,
+    minSillClearanceCm: 4.442516193966846,
+    maxAxleDriftMm: 7.105427357601002e-13,
+    minSlopeTreadGapCm: 0.0007861045250366817
+  },
+  {
+    id: 'SEAL08',
+    cases: 21,
+    minSillClearanceCm: 4.442628815886174,
+    maxAxleDriftMm: 5.329070518200751e-13,
+    minSlopeTreadGapCm: 0.0007078083639707568
+  },
+  {
+    id: 'TAI7',
+    cases: 21,
+    minSillClearanceCm: 5.013100349442272,
+    maxAxleDriftMm: 3.552713678800501e-13,
+    minSlopeTreadGapCm: 0.0007928008702523751
+  },
+  {
+    id: 'LI_I9',
+    cases: 21,
+    minSillClearanceCm: 3.877656346423688,
+    maxAxleDriftMm: 7.105427357601002e-13,
+    minSlopeTreadGapCm: 0.000777572256300395
+  },
+  {
+    id: 'N90',
+    cases: 21,
+    minSillClearanceCm: 3.8763954594347183,
+    maxAxleDriftMm: 3.552713678800501e-13,
+    minSlopeTreadGapCm: 0.0007660360940152942
+  }
+]
+Actual GLBs: combined grades/banks/steer, tyre orientation/contact, gravity/braking loads, fast descents and rigid-body rollover PASS [
+  {
+    id: 'SUV',
+    cases: 45,
+    maxGapCm: 5.3290705182007514e-14,
+    maxAxleDriftMm: 7.105427357601002e-13,
+    minTreadGapCm: -5.911793676816046e-7,
+    maxTravelCm: 6.059759775540741,
+    fastestGapCm: 1.1368683772161603e-12
+  },
+  {
+    id: 'SEAL08',
+    cases: 45,
+    maxGapCm: 3.552713678800501e-14,
+    maxAxleDriftMm: 3.552713678800501e-13,
+    minTreadGapCm: -5.266868230435762e-7,
+    maxTravelCm: 3.5988661204091588,
+    fastestGapCm: 1.1368683772161603e-12
+  },
+  {
+    id: 'TAI7',
+    cases: 45,
+    maxGapCm: 5.3290705182007514e-14,
+    maxAxleDriftMm: 5.329070518200751e-13,
+    minTreadGapCm: -5.481838538656802e-7,
+    maxTravelCm: 6.715369774020558,
+    fastestGapCm: 1.1368683772161603e-12
+  },
+  {
+    id: 'LI_I9',
+    cases: 45,
+    maxGapCm: 5.3290705182007514e-14,
+    maxAxleDriftMm: 5.329070518200751e-13,
+    minTreadGapCm: -5.69681590789628e-7,
+    maxTravelCm: 5.910877580645202,
+    fastestGapCm: 1.1368683772161603e-12
+  },
+  {
+    id: 'N90',
+    cases: 45,
+    maxGapCm: 3.552713678800501e-14,
+    maxAxleDriftMm: 5.329070518200751e-13,
+    minTreadGapCm: -5.69681590789628e-7,
+    maxTravelCm: 6.055244494755346,
+    fastestGapCm: 1.1368683772161603e-12
+  }
+]
+All 5 powertrains: driven/coasting/reverse/brake gating + cabin isolation + granular road + production audio graph/lifecycle PASS [
+  {
+    id: 'SUV',
+    cabinRoadAmplitudeRatio: 0.09000000000000001,
+    driveToneHz: 85.5,
+    cabinMotorGain: 0.004272235948540295
+  },
+  {
+    id: 'SEAL08',
+    cabinRoadAmplitudeRatio: 0.11,
+    driveToneHz: 85.5,
+    cabinMotorGain: 0.004723134552392086
+  },
+  {
+    id: 'TAI7',
+    cabinRoadAmplitudeRatio: 0.13,
+    driveToneHz: 85.5,
+    cabinMotorGain: 0.0051345885911141895
+  },
+  {
+    id: 'LI_I9',
+    cabinRoadAmplitudeRatio: 0.09000000000000001,
+    driveToneHz: 85.5,
+    cabinMotorGain: 0.004272235948540295
+  },
+  {
+    id: 'N90',
+    cabinRoadAmplitudeRatio: 0.1,
+    driveToneHz: 85.5,
+    cabinMotorGain: 0.004503332099679081
+  }
+]
+Damage tiers, five authored shells, bounded dents/reset, momentum, solid wall and inspection controls PASS [
+  {
+    id: 'SUV',
+    light: 1,
+    moderate: 4,
+    displaced: 918,
+    maxDisplacement: 1.947426795959431
+  },
+  {
+    id: 'SEDAN',
+    light: 1,
+    moderate: 4,
+    displaced: 864,
+    maxDisplacement: 2.0031332969665456
+  },
+  {
+    id: 'TAI7',
+    light: 1,
+    moderate: 4,
+    displaced: 898,
+    maxDisplacement: 2.118241786956775
+  },
+  {
+    id: 'LI_I9',
+    light: 1,
+    moderate: 4,
+    displaced: 969,
+    maxDisplacement: 2.141482830047575
+  },
+  {
+    id: 'N90',
+    light: 1,
+    moderate: 4,
+    displaced: 850,
+    maxDisplacement: 2.1201300621032884
+  }
+]
+Suspension rebound, damping, ballistic crest/landing, frame rate and actual-model high-speed clearance PASS {
+  kerb: {
+    goodDamping: { crossings: 4, totalHeaveM: 0.011922437588273924 },
+    poorDamping: { crossings: 6, totalHeaveM: 0.0660171324217297 }
+  },
+  crestResults: [
+    { fps: 15, airtime: 1, peakHeightM: 2.926882296549786 },
+    { fps: 30, airtime: 1, peakHeightM: 2.929343926303326 },
+    { fps: 60, airtime: 1, peakHeightM: 2.933302190630927 },
+    { fps: 120, airtime: 1, peakHeightM: 2.9346958460432746 }
+  ],
+  cars: [
+    {
+      id: 'SUV',
+      trackM: 1.7200000286102295,
+      maxRollDeg: 2.8884108000007713,
+      minBodyClearanceCm: 14.795980250726846
+    },
+    {
+      id: 'SEAL08',
+      trackM: 1.7300000190734863,
+      maxRollDeg: 1.4310507974427749,
+      minBodyClearanceCm: 12.554940274738733
+    },
+    {
+      id: 'TAI7',
+      trackM: 1.7200000286102295,
+      maxRollDeg: 3.254245119891666,
+      minBodyClearanceCm: 13.637069074392487
+    },
+    {
+      id: 'LI_I9',
+      trackM: 1.6950000524520874,
+      maxRollDeg: 2.712221580045719,
+      minBodyClearanceCm: 16.49857496796801
+    },
+    {
+      id: 'N90',
+      trackM: 1.7230000495910645,
+      maxRollDeg: 2.8301365159531002,
+      minBodyClearanceCm: 16.287875856769602
+    }
+  ]
+}
+Production mountain profile, low-speed contact and fast crest PASS [
+  {
+    speedMps: 2,
+    airtimeSeconds: 0,
+    maxWheelGapM: 9.96442253153873e-8,
+    minWheelGapM: -9.962576541511226e-8,
+    maxHeightM: 22.47581849971761
+  },
+  {
+    speedMps: 25,
+    airtimeSeconds: 1.2333333333333303,
+    maxWheelGapM: 2.2638657406743734,
+    minWheelGapM: -9.794736968160578e-8,
+    maxHeightM: 23.314465809836307
+  },
+  {
+    speedMps: 35,
+    airtimeSeconds: 2.5916666666666903,
+    maxWheelGapM: 10.058688602904818,
+    minWheelGapM: -7.123475427306403e-8,
+    maxHeightM: 27.228424206609663
+  }
+]
+Round19 brake, full steering travel, stacked garage connectivity, tight debris floor/boundary checks PASS {
+  "brakes": [
+    {
+      "hz": 30,
+      "mode": "abs",
+      "metres": 39.939870193321966,
+      "seconds": 2.8
+    },
+    {
+      "hz": 30,
+      "mode": "locked",
+      "metres": 51.575048032007906,
+      "seconds": 3.6666666666666634
+    },
+    {
+      "hz": 30,
+      "mode": "hand",
+      "metres": 82.50858832048198,
+      "seconds": 5.899999999999989
+    },
+    {
+      "hz": 60,
+      "mode": "abs",
+      "metres": 39.94440103033264,
+      "seconds": 2.799999999999995
+    },
+    {
+      "hz": 60,
+      "mode": "locked",
+      "metres": 51.57119694387767,
+      "seconds": 3.649999999999992
+    },
+    {
+      "hz": 60,
+      "mode": "hand",
+      "metres": 82.50427366469131,
+      "seconds": 5.883333333333318
+    },
+    {
+      "hz": 120,
+      "mode": "abs",
+      "metres": 40.060141771073425,
+      "seconds": 2.7999999999999927
+    },
+    {
+      "hz": 120,
+      "mode": "locked",
+      "metres": 51.68693768461842,
+      "seconds": 3.6499999999999897
+    },
+    {
+      "hz": 120,
+      "mode": "hand",
+      "metres": 82.62001440543206,
+      "seconds": 5.8833333333334155
+    }
+  ],
+  "garage": [
+    {
+      "from": 1,
+      "to": 2,
+      "endElevation": -96,
+      "maxStep": 0.16363523666416313
+    },
+    {
+      "from": 2,
+      "to": 1,
+      "endElevation": -48,
+      "maxStep": 0.16363523666416313
+    },
+    {
+      "from": 2,
+      "to": 3,
+      "endElevation": -144,
+      "maxStep": 0.16363523666416313
+    },
+    {
+      "from": 3,
+      "to": 2,
+      "endElevation": -96,
+      "maxStep": 0.16363523666416313
+    }
+  ],
+  "debris": [
+    {
+      "hz": 30,
+      "maxGap": 0,
+      "maxSpeed": 0
+    },
+    {
+      "hz": 60,
+      "maxGap": 0,
+      "maxSpeed": 0
+    },
+    {
+      "hz": 120,
+      "maxGap": 0,
+      "maxSpeed": 0
+    }
+  ]
+}

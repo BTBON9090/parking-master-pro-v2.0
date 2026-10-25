@@ -1,0 +1,58 @@
+{
+  "date": "2026-10-23",
+  "scope": "Concept GT model import, wheel rig, native cockpit and collision envelope",
+  "implemented_by": "Codex; user authorized personal repair after repeated failed acceptance",
+  "root_causes": [
+    "Per-axis normalization distorted the complete car",
+    "GLB showroom wheel pose was layered with live steering and rolling",
+    "Approximate rotated AABB was mistaken for tyre diameter and lifted the vehicle",
+    "First-person mode hid the native interior and substituted a generic cockpit",
+    "Fallback lamp boxes were added outside the measured collision hull",
+    "Native-wheel AABB corners expanded the collision hull beyond geometry"
+  ],
+  "changes": [
+    "Concept normalized uniformly after resetting authored wheel pose",
+    "Baked neutral transforms into unit-scale steering/rolling rigs; calipers do not roll",
+    "Native interior, steering rim, column, body, glass and lamp lenses retained",
+    "Original instrument screen displays live speed and RPM",
+    "Cached geometry footprint follows live steering; no rotated AABB expansion",
+    "Head yaw uses vehicle up vector so looking sideways does not tilt the horizon"
+  ],
+  "automated": {
+    "typecheck": "PASS",
+    "driving_and_system_tests": "PASS",
+    "production_build": "PASS; existing bundle-size warning",
+    "wheel_cases": "4 wheels x 3 steering angles x 4 roll angles; ground error <0.035 world units; diameter error <0.04; axle stays horizontal",
+    "collider_cases": "At -0.65/0/+0.65 rad steer, cached dynamic hull envelope matches mesh-derived envelope within 0.01 world units"
+  },
+  "manual": {
+    "cold_start": "PASS after correcting frontWheelCount temporal access discovered during browser QA",
+    "native_cockpit": "Original red/black cabin and wheel visible in game, no substitute bulkhead",
+    "wheel_roll": "Light throttle then hard braking, tyre shape/contact retained",
+    "steering": "Clockwise wheel on right input, continuous motion, Alt+C returns to center",
+    "head_look": "Left/right and reset exercised; door/window/roof from native asset",
+    "instrument": "Actual 16 km/h observed both native screen and HUD; saved moving screenshot shows 10 km/h on both",
+    "collision": "NPC rear approached with light throttle; nose contact stops vehicle and deducts collision penalty; screenshot saved",
+    "frame_sample": "17.0ms mean /25.7ms p95 in one stationary cockpit sample, not a sustained benchmark"
+  },
+  "blender": {
+    "version": "5.4.0 Alpha",
+    "execution": "Local background Python verified; no MCP required",
+    "file": "Concept-GT-inspection.blend",
+    "purpose": "Neutral source proportion, driver-eye and axle markers; packed textures; reference only, not runtime rig export"
+  },
+  "remaining": [
+    "This round does not certify all other vehicle models or every slope/curb scenario",
+    "Collision is a horizontal convex envelope with height-layer filtering, not full mesh collision for concavities",
+    "Extreme side look exposes the concept asset's angular upper cabin structure; further interior asset cleanup is still needed",
+    "Orbit side camera may be occluded by signs at the collision test point; reverse side was used for contact verification",
+    "Other source vehicles still use the legacy body/interior path and need individual conversion"
+  ],
+  "evidence": [
+    "cockpit-neutral.png",
+    "cockpit-driving.png",
+    "exterior-side.png",
+    "collision-contact.png",
+    "head-look-left.png"
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "date": "2026-10-24T22:00:23.001311",
+  "implementation": "Codex direct implementation; existing authored car assets preserved; runtime material changes only",
+  "map": {
+    "root_cause": "Bridge piers overlapped the road-height collision interval. Changed physical and rendered pier tops to the slab underside (deck minus 2.26 game units).",
+    "bridge_pose_checks": 7014,
+    "manual_bridge_east": "6000,4460 -> beyond 6896, no impact",
+    "manual_bridge_west": "7100,4540 -> 5473,4540, no impact",
+    "roundabout": "24 m centreline radius, 9 m carriageway, two counterclockwise same-direction lanes; white dashed separator, direction arrows, yield approach, no through centreline from S branch",
+    "ring_checked": "Both lane centre paths swept with TAI7 body; visual screenshot independently checked; not a full manually driven lap",
+    "signs": "Separate readable faces; long labels fitted to board"
+  },
+  "driver_motion": {
+    "model": "Damped neck/seat springs driven by measured body acceleration plus filtered pitch/roll stabilization; car-relative offsets avoid world-camera dragging at speed",
+    "verified_corner": "31 km/h, 0.44 g turn: 1.46 cm outward head offset and 1.4 degree body roll",
+    "bounds_cm": {
+      "side": 4,
+      "vertical": 3,
+      "forward_back": 2.8
+    },
+    "occlusion": "All five actual GLBs checked at per-car default eye and extreme head positions; floor remains opaque and eye clears rim"
+  },
+  "audio": {
+    "electric": "Synthesized speed/load-dependent motor harmonics retained with decoded road recordings; muffled cabin filter and 55% road-noise attenuation",
+    "provenance": "EV motor is synthesis, not an OEM recording. Existing CC0 combustion/road/gravel/skid/impact assets retained.",
+    "verification": "Gain/cutoff tests and runtime 7/7 loaded audio telemetry; subjective loudness not independently listened to"
+  },
+  "collision": {
+    "model": "Convex SAT contact normals, normal impulse/restitution, tangential friction, angular inertia, transient sliding momentum, damage accumulation",
+    "manual_glance": "Glancing factory-wall contact retained roughly 52 km/h and showed spin response; 3% damage, vehicle remained driveable",
+    "destruction": "Severe normal impact (17 m/s / 61.2 km/h or accumulated damage) splits authored shell into six clipped pieces and four intact wheels; connected six-body clothed driver; non-gory arcade effect",
+    "recovery": "UI repair/reset tested repeatedly, clears wreck and restores N + parking brake",
+    "bounded_physics": "Cannon debris/driver tested 30/60/120 Hz, all finite, no floor tunnelling; no initial overlap explosion",
+    "limits": "Lightweight rigid fragments, not a validated crash reconstruction or soft-body deformation simulation"
+  },
+  "defaults": {
+    "steeringSensitivity": 0.3,
+    "TAI7": {
+      "firstHalfGain": 0.05,
+      "secondHalfGain": 0.09,
+      "thirdHalfGain": 1,
+      "inputSmoothing": 0.7,
+      "highSpeedFloor": 0.26,
+      "centeringGain": 1,
+      "autoCenteringSpeed": 1.11
+    },
+    "hoodCameraAdjustment": {
+      "forward": -7.5,
+      "lateral": 3.25,
+      "height": -6.75,
+      "pitch": 7.25,
+      "yaw": 0,
+      "fov": 65
+    }
+  },
+  "verification": {
+    "full_regression_suite": "PASS",
+    "final_camera_occlusion_extension": "PASS",
+    "typecheck": "PASS",
+    "production_build": "PASS; existing large JS chunk advisory remains",
+    "browser_errors": "No captured error entries in final live check"
+  },
+  "final_state": {
+    "url": "http://127.0.0.1:3000/",
+    "car": "TAI7",
+    "position": [
+      4270,
+      4500
+    ],
+    "gear": "N",
+    "parking_brake": true,
+    "camera": "HOOD",
+    "running": true
+  },
+  "evidence": [
+    "ready-to-drive.png",
+    "roundabout-one-way.png",
+    "bridge-return.png",
+    "crash-breakup.png",
+    "rough-road-telemetry.txt",
+    "cornering-telemetry.txt",
+    "regression.json",
+    "crash-simulation.json"
+  ]
+}

@@ -1,0 +1,101 @@
+Round19 brake, full steering travel, stacked garage connectivity, tight debris floor/boundary checks PASS {
+  "brakes": [
+    {
+      "hz": 30,
+      "mode": "abs",
+      "metres": 39.939870193321966,
+      "seconds": 2.8
+    },
+    {
+      "hz": 30,
+      "mode": "locked",
+      "metres": 51.575048032007906,
+      "seconds": 3.6666666666666634
+    },
+    {
+      "hz": 30,
+      "mode": "hand",
+      "metres": 82.50858832048198,
+      "seconds": 5.899999999999989
+    },
+    {
+      "hz": 60,
+      "mode": "abs",
+      "metres": 39.94440103033264,
+      "seconds": 2.799999999999995
+    },
+    {
+      "hz": 60,
+      "mode": "locked",
+      "metres": 51.57119694387767,
+      "seconds": 3.649999999999992
+    },
+    {
+      "hz": 60,
+      "mode": "hand",
+      "metres": 82.50427366469131,
+      "seconds": 5.883333333333318
+    },
+    {
+      "hz": 120,
+      "mode": "abs",
+      "metres": 40.060141771073425,
+      "seconds": 2.7999999999999927
+    },
+    {
+      "hz": 120,
+      "mode": "locked",
+      "metres": 51.68693768461842,
+      "seconds": 3.6499999999999897
+    },
+    {
+      "hz": 120,
+      "mode": "hand",
+      "metres": 82.62001440543206,
+      "seconds": 5.8833333333334155
+    }
+  ],
+  "garage": [
+    {
+      "from": 1,
+      "to": 2,
+      "endElevation": -96,
+      "maxStep": 0.16363523666416313
+    },
+    {
+      "from": 2,
+      "to": 1,
+      "endElevation": -48,
+      "maxStep": 0.16363523666416313
+    },
+    {
+      "from": 2,
+      "to": 3,
+      "endElevation": -144,
+      "maxStep": 0.16363523666416313
+    },
+    {
+      "from": 3,
+      "to": 2,
+      "endElevation": -96,
+      "maxStep": 0.16363523666416313
+    }
+  ],
+  "debris": [
+    {
+      "hz": 30,
+      "maxGap": 0.0011842634101100202,
+      "maxSpeed": 0
+    },
+    {
+      "hz": 60,
+      "maxGap": 0.0011842634101100202,
+      "maxSpeed": 0
+    },
+    {
+      "hz": 120,
+      "maxGap": 0.0011842634101100202,
+      "maxSpeed": 0
+    }
+  ]
+}

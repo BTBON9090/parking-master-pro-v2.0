@@ -1,0 +1,114 @@
+{
+  "checked": "2026-10-24",
+  "scale": "10 game units = 1 metre",
+  "assets": "Original Blender-authored stylized meshes; official product photographs used only as proportion references, not bundled as game textures. No third-party car mesh imported.",
+  "unverified_common": [
+    "curb mass used for simulation",
+    "track width",
+    "tyre friction",
+    "drag area",
+    "centre of gravity",
+    "spring rates and damping coefficients",
+    "reduction ratio",
+    "interior details and eye position",
+    "OEM active suspension software is not reproduced"
+  ],
+  "vehicles": {
+    "TAI7": {
+      "version": "钛7 190KM 四驱 Ultra",
+      "sources": [
+        "https://www.fangchengbao.com/disposition-tai7.html"
+      ],
+      "official": {
+        "dimensions_mm": [
+          4999,
+          1995,
+          1865
+        ],
+        "wheelbase_mm": 2920,
+        "motor_kw": [
+          160,
+          200
+        ],
+        "motor_nm": [
+          260,
+          360
+        ],
+        "zero_100_s": 4.5,
+        "vmax_kmh": 190,
+        "tyres": "255/55 R20",
+        "suspension": "front double wishbone / rear five-link; 云辇-C"
+      },
+      "simulation": {
+        "mass_kg": 2495,
+        "turning_radius_m": 5.8,
+        "rear_steer_deg": 0,
+        "reduction": 11.4,
+        "note": "Aggregate front/rear motor output. Hybrid engine and motor blending simplified; no separate engine-power summation."
+      }
+    },
+    "LI_I9": {
+      "version": "理想 i9 标准转向 / 敏捷后轮转向模式",
+      "sources": [
+        "https://www.lixiang.com/configuration.html?carModel=i9",
+        "https://www.lixiang.com/i9",
+        "https://ir.lixiang.com/zh-hant/news-releases/news-release-details/li-auto-inc-launches-li-i9-pioneering-flagship-family-suv"
+      ],
+      "official": {
+        "dimensions_mm": [
+          5225,
+          1970,
+          1752
+        ],
+        "wheelbase_mm": 3168,
+        "power_kw": 400,
+        "torque_nm": 660,
+        "zero_100_s": 4.9,
+        "vmax_kmh": 200,
+        "tyres": "265/45 R21",
+        "turning_radius_m": 5.3,
+        "steering_wheel_total_deg": 360,
+        "suspension": "front double wishbone / rear five-link, dual-chamber air, dual-valve CDC"
+      },
+      "simulation": {
+        "mass_kg": 2745,
+        "rear_steer_deg": 6,
+        "reduction": 10.2,
+        "note": "Rear steering angle unpublished: 6 degrees is a simulation choice combined with front lock to fit the published 5.3 m radius. OEM radius convention not specified; treated as outer front tyre radius."
+      },
+      "requested_model_year": 2026,
+      "year_selection_note": "用户补充：使用最新 2026 款。车型继续采用已核对的当前官方配置；年款要求不代表新增或已证实的悬架标定数据。"
+    },
+    "N90": {
+      "version": "小米澎程 N90 Max 七座 (chosen interpretation of user’s 鹏程)",
+      "sources": [
+        "https://www.xiaomiev.com/skynomad/n90",
+        "https://www.xiaomiev.com/skynomad/car-config"
+      ],
+      "official": {
+        "dimensions_mm": [
+          5285,
+          1998,
+          1825
+        ],
+        "wheelbase_mm": 3080,
+        "power_kw": 310,
+        "torque_nm": 540,
+        "zero_100_s": 5.9,
+        "vmax_kmh": 190,
+        "front_tyres": "255/45 R21",
+        "rear_tyres": "265/45 R21",
+        "turning_radius_m": 5.95,
+        "suspension": "front double wishbone / rear multilink; air spring and continuous damping"
+      },
+      "simulation": {
+        "mass_kg": 2650,
+        "rear_steer_deg": 0,
+        "reduction": 9.9,
+        "note": "Extended-range energy system simplified to motor-driven single forward reduction; no verified rear steering specification."
+      },
+      "requested_model_year": 2026,
+      "year_selection_note": "用户补充：使用最新 2026 款。车型继续采用已核对的当前官方配置；年款要求不代表新增或已证实的悬架标定数据。"
+    }
+  }
+}

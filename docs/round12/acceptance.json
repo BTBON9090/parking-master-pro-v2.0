@@ -1,0 +1,39 @@
+{
+  "date": "2026-10-24",
+  "scope": "Single-speed gears, driver view, mouse release, high-speed camera presentation, L80 curb launch",
+  "implementation": {
+    "gears": "Single-speed EV forward gear is displayed as D. Requests for 2–5 explicitly explain that no additional forward gears exist. Manual training gears remain available.",
+    "eyes": "Native L80 eye raised 0.18 m; Seal08/manual eye raised 0.15 m. Runtime calibration, not measured OEM seat data. Native pitch -1 degree; user adjustment offsets preserved.",
+    "cabin": "Ten opaque interior triangles close floor/side/firewall/rear seams. Authored windows and body stay intact. Runtime totals: Seal08 7862 triangles, L80 7874.",
+    "input": "Cockpit canvas double-click resets head look. Steering requires both an active right press and the right button bit; mouse/pointer release, cancellation, blur, lost lock and late lock completion release input. Pointer lock alone no longer suppresses auto-centering.",
+    "camera": "Exact vehicle translation is added to external camera and target before damping relative changes. View changes and teleports snap to the correct pose. Unneeded glass-material recompilation removed.",
+    "speed": "Smooth 70–170 km/h strength ramp, at most 7 degrees extra FOV and a three-colour-tap radial edge effect. Depth rejects near-cabin taps; central view and separately rendered mirrors/HUD stay sharp. Render target allocated only once the effect becomes visible.",
+    "drive": "Removed the L80 electric motor's inherited combustion-SUV 0.70 low-rpm torque factor; low-speed factor is now 1.00 with a falling high-speed curve. This is simulator calibration, not a claim of an OEM torque map. W remains 15%, Shift+W 30%. Curb work/contact resistance is retained."
+  },
+  "automated": {
+    "typecheck": "passed",
+    "tests": "passed; see regression.log",
+    "newChecks": [
+      "Lost-button/late-lock input guards and single-speed gear rejection",
+      "100 km/h camera-relative distance invariant under alternating frame durations at 15/30/60/120 fps",
+      "Actual GLB steering-rim clearance and nine floor-seam occlusion rays per car",
+      "Combined drivetrain and actual GLB tyre/curb solver: 18 runs across two cars, three starting poses and 30/60/120 fps; exactly one wheel starts on the curb in the single-wheel fixture",
+      "Existing left/right body-roll, actual tyre vertex penetration, coast energy loss and weak-force blockage checks still pass"
+    ]
+  },
+  "browser": {
+    "method": "Full reload, normal menus, keyboard driving and visible T-panel test points; no hidden state injection",
+    "l80Gear": "Observed D label and explicit refusal message for attempting the next forward gear",
+    "l80Curb": "Starting at (734.45,667.14), Shift+W for 3 seconds moved to about (740,745); 14 km/h observed while braking after the run. Four contact gaps 0.00 u; both raised-side supports 2.60 u.",
+    "cockpit": "Both vehicles visually checked facing forward and turning head downward/right; opaque footwell and door interior, no road visible through those panels. Drag then double-click returned to the forward view.",
+    "highSpeed": "L80 cockpit reached approximately 97 km/h; near-follow view approximately 90 km/h. Last near-follow readout mean/p95 frame interval 17.5/28.6 ms, speed change 0.002 game units. No console errors reported.",
+    "mouse": "Right click/release followed by left look drag left the steering readout at zero. The browser inspection API does not expose pointerLockElement, so a direct DOM lock assertion was discarded.",
+    "screenshots": ["l80-high-speed.png", "l80-chase.png", "seal08-cockpit.png", "seal08-look-down.png"],
+    "finalState": "Game remains running at http://127.0.0.1:3000/, Seal08 cockpit, forward view, stationary with parking brake."
+  },
+  "limits": [
+    "The exact physical screen-edge drag sequence could not be replayed with the available right-drag UI API; release guards, subsequent gestures and regression checks were verified instead.",
+    "Starting with a wheel already on top of the curb is tested; this does not imply that light throttle must climb every steep vertical edge or sidewall contact.",
+    "Performance and the added edge effect were checked in the local desktop browser, not across all devices, resolutions or every vehicle."
+  ]
+}

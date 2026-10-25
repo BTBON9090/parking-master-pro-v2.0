@@ -1,0 +1,9 @@
+Browser tab: 1, Title: "停车大师 Pro · Driving Academy", URL: "http://127.0.0.1:3000/".
+The following is a diff from the previous accessibility tree with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.
+~					38 text X  752  · Y  666
+~			39 button (disabled) 停稳后进入非铺装
+~					43 image RPM 1 转速 x1000
+~					66 text 12 KM/H GEAR 1
+~					67 image SPEED 12 KM/H
+~			88 text 车速 12 km/h 转速 1074 / 18000 档位 1 前轮转角 δ 0.0° 有效轨迹转角 0.0° 方向盘 0° / ±540° 转弯半径 R ∞ 横摆率 ω 0.000 rad/s 纵向加速度 -0.02 g 横向加速度 0.00 g 换挡接合 100% 帧间隔 mean/p95 17.4 / 24.9 ms 单帧位移/速度跃变 0.59 u / 0.001 u 音频素材 7/7 · ACTIVE 地形 / 升沉 0.00 / -0.02 u 俯仰 / 侧倾 -0.1° / -0.0° 四轮行程 -0.03 / -0.03 / 0.07 / 0.07 四轮接地 G / G / G / G · 0.00 / 0.00 / 0.00 / 0.00 轮底-路面间隙 0.00 / 0.00 / 0.00 / 0.00 u 路面层 asphalt 实际油门 / 刹车 0% / 0% 纵向 g / 动态俯仰 0.01g / -0.08° 路面高度 / NPC 0.00u / 30 后轮转向 0.00°
+The focused UI element is 149 button 越障助跑 625.39,674.23 · 留出约 10 m 助跑距离，轻油门起步后观察越障减速, Help: 625.39, 674.23 · 留出约 10 m 助跑距离，轻油门起步后观察越障减速

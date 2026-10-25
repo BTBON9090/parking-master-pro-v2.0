@@ -1,0 +1,18 @@
+
+> parking-master-pro-v2.0@0.0.0 build
+> vite build
+
+vite v6.4.1 building for production...
+transforming...
+✓ 1766 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                     1.11 kB │ gzip:   0.59 kB
+dist/assets/index-F4iY1L-U.css      9.16 kB │ gzip:   2.92 kB
+dist/assets/index-wrX1a0A9.js   1,527.16 kB │ gzip: 445.48 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 3.42s

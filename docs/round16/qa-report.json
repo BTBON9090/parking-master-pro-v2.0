@@ -1,0 +1,88 @@
+{
+  "status": "implemented-and-verified",
+  "audio": {
+    "motor": "Load-gated restrained sine harmonics, fundamental 58–124 Hz; no idle gain floor; zero demand/neutral/off/brake/park mute drive layer.",
+    "mix": "Exterior tyre bed; cabin road amplitude 0.09–0.13 of exterior plus 310 Hz low-pass. Motor cabin low-pass 190 Hz; exterior 330 Hz.",
+    "road": "Distance-based sparse low-speed grain envelope fades into continuous bed as speed increases; reverse/coasting remain audible.",
+    "fixedStep": "Keep previous drive-force sample on render frames without a new 60 Hz physics step. Keyboard demand uses drivetrain target, not analogue-only field.",
+    "liveUI": {
+      "drive": "\t\t\t104 text 车速 3 km/h 转速 776 / 18000 档位 1 前轮转角 δ 0.0° 有效轨迹转角 0.0° 方向盘 0° / ±534° 转弯半径 R ∞ 横摆率 ω 0.000 rad/s 纵向加速度 0.13 g 横向加速度 0.00 g 换挡接合 100% 帧间隔 mean/p95 44.4 / 111.6 ms 单帧位移/速度跃变 0.93 u / 0.021 u 音频素材 7/7 · ACTIVE 声场 / 驱动力音 车内 · 驱动 · 电机 0.0036 / 胎噪 0.0032 地形 / 升沉 0.00 / 0.00 u 头部偏移 左/上/前 0.00 / -0.00 / -0.30 cm 碰撞 法向/剩余速度/旋转 0.0 / 0.0 km/h / 0.00 rad/s 俯仰 / 侧倾 -0.3° / 0.0° 四轮行程 -0.07 / -0.07 / 0.07 / 0.07 四轮接地 G / G / G / G · 0.00 / 0.00 / 0.00 / 0.00 轮底-路面间隙 -0.00 / -0.00 / 0.00 / 0.00 u 路面层 asphalt 实际油门 / 刹车 15% / 0% 纵向 g / 动态俯仰 0.13g / -0.27° 路面高度 / NPC 0.00u / 30 后轮转向 0.00°",
+      "coast": "\t\t\t104 text 车速 14 km/h 转速 1302 / 18000 档位 1 前轮转角 δ 0.0° 有效轨迹转角 0.0° 方向盘 0° / ±534° 转弯半径 R ∞ 横摆率 ω 0.000 rad/s 纵向加速度 -0.02 g 横向加速度 0.00 g 换挡接合 100% 帧间隔 mean/p95 48.3 / 115.6 ms 单帧位移/速度跃变 2.41 u / 0.003 u 音频素材 7/7 · ACTIVE 声场 / 驱动力音 车内 · 滑行/静止 · 电机 0.0000 / 胎噪 0.0052 地形 / 升沉 0.00 / -0.00 u 头部偏移 左/上/前 0.00 / -0.00 / -0.11 cm 碰撞 法向/剩余速度/旋转 0.0 / 0.0 km/h / 0.00 rad/s 俯仰 / 侧倾 -0.2° / 0.0° 四轮行程 -0.04 / -0.04 / 0.04 / 0.04 四轮接地 G / G / G / G · 0.00 / 0.00 / 0.00 / 0.00 轮底-路面间隙 0.00 / 0.00 / 0.00 / 0.00 u 路面层 asphalt 实际油门 / 刹车 0% / 0% 纵向 g / 动态俯仰 0.01g / -0.15° 路面高度 / NPC 0.00u / 30 后轮转向 0.00°"
+    },
+    "assets": "7/7 decoded and ACTIVE in final live run",
+    "scope": "Soft stylized synthesized EV drive layer over existing CC0 road recordings; not an OEM motor recording. Automated graph and live telemetry verification, no claim of subjective listening."
+  },
+  "chassis": {
+    "frame": "Shell, knuckles and steering axes share full terrain pitch and bank. Wheel hubs move only along bounded chassis-local suspension Y.",
+    "loads": "Per-corner gravity and acceleration loads, bounded spring/damper response. Gravity bias follows the downhill end regardless of reverse velocity.",
+    "contact": "Oriented finite-width cylinder support for terrain and kerbs; downhill heave transports continuous terrain motion before spring response.",
+    "rollover": "Sustained pressure-centre escape hands whole vehicle to Cannon rigid-body contact/gravity. Verified on a 60-degree test heightfield, not interactively on every map slope.",
+    "tests": [
+      {
+        "id": "SUV",
+        "cases": 45,
+        "maxGapCm": 5.3290705182007514e-14,
+        "maxAxleDriftMm": 7.105427357601002e-13,
+        "minTreadGapCm": -5.911793676816046e-07,
+        "maxTravelCm": 6.0597597756855155,
+        "fastestGapCm": 1.1368683772161603e-12
+      },
+      {
+        "id": "SEAL08",
+        "cases": 45,
+        "maxGapCm": 5.3290705182007514e-14,
+        "maxAxleDriftMm": 3.552713678800501e-13,
+        "minTreadGapCm": -5.266868230435762e-07,
+        "maxTravelCm": 3.5988661204091588,
+        "fastestGapCm": 1.1368683772161603e-12
+      },
+      {
+        "id": "TAI7",
+        "cases": 45,
+        "maxGapCm": 5.3290705182007514e-14,
+        "maxAxleDriftMm": 5.329070518200751e-13,
+        "minTreadGapCm": -5.481838538656802e-07,
+        "maxTravelCm": 6.715369774020568,
+        "fastestGapCm": 1.1368683772161603e-12
+      },
+      {
+        "id": "LI_I9",
+        "cases": 45,
+        "maxGapCm": 5.3290705182007514e-14,
+        "maxAxleDriftMm": 5.329070518200751e-13,
+        "minTreadGapCm": -5.69681590789628e-07,
+        "maxTravelCm": 5.910877580645164,
+        "fastestGapCm": 1.1368683772161603e-12
+      },
+      {
+        "id": "N90",
+        "cases": 45,
+        "maxGapCm": 4.440892098500626e-14,
+        "maxAxleDriftMm": 5.329070518200751e-13,
+        "minTreadGapCm": -5.69681590789628e-07,
+        "maxTravelCm": 6.055244494768766,
+        "fastestGapCm": 1.1368683772161603e-12
+      }
+    ],
+    "worldTests": "All five GLBs: two real kerb-side points and four mountain heading/bank points; actual exported tyre vertices checked against solid kerbs.",
+    "live": "L80 left/right 22.5 degree banks; Tai7 uphill and downhill roll; four contact gaps reported approximately zero.",
+    "limits": "Game-calibrated CoM/spring/damping, not manufacturer suspension maps or a full multi-link / deformable tyre solver."
+  },
+  "development": "Force remount on hot edits; clear audio references on disposal; avoid stale native audio graphs and old render closures.",
+  "checks": {
+    "npm test": "PASS",
+    "npm run typecheck": "PASS",
+    "npm run build": "PASS (existing large bundle advisory)"
+  },
+  "sources": [
+    "https://nvidia-omniverse.github.io/PhysX/physx/5.6.1/docs/Vehicles.html",
+    "https://www.nhtsa.gov/sites/nhtsa.gov/files/1104sandiego.pdf"
+  ],
+  "assetsModified": false,
+  "screenshots": [
+    "L80-sidehill-left.png",
+    "L80-sidehill-right.png",
+    "Tai7-uphill.png",
+    "game-ready.png"
+  ]
+}

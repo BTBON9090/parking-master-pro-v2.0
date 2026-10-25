@@ -1,0 +1,46 @@
+{
+  "deckChecks": 7014,
+  "ringRadiusM": 24,
+  "headMotion": [
+    {
+      "hz": 30,
+      "maxX": 0.2397137811102366,
+      "maxY": 0.11222830818948074,
+      "maxCorrection": 0.017192351689441887
+    },
+    {
+      "hz": 60,
+      "maxX": 0.2397137811102366,
+      "maxY": 0.11238710736856707,
+      "maxCorrection": 0.017489522268759525
+    },
+    {
+      "hz": 120,
+      "maxX": 0.23972408448575983,
+      "maxY": 0.0723261242048807,
+      "maxCorrection": 0.017632496161361283
+    }
+  ],
+  "frontal": {
+    "velocity": {
+      "x": -2.599999999999998,
+      "y": 0
+    },
+    "yawRate": 0,
+    "closing": 20,
+    "damage": 1,
+    "catastrophic": true,
+    "tier": "severe"
+  },
+  "glance": {
+    "velocity": {
+      "x": 0.26097560975609735,
+      "y": 19.57348780487805
+    },
+    "yawRate": 1.9609756097560977,
+    "closing": 5,
+    "damage": 0.08650519031141869,
+    "catastrophic": false,
+    "tier": "light"
+  }
+}

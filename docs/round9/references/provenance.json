@@ -1,0 +1,92 @@
+{
+  "checkedAt": "2026-10-24",
+  "purpose": "Local modeling references; photographs are not orthographic engineering blueprints. Do not ship source marketing photographs as game textures.",
+  "seal08": {
+    "page": "https://www.byd.com/cn/ocean-home/models/haibao/haibao-08-EV",
+    "configuration": "https://www.byd.com/cn/parameter-comparison?goodsId=10053",
+    "poster": "https://www.byd.com/material/__CN/domestic-official/ocean/product/haibao-08-kv/ct.jpg",
+    "verified": {
+      "lengthMm": 5150,
+      "widthMm": 1999,
+      "heightMm": 1505,
+      "wheelbaseMm": 3030,
+      "frontTrackMm": 1715,
+      "rearTrackMm": 1730,
+      "turningRadiusM": 4.95,
+      "tires": "245/45 R19",
+      "rearSteerMaxDeg": 7,
+      "rideHeightAdjustmentTotalMm": 55
+    },
+    "proof": {
+      "rearSteer": "seal08-section-15.jpg",
+      "rideHeight": "seal08-section-14.jpg",
+      "dimensions": "seal08-official-config.txt",
+      "interior": "seal08-section-03.jpg"
+    },
+    "derived": {
+      "nominalUnloadedTireRadiusMm": 351.55
+    },
+    "unknown": [
+      "front virtual bicycle steer angle",
+      "speed-dependent rear-steer curve",
+      "individual wheel jounce and rebound stops",
+      "spring rates, damping curves and motion ratios",
+      "absolute ground clearance by load and height setting"
+    ]
+  },
+  "onvoL80": {
+    "page": "https://www.onvo.cn/l80",
+    "configuration": "https://configuration.onvo.cn/index?model_code=L80&scene=office",
+    "verified": {
+      "lengthMm": 5145,
+      "widthMm": 1998,
+      "heightMm": 1766,
+      "wheelbaseMm": 3110,
+      "standardFrontTire": "255/55 R20",
+      "standardRearTire": "275/50 R20",
+      "airSuspensionAdvertisedStrokeMm": 100,
+      "frontSuspension": "double wishbone",
+      "rearSuspension": "five-link",
+      "UltraPlusPowerKw": 440,
+      "UltraPlusTorqueNm": 535
+    },
+    "derived": {
+      "frontNominalUnloadedTireRadiusMm": 394.25,
+      "rearNominalUnloadedTireRadiusMm": 391.5
+    },
+    "unknown": [
+      "absolute ground clearance under a specified load",
+      "rear wheel steering not stated by manufacturer; do not enable",
+      "spring rates, damping curves and motion ratios"
+    ],
+    "images": [
+      [
+        "onvo-l80-side.jpg",
+        "https://cdn-up-public.onvo.cn/www-alps-cn/www/l80/exterior/exterior-data-hero-desktop.jpg"
+      ],
+      [
+        "onvo-l80-front.jpg",
+        "https://cdn-up-public.onvo.cn/www-alps-cn/www/l80/exterior/exterior-carousel-P1-01-desktop.jpg"
+      ],
+      [
+        "onvo-l80-quarter.jpg",
+        "https://cdn-up-public.onvo.cn/www-alps-cn/www/l80/exterior/exterior-carousel-P1-02-desktop.jpg"
+      ],
+      [
+        "onvo-l80-rear.jpg",
+        "https://cdn-up-public.onvo.cn/www-alps-cn/www/l80/exterior/exterior-carousel-P1-03-desktop.jpg"
+      ],
+      [
+        "onvo-l80-interior.jpg",
+        "https://cdn-up-public.onvo.cn/www-alps-cn/www/l80/highlights/highlights-carousel-03-desktop.jpg"
+      ]
+    ]
+  },
+  "calibrationPrinciples": [
+    "Separate commanded ride height from dynamic wheel travel.",
+    "Do not identify total wheel travel with published adjustable ride-height range.",
+    "Use k_w=(2*pi*f_n)^2*m_s and c_w=2*zeta*sqrt(k_w*m_s) only as simulation tuning with assumed sprung mass/frequency/damping ratio, not OEM data.",
+    "Verify actual world-space tire contact and body clearance on one-wheel curbs, diagonal ramps and flat asphalt.",
+    "Match turn radius measurement convention: wheel path vs body sweep; front inner angle is not the bicycle angle."
+  ]
+}

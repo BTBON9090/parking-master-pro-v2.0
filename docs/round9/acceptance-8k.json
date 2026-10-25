@@ -1,0 +1,41 @@
+{
+  "checkedAt": "2026-10-24T01:50:44.549120+08:00",
+  "scope": "Two Blender-authored complete player car models; counts include interior and all four wheels. Other legacy car assets are outside this reduction pass.",
+  "budget": {
+    "unit": "rendered triangles including node instances",
+    "maxPerCar": 8000
+  },
+  "assets": [
+    {
+      "name": "海豹 08",
+      "file": "public/models/cars/byd-seal-08.glb",
+      "renderedTriangles": 7852,
+      "bytes": 364608,
+      "sha256": "223d2e9de10b793d65353b496cf3d0e5cfaf4f5ebbca56fc3c40b903fc98fffd"
+    },
+    {
+      "name": "乐道 L80",
+      "file": "public/models/cars/onvo-l80.glb",
+      "renderedTriangles": 7864,
+      "bytes": 363500,
+      "sha256": "23a998d19cfe18ab6dc055f27add65ce3bec2249ae27611bf93a1302c5a57065"
+    }
+  ],
+  "checks": {
+    "blenderGeneration": "passed; source blend files saved and game GLBs exported with budget assertion",
+    "typecheck": "passed",
+    "automatedRegressions": "passed",
+    "productionBuild": "passed",
+    "gameLoading": "Both cars loaded and visually inspected in localhost:3000",
+    "nativeWheelGeometry": "circular, axle rotation, initial ground plane and settled static curb checks passed",
+    "steeringWheel": "actual GLB rim stays in-plane during rotation",
+    "cockpit": "L80 speed readout visible after UV and dashboard occlusion fixes; left-drag head look verified",
+    "orbit": "plain left-drag exterior view verified",
+    "newBrowserErrorsAfterReload": 0
+  },
+  "limits": [
+    "Full road and dynamic curb regression has not been completed for this reduced geometry pass. Static contact checks are not a substitute for transient suspension validation.",
+    "Native Blender window could not be shown because macOS is locked; background Blender generation and source saving completed.",
+    "Models are stylized approximations using published dimensions, not engineering replicas. Suspension calibration and unpublished front steering curves remain simulations."
+  ]
+}

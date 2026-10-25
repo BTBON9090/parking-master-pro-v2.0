@@ -1,0 +1,183 @@
+/**
+ * 主菜单 3D 车模展示台
+ * ====================
+ * 选车界面直接把真实车模呈现出来（参考 极限竞速 / 极品飞车 的展厅）：
+ *  - 缓慢自动旋转的展台；按住拖拽可手动环视，松手数秒后恢复自动旋转
+ *  - 摄影棚三点布光 + 地面发光圆盘 + 软阴影
+ *  - 复用游戏同款 loadModel 管线（public/models/*.glb），换车只换模型，
+ *    渲染器 / 灯光 / 相机只初始化一次
+ */
+
+import React, { useEffect, useRef } from 'react';
+import * as THREE from 'three';
+import { CarType } from '../types';
+import { CAR_MODELS } from '../constants';
+import { buildVehicleParts, applyShowroomPose } from '../three/vehicleModels';
+
+interface CarPreview3DProps {
+  carType: CarType;
+  accentColor?: string;
+}
+
+const CarPreview3D: React.FC<CarPreview3DProps> = ({ carType, accentColor = '#f59e0b' }) => {
+  const mountRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<THREE.Group | null>(null);
+  const spinRef = useRef({ target: 0.55, current: 0.55, idleAt: 0, dragging: false });
+
+  // —— 初始化一次：渲染器 / 场景 / 相机 / 灯光 / 展台 ——
+  useEffect(() => {
+    const mount = mountRef.current;
+    if (!mount) return;
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
+    mount.appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(36, 1, 1, 800);
+    camera.position.set(70, 32, 70);
+    camera.lookAt(0, 6, 0);
+
+    // 三点布光
+    scene.add(new THREE.HemisphereLight(0xdfe8ff, 0x1a1c22, 1.05));
+    const key = new THREE.DirectionalLight(0xfff1de, 2.4);
+    key.position.set(60, 90, 40);
+    key.castShadow = true;
+    key.shadow.mapSize.set(1024, 1024);
+    key.shadow.camera.left = -70; key.shadow.camera.right = 70;
+    key.shadow.camera.top = 70; key.shadow.camera.bottom = -70;
+    key.shadow.radius = 6;
+    scene.add(key);
+    const rim = new THREE.DirectionalLight(0x8fb4ff, 1.5);
+    rim.position.set(-70, 40, -60);
+    scene.add(rim);
+
+    // 展台：深色圆盘 + 发光外环 + 网格纹理
+    const stage = new THREE.Group();
+    const disc = new THREE.Mesh(
+      new THREE.CircleGeometry(66, 64),
+      new THREE.MeshStandardMaterial({ color: 0x101116, roughness: 0.85, metalness: 0.35 }),
+    );
+    disc.rotation.x = -Math.PI / 2;
+    disc.receiveShadow = true;
+    stage.add(disc);
+
+    const ringColor = new THREE.Color(accentColor);
+    const ring = new THREE.Mesh(
+      new THREE.RingGeometry(64.2, 66, 96),
+      new THREE.MeshBasicMaterial({ color: ringColor, transparent: true, opacity: 0.85, side: THREE.DoubleSide }),
+    );
+    ring.rotation.x = -Math.PI / 2;
+    ring.position.y = 0.06;
+    stage.add(ring);
+
+    const gridHelper = new THREE.PolarGridHelper(52, 12, 5, 64, 0x3a3d46, 0x23252c);
+    (gridHelper.material as THREE.Material).transparent = true;
+    (gridHelper.material as THREE.Material).opacity = 0.5;
+    gridHelper.position.y = 0.04;
+    stage.add(gridHelper);
+
+    // 软阴影承接面
+    const shadowPlane = new THREE.Mesh(
+      new THREE.PlaneGeometry(160, 160),
+      new THREE.ShadowMaterial({ opacity: 0.42 }),
+    );
+    shadowPlane.rotation.x = -Math.PI / 2;
+    shadowPlane.position.y = 0.02;
+    shadowPlane.receiveShadow = true;
+    stage.add(shadowPlane);
+    scene.add(stage);
+    stageRef.current = stage;
+
+    // 尺寸自适应。注意 updateStyle=false：canvas 的 CSS 尺寸交给
+    // .cockpit-canvas-host（width/height:100%），避免内联像素宽度撑破
+    // 父级网格轨道（曾导致首次进入选车页时右侧车单被挤没）。
+    const resize = () => {
+      const w = mount.clientWidth || 1;
+      const h = mount.clientHeight || 1;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    };
+    resize();
+    const observer = new ResizeObserver(resize);
+    observer.observe(mount);
+
+    // 拖拽环视
+    let lastX = 0;
+    const dom = renderer.domElement;
+    const down = (e: PointerEvent) => { spinRef.current.dragging = true; lastX = e.clientX; dom.setPointerCapture(e.pointerId); };
+    const move = (e: PointerEvent) => {
+      if (!spinRef.current.dragging) return;
+      stage.rotation.y += (e.clientX - lastX) * 0.012;
+      lastX = e.clientX;
+      spinRef.current.idleAt = performance.now() + 2600;
+    };
+    const up = () => { spinRef.current.dragging = false; spinRef.current.idleAt = performance.now() + 2600; };
+    dom.addEventListener('pointerdown', down);
+    dom.addEventListener('pointermove', move);
+    dom.addEventListener('pointerup', up);
+    dom.addEventListener('pointercancel', up);
+
+    let raf = 0;
+    const tick = () => {
+      raf = requestAnimationFrame(tick);
+      if (!spinRef.current.dragging && performance.now() > spinRef.current.idleAt) {
+        stage.rotation.y += 0.0038;
+      }
+      renderer.render(scene, camera);
+    };
+    tick();
+
+    return () => {
+      cancelAnimationFrame(raf);
+      observer.disconnect();
+      dom.removeEventListener('pointerdown', down);
+      dom.removeEventListener('pointermove', move);
+      dom.removeEventListener('pointerup', up);
+      dom.removeEventListener('pointercancel', up);
+      stageRef.current = null;
+      scene.traverse(obj => { if (obj instanceof THREE.Mesh) obj.geometry.dispose(); });
+      renderer.dispose();
+      if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // —— 换车：只替换模型节点 ——
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    let cancelled = false;
+    let current: THREE.Group | null = null;
+    buildVehicleParts(carType, CAR_MODELS[carType]).then(parts => {
+      if (cancelled || !stageRef.current) return;
+      // 程序化车型在展厅里把车门半开、尾翼抬起，直观展示部件绑定；
+      // GLB 车型没有这些绑定，applyShowroomPose 会自动跳过。
+      applyShowroomPose(parts.extras, 0.55);
+      const model = parts.group;
+      current = model;
+      // 重新实测包围盒后落地 + 居中：个别车源（如海豹 08）的原点不在地面，
+      // 直接写死 position.y 会覆盖归一化偏移、让轮胎沉进展台。
+      const box = new THREE.Box3().setFromObject(model);
+      const center = box.getCenter(new THREE.Vector3());
+      model.position.x -= center.x;
+      model.position.z -= center.z;
+      model.position.y -= box.min.y;
+      model.position.y += 0.12; // 胎壁与盘面之间一点呼吸感
+      stageRef.current.add(model);
+    }).catch(() => undefined);
+    return () => {
+      cancelled = true;
+      if (current && stageRef.current) stageRef.current.remove(current);
+    };
+  }, [carType]);
+
+  return (
+    <div ref={mountRef} className="cockpit-canvas-host w-full h-full cursor-grab active:cursor-grabbing touch-none" aria-label="3D car preview" />
+  );
+};
+
+export default CarPreview3D;

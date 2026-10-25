@@ -1,0 +1,69 @@
+{
+  "date": "2026-10-24",
+  "scope": "轮胎与实体路缘接触、悬架压缩/回弹、越障阻力；未继续修改或导出模型",
+  "root_causes": [
+    "原地面高度采样只检查轮心，忽略轮胎半径、宽度与路缘侧面。",
+    "原悬架把接触高度当作平滑目标，过渡期间轮胎可进入障碍物。",
+    "原车身俯仰改变了轮胎的实际水平位置，碰撞采样仍使用未俯仰位置。扩展测试复现最大约1.7cm穿入。",
+    "原运动积分未扣除轮胎抬升所需的能量，侧滑位移也会绕过路缘接触检查。"
+  ],
+  "implementation": [
+    "用实际GLB轮胎半径/宽度，对可见路缘实体进行圆柱体积接触计算。",
+    "接触运动使用最大1/240秒且最大2cm位移的子步，计入抬升做功；低速动力不足时受阻，越障损失速度。",
+    "轮胎压缩受非穿透约束，离开路缘后有回弹/下垂过程；簧载车身采用阻尼弹簧升沉与压缩限位。",
+    "轮毂反向补偿车身俯仰，保持渲染轮胎与接触体积的水平位置一致。",
+    "把侧滑位移也纳入接触积分，车身动态俯仰使用受阻后的实际加速度。",
+    "测试点切换清除旧悬架和腾空状态；新增正常UI测试点。"
+  ],
+  "automated": {
+    "commands": [
+      "npm run typecheck",
+      "npm test",
+      "npm run build",
+      "git diff --check"
+    ],
+    "result": "passed",
+    "geometry": "直接加载海豹08与乐道L80实际GLB，逐帧检测旋转中的Tyre网格顶点是否进入路缘实体；包含车身俯仰。",
+    "matrix": "2车型 × 5接近/转向组合 × 15/30/60/120fps；正向90°、斜向60°/120°、前轮±0.5rad；另有弱动力前进/倒车与侧壁撞击测试。",
+    "penetration": "40组动态几何测试的最小间隙均>=0；允许误差3mm。",
+    "coast": "无油门以4m/s（14.4km/h）越过同一26cm路缘，速度降至3.302m/s（11.89km/h）；各帧率结果一致。",
+    "build_note": "保留既有大JS chunk警告；构建成功。"
+  },
+  "live_browser": {
+    "url": "http://127.0.0.1:3000/",
+    "car": "乐道L80 Ultra+",
+    "low_speed": "W轻油门接近后停在x约723,y约668的路缘前；已截图。",
+    "run_up": "从x625.39,y674.23开始W约6.8秒，约12km/h越障，截图捕捉到后轮上缘、前轮落地；随后Shift+S刹停。",
+    "one_side": "左侧两轮接触2.60u，右侧0；四轮行程+1.30/-1.30/+1.30/-1.30u，轮底间隙均0，四轮接地。",
+    "frame_time": "本机验收段平均约17.4ms，p95约25.1ms；不代表所有设备性能。",
+    "console": "保留04:41:58的Vite WebSocket连接失败历史记录；重启服务后至04:56检查未见新游戏运行错误。"
+  },
+  "sources": [
+    {
+      "url": "https://nvidiagameworks.github.io/PhysX/4.1/documentation/physxguide/Manual/Vehicles.html",
+      "use": "参考轮胎体积接触相较单射线的必要性；未声称取得商业游戏源码或复刻其内部算法。"
+    },
+    {
+      "url": "https://nvidia-omniverse.github.io/PhysX/physx/5.1.1/docs/Vehicles.html",
+      "use": "轮胎尺寸匹配、悬架压缩限位和回弹速度约束。"
+    },
+    {
+      "url": "https://jrouwe.github.io/JoltPhysicsDocs/5.0.0/class_vehicle_collision_tester_cast_cylinder.html",
+      "use": "圆柱形轮胎接触的公开实现思路。"
+    }
+  ],
+  "limits": [
+    "当前是轻量车辆接触近似，不是完整六自由度刚体车辆求解器。",
+    "本轮几何回归针对固定尺寸路缘与轮胎；整车底盘托底、翻滚、任意形状碎石/高墙碰撞不在本轮通过范围。",
+    "弹簧、阻尼、非簧载质量为游戏模拟标定，不是厂家公布的悬架参数。"
+  ],
+  "evidence": [
+    "dynamic-curb.png",
+    "dynamic-curb-telemetry.txt",
+    "low-speed-blocked.png",
+    "single-side-telemetry.txt",
+    "tests.log",
+    "typecheck.log",
+    "build.log"
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "date": "2026-10-24",
+  "result": "implemented and verified locally",
+  "world": {
+    "new_road_km": 2.600811,
+    "routes": [
+      "城郊连接线",
+      "青岚山环线",
+      "云顶观景线",
+      "溪谷砂石捷径"
+    ],
+    "city": "Existing Dongsi street-layout approximation retained",
+    "mountain": "Original fictional Qinglan routes, not a surveyed Beijing reconstruction",
+    "maximum_grade_percent": 17.56,
+    "minimum_asphalt_center_radius_m": 9.8,
+    "max_elevation_m": 58,
+    "gravel_and_shallow_puddles": true,
+    "curved_paint_and_minimap_share_centerline": true,
+    "terrain_and_tyres_share_surface": true,
+    "max_sampled_render_support_error_cm": {
+      "asphalt": 1.235,
+      "gravel": 4.825,
+      "shoulder_and_offroad": 1.355
+    },
+    "rail_colliders": 1632,
+    "tree_trunk_and_sign_post_collisions": true
+  },
+  "garage": {
+    "selectable": [
+      "ONVO L80",
+      "BYD Seal08",
+      "Fangchengbao Tai7 Ultra",
+      "Li i9",
+      "Xiaomi Skynomad N90 Max"
+    ],
+    "legacy_choices_removed": true,
+    "triangles_including_runtime_cabin_liner": {
+      "N90": 7516,
+      "Tai7": 7434,
+      "LiI9": 7542
+    },
+    "new_models": "Original Blender meshes, cohesive lofted body shells, cut-out windows, named separate wheel rigs; all under 8000 triangles",
+    "new_car_full_pedal_0_100_s": {
+      "TAI7": 4.45,
+      "LI_I9": 4.883333,
+      "N90": 5.916667
+    }
+  },
+  "manual_browser_checks": [
+    "D / park release / Shift+W uphill launch in i9 and Tai7",
+    "N90 cockpit and gravel route",
+    "new-car tuning panel opens without error after default migration fix",
+    "gear returns to N and parking brake engages on paused car change and travel",
+    "car model changes at the same location",
+    "mountain to Underground and back through Settings",
+    "city/mountain gateway driven from X8191 to X8826 without obstruction",
+    "retained Seal08 and L80 render correctly",
+    "live HUD updates after car and scene rebuild",
+    "roadsign reads normally from both sides"
+  ],
+  "performance_snapshot": {
+    "vehicle": "TAI7",
+    "location": "mountain entrance",
+    "mean_frame_ms": 17.2,
+    "p95_frame_ms": 26.8,
+    "note": "A local spot measurement, not a whole-map FPS guarantee; during background builds frame times were higher."
+  },
+  "checks": {
+    "npm_test": "passed",
+    "npm_run_typecheck": "passed",
+    "npm_run_build": "passed; existing large-bundle warning"
+  },
+  "limitations": [
+    "No full lap driven manually; route geometry and support were also sampled automatically.",
+    "Vehicle interiors and unpublished steering/suspension coefficients are approximations; see vehicle-provenance.json.",
+    "i9 6-degree rear steer is a simulation calibration, not a published OEM angle.",
+    "This implements free roaming and scene/vehicle switching, not an entire Forza-scale gameplay system.",
+    "Shallow puddles affect support/friction/rolling load; no fluid or mud-deformation simulation."
+  ]
+}

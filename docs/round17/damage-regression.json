@@ -1,0 +1,37 @@
+[
+  {
+    "id": "SUV",
+    "light": 1,
+    "moderate": 4,
+    "displaced": 918,
+    "maxDisplacement": 1.947426795959431
+  },
+  {
+    "id": "SEDAN",
+    "light": 1,
+    "moderate": 4,
+    "displaced": 864,
+    "maxDisplacement": 2.0031332969665456
+  },
+  {
+    "id": "TAI7",
+    "light": 1,
+    "moderate": 4,
+    "displaced": 898,
+    "maxDisplacement": 2.118241786956775
+  },
+  {
+    "id": "LI_I9",
+    "light": 1,
+    "moderate": 4,
+    "displaced": 969,
+    "maxDisplacement": 2.141482830047575
+  },
+  {
+    "id": "N90",
+    "light": 1,
+    "moderate": 4,
+    "displaced": 850,
+    "maxDisplacement": 2.1201300621032884
+  }
+]

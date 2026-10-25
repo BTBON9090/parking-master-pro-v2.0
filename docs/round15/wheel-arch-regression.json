@@ -1,0 +1,44 @@
+[
+  {
+    "id": "SUV",
+    "cases": 21,
+    "minSillClearanceCm": 4.442516193966846,
+    "maxAxleDriftMm": 7.105427357601002e-13,
+    "minSlopeTreadGapCm": 0.0007861045250366817
+  },
+  {
+    "id": "SEAL08",
+    "cases": 21,
+    "minSillClearanceCm": 4.442628815886174,
+    "maxAxleDriftMm": 5.329070518200751e-13,
+    "minSlopeTreadGapCm": 0.0007078083639707568
+  },
+  {
+    "id": "TAI7",
+    "cases": 21,
+    "minSillClearanceCm": 5.013100349442272,
+    "maxAxleDriftMm": 3.552713678800501e-13,
+    "minSlopeTreadGapCm": 0.0007928008702523751
+  },
+  {
+    "id": "LI_I9",
+    "cases": 21,
+    "minSillClearanceCm": 3.877656346423688,
+    "maxAxleDriftMm": 7.105427357601002e-13,
+    "minSlopeTreadGapCm": 0.000777572256300395
+  },
+  {
+    "id": "N90",
+    "cases": 21,
+    "minSillClearanceCm": 3.8763954594347183,
+    "maxAxleDriftMm": 3.552713678800501e-13,
+    "minSlopeTreadGapCm": 0.0007660360940152942
+  },
+  {
+    "id": "TRUCK",
+    "cases": 21,
+    "minSillClearanceCm": 4.925483749759003,
+    "maxAxleDriftMm": 7.105427357601002e-13,
+    "minSlopeTreadGapCm": 0.0007826678740390614
+  }
+]

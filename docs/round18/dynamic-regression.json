@@ -1,0 +1,72 @@
+{
+  "kerb": {
+    "goodDamping": {
+      "crossings": 4,
+      "totalHeaveM": 0.011922437588273924
+    },
+    "poorDamping": {
+      "crossings": 6,
+      "totalHeaveM": 0.0660171324217297
+    }
+  },
+  "crestResults": [
+    {
+      "fps": 15,
+      "airtime": 1,
+      "peakHeightM": 2.926882296549786
+    },
+    {
+      "fps": 30,
+      "airtime": 1,
+      "peakHeightM": 2.929343926303326
+    },
+    {
+      "fps": 60,
+      "airtime": 1,
+      "peakHeightM": 2.933302190630927
+    },
+    {
+      "fps": 120,
+      "airtime": 1,
+      "peakHeightM": 2.9346958460432746
+    }
+  ],
+  "cars": [
+    {
+      "id": "SUV",
+      "trackM": 1.7200000286102295,
+      "maxRollDeg": 2.8884108000007713,
+      "minBodyClearanceCm": 14.795980250726846
+    },
+    {
+      "id": "SEAL08",
+      "trackM": 1.7300000190734863,
+      "maxRollDeg": 1.4310507974427749,
+      "minBodyClearanceCm": 12.554940274738733
+    },
+    {
+      "id": "TAI7",
+      "trackM": 1.7200000286102295,
+      "maxRollDeg": 3.254245119891666,
+      "minBodyClearanceCm": 13.637069074392487
+    },
+    {
+      "id": "LI_I9",
+      "trackM": 1.6950000524520874,
+      "maxRollDeg": 2.712221580045719,
+      "minBodyClearanceCm": 16.49857496796801
+    },
+    {
+      "id": "N90",
+      "trackM": 1.7230000495910645,
+      "maxRollDeg": 2.8301365159531002,
+      "minBodyClearanceCm": 16.287875856769602
+    },
+    {
+      "id": "TRUCK",
+      "trackM": 1.6799999475479126,
+      "maxRollDeg": 3.8046989833755633,
+      "minBodyClearanceCm": 18.36786300961597
+    }
+  ]
+}

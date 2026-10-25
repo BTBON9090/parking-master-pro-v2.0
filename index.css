@@ -1,0 +1,513 @@
+/*
+ * Parking Master Pro v2.0 - 驾驶舱设计令牌
+ * 深色科技驾驶舱 / 仪表盘风格
+ * 色彩锁定：暖灰近黑底色 + 单一琥珀强调 + 语义色（绿/红/青）
+ */
+
+:root {
+  /* 底色阶梯（暖灰近黑，不用纯黑） */
+  --bg: #0a0a0b;
+  --panel: #141416;
+  --panel-2: #1c1c20;
+  --panel-3: #242429;
+
+  /* 发丝线 / 边框 */
+  --hairline: rgba(255, 255, 255, 0.08);
+  --hairline-strong: rgba(255, 255, 255, 0.14);
+
+  /* 文字 */
+  --text: #f4f4f5;
+  --text-dim: #a1a1aa;
+  --text-mute: #71717a;
+
+  /* 单一强调色：琥珀 */
+  --amber: #f59e0b;
+  --amber-dim: rgba(245, 158, 11, 0.16);
+  --amber-glow: rgba(245, 158, 11, 0.45);
+
+  /* 语义色（状态指示，非装饰） */
+  --red: #ef4444;
+  --red-dim: rgba(239, 68, 68, 0.16);
+  --green: #22c55e;
+  --green-dim: rgba(34, 197, 94, 0.16);
+  --cyan: #22d3ee;
+  --cyan-dim: rgba(34, 211, 238, 0.16);
+
+  /* 内阴影 / 高光 */
+  --inset-hi: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --inset-lo: inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+}
+
+html,
+body,
+#root {
+  /* HUD is anchored to the actual viewport. A hard 1180px minimum made
+     right-anchored mirrors/maps hang outside a 1153px window. */
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+}
+
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ===== 驾驶舱面板：底色 + 内高光 + 发丝边 ===== */
+.cockpit-panel {
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  box-shadow: var(--inset-hi), 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+/* 内凹面板：换挡槽、踏板槽等需要"凹陷感"的容器 */
+.cockpit-recess {
+  background: var(--bg);
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6), var(--inset-hi);
+}
+
+/* ===== 发丝线分隔 ===== */
+.hairline {
+  background: var(--hairline);
+}
+.hairline-h {
+  height: 1px;
+  width: 100%;
+  background: var(--hairline-strong);
+}
+.hairline-v {
+  width: 1px;
+  align-self: stretch;
+  background: var(--hairline-strong);
+}
+
+/* ===== 等宽数字辅助 ===== */
+.mono {
+  font-family: ui-monospace, "SF Mono", "JetBrains Mono", "Roboto Mono", Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* ===== 仪表外壳 ===== */
+.gauge-housing {
+  background: var(--bg);
+  border: 1px solid var(--hairline);
+  border-radius: 9999px;
+  box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.7), var(--inset-hi);
+}
+
+/* ===== 激活态发光（琥珀） ===== */
+.glow-amber {
+  box-shadow: 0 0 0 1px var(--amber), 0 0 14px var(--amber-glow);
+}
+.glow-green {
+  box-shadow: 0 0 0 1px var(--green), 0 0 14px rgba(34, 197, 94, 0.4);
+}
+.glow-red {
+  box-shadow: 0 0 0 1px var(--red), 0 0 14px rgba(239, 68, 68, 0.4);
+}
+.glow-cyan {
+  box-shadow: 0 0 0 1px var(--cyan), 0 0 14px rgba(34, 211, 238, 0.4);
+}
+
+/* ===== 告警灯片（亮/灭两态） ===== */
+.telltale {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1px solid var(--hairline);
+  color: var(--text-mute);
+  background: rgba(0, 0, 0, 0.3);
+  transition: color 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+}
+.telltale.is-on {
+  color: var(--text);
+}
+
+/* ===== 深色滚动条（菜单/弹窗用） ===== */
+.cockpit-scroll::-webkit-scrollbar {
+  width: 6px;
+  display: block;
+}
+.cockpit-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.cockpit-scroll::-webkit-scrollbar-thumb {
+  background: var(--hairline-strong);
+  border-radius: 9999px;
+}
+.cockpit-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--amber);
+}
+
+/* ===== 滑块（设置弹窗音量等） ===== */
+input[type="range"].cockpit-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--panel-3);
+  outline: none;
+}
+input[type="range"].cockpit-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  background: var(--amber);
+  box-shadow: 0 0 8px var(--amber-glow);
+  cursor: pointer;
+}
+input[type="range"].cockpit-range::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: none;
+  border-radius: 9999px;
+  background: var(--amber);
+  box-shadow: 0 0 8px var(--amber-glow);
+  cursor: pointer;
+}
+
+/* ===== 减少动效偏好支持 ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ============================================================
+ * 3A 主菜单视觉基座（尘埃 / 极品飞车 / 地平线）
+ * ============================================================ */
+
+/* 展示字体：Rajdhani（在 index.html 引入）。CJK 回落系统粗黑。 */
+.font-display {
+  font-family: "Rajdhani", "Arial Narrow", "PingFang SC", "Microsoft YaHei", ui-sans-serif, sans-serif;
+}
+
+/* 斜切面板 */
+.clip-angle {
+  clip-path: polygon(14px 0, 100% 0, calc(100% - 14px) 100%, 0 100%);
+}
+.clip-angle-sm {
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+}
+
+/* 标题流光扫过 */
+.title-shine {
+  color: #f4f4f5;
+}
+@keyframes shineText {
+  0%, 18% { background-position: 130% 0; }
+  62%, 100% { background-position: -130% 0; }
+}
+
+/* 描边空心字 */
+.text-outline {
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.42);
+}
+
+/* 点火提示呼吸闪烁 */
+.prompt-blink {
+  animation: blinkPrompt 1.7s ease-in-out infinite;
+}
+@keyframes blinkPrompt {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.38; }
+}
+
+/* 启动按钮脉冲辉光 */
+.start-pulse {
+  animation: startPulse 2.3s ease-in-out infinite;
+}
+@keyframes startPulse {
+  0%, 100% { box-shadow: 0 0 24px rgba(245, 158, 11, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35); }
+  50% { box-shadow: 0 0 52px rgba(245, 158, 11, 0.72), 0 0 12px rgba(251, 146, 60, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.35); }
+}
+
+/* 步骤切换入场 */
+.menu-step-enter {
+  animation: fadeSlideUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 透视网格地板（向后滚动 = 速度感） */
+.menu-grid-floor {
+  position: absolute;
+  left: -25%;
+  right: -25%;
+  bottom: -10%;
+  height: 58%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='54' height='54'%3E%3Cpath d='M0 0H54M0 0V54' stroke='%23f59e0b' stroke-opacity='0.14' stroke-width='1'/%3E%3C/svg%3E");
+  background-size: 54px 54px;
+  transform: perspective(540px) rotateX(63deg);
+  transform-origin: 50% 100%;
+  animation: gridScroll 2.4s linear infinite;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+@keyframes gridScroll {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 0 54px, 0 0; }
+}
+
+/* 斜向流光 */
+.menu-streak {
+  position: absolute;
+  left: -32%;
+  width: 34%;
+  height: 2px;
+  background: rgba(245, 158, 11, 0.55);
+  filter: blur(1px);
+  transform: rotate(-8deg);
+  animation: streakMove 4.8s linear infinite;
+  opacity: 0;
+}
+@keyframes streakMove {
+  0% { transform: translateX(0) rotate(-8deg); opacity: 0; }
+  7% { opacity: 0.85; }
+  42% { opacity: 0.45; }
+  100% { transform: translateX(430%) rotate(-8deg); opacity: 0; }
+}
+
+/* 黄黑警示条纹（无缝滚动，供警示带上下边线使用） */
+.hazard-stripes {
+  background-color: #101013;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' fill='%23101013'/%3E%3Cpath d='M-16 16L16 -16M0 32L32 0M16 48L48 16' stroke='%23f5b301' stroke-width='16'/%3E%3C/svg%3E");
+  background-size: 200% 100%;
+  animation: hazardScroll 1.1s linear infinite;
+}
+@keyframes hazardScroll {
+  from { background-position: 0 0; }
+  to { background-position: 45.25px 0; } /* √2·32px 沿 -45° 方向无缝循环 */
+}
+
+/* 警示带组合：上下两条滚动条纹线 + 中间黑底滚动文字（真·跑马灯） */
+.hazard-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 32px;
+  pointer-events: none;
+}
+.hazard-ticker {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 5px;
+  bottom: 5px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  background: rgba(7, 7, 9, 0.86);
+  border-top: 1px solid rgba(245, 179, 1, 0.22);
+  border-bottom: 1px solid rgba(245, 179, 1, 0.22);
+}
+.hazard-ticker-track {
+  display: flex;
+  flex-shrink: 0;
+  white-space: nowrap;
+  will-change: transform;
+  animation: tickerScroll 26s linear infinite;
+}
+.hazard-ticker-track.reverse {
+  animation-direction: reverse;
+}
+@keyframes tickerScroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); } /* 轨道内容复制两份，-50% 无缝循环 */
+}
+.hazard-ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 18px;
+  font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.34em;
+  color: rgba(245, 179, 1, 0.66);
+  text-shadow: 0 0 8px rgba(245, 179, 1, 0.32);
+}
+.hazard-ticker-item i {
+  font-style: normal;
+  color: rgba(255, 255, 255, 0.26);
+}
+
+/* 警灯氛围：红蓝交替大光晕（冷暖对冲的警惕感） */
+.police-glow {
+  position: absolute;
+  width: 64vmax;
+  height: 64vmax;
+  border-radius: 9999px;
+  filter: blur(90px);
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+.police-glow-red {
+  left: -18vmax;
+  top: -14vmax;
+  background: rgba(239, 68, 68, 0.34);
+  animation: policeRed 2.4s ease-in-out infinite;
+}
+.police-glow-blue {
+  right: -18vmax;
+  bottom: -16vmax;
+  background: rgba(59, 130, 246, 0.34);
+  animation: policeBlue 2.4s ease-in-out infinite;
+}
+@keyframes policeRed {
+  0%, 100% { opacity: 0.16; transform: scale(0.96); }
+  22% { opacity: 1; transform: scale(1.05); }
+  46% { opacity: 0.22; transform: scale(0.98); }
+}
+@keyframes policeBlue {
+  0%, 100% { opacity: 0.18; transform: scale(0.97); }
+  50% { opacity: 0.2; transform: scale(0.99); }
+  72% { opacity: 1; transform: scale(1.06); }
+  92% { opacity: 0.24; transform: scale(0.98); }
+}
+
+/* 旋转警灯光束：红蓝大探照扇形扫过画面（screen 混合，像真的警灯在转） */
+.police-beam {
+  /* 禁止渐变后，扇形光束只能用硬边纯色，观感上变成大块色块——
+     直接隐藏，保留四周的柔和警灯辉光即可。 */
+  display: none;
+}
+.police-beam-red {
+  left: -48vmax;
+  top: -48vmax;
+  background: rgba(239, 68, 68, 0.34);
+  clip-path: polygon(50% 50%, 100% 0%, 100% 34%);
+  animation: beaconSpin 3.6s linear infinite;
+}
+.police-beam-blue {
+  right: -48vmax;
+  bottom: -48vmax;
+  background: rgba(59, 130, 246, 0.34);
+  clip-path: polygon(50% 50%, 0% 100%, 34% 100%);
+  animation: beaconSpin 3.6s linear infinite reverse;
+}
+@keyframes beaconSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* 全屏红蓝交替洗色（极低透明度，强化"警灯闪烁"的节律感） */
+.police-wash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  animation: policeWash 2.4s ease-in-out infinite;
+}
+@keyframes policeWash {
+  0%, 100% { background: rgba(239, 68, 68, 0.035); }
+  25% { background: rgba(239, 68, 68, 0); }
+  50% { background: rgba(59, 130, 246, 0.042); }
+  75% { background: rgba(59, 130, 246, 0); }
+}
+
+/* 奖励弹窗 */
+.reward-pop {
+  animation: rewardPop 0.38s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+@keyframes rewardPop {
+  from { opacity: 0; transform: translateY(-14px) scale(0.86); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ============================================================
+ * START ENGINE 速度感转场
+ * ============================================================ */
+.launch-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 90;
+  overflow: hidden;
+  background: rgba(7, 8, 11, 0.94);
+  animation: launchZoom 0.82s cubic-bezier(0.32, 0.72, 0.25, 1) both;
+  pointer-events: all;
+}
+@keyframes launchZoom {
+  from { opacity: 0; transform: scale(1); }
+  22% { opacity: 1; }
+  to { opacity: 1; transform: scale(1.08); }
+}
+/* 速度线：从中心向两侧飞速掠过 */
+.launch-streak {
+  position: absolute;
+  left: 50%;
+  width: 62vw;
+  height: 2px;
+  transform-origin: left center;
+  background: rgba(245, 158, 11, 0.55);
+  filter: blur(1px);
+  opacity: 0;
+  animation: launchStreak 0.78s cubic-bezier(0.3, 0, 0.65, 0.45) both;
+}
+@keyframes launchStreak {
+  0% { transform: translateX(-52vw) scaleX(0.1); opacity: 0; }
+  18% { opacity: 0.62; }
+  100% { transform: translateX(52vw) scaleX(1.25); opacity: 0; }
+}
+/* 转场大字 */
+.launch-title {
+  animation: launchTitle 0.78s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+@keyframes launchTitle {
+  0% { opacity: 0; transform: translateX(-40px) skewX(-12deg); letter-spacing: 0.2em; }
+  22% { opacity: 1; transform: translateX(0) skewX(-12deg); }
+  68% { opacity: 0.9; letter-spacing: 0.34em; }
+  100% { opacity: 0; transform: translateX(34px) skewX(-8deg); letter-spacing: 0.40em; }
+}
+
+/* 欢迎页声波纹条（JS 驱动高度，CSS 只管造型） */
+.wave-bar {
+  width: 4px;
+  border-radius: 9999px;
+  background: #f59e0b;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.35);
+  transition: height 70ms linear, opacity 0.3s ease;
+}
+
+/* 展台 canvas 必须服从容器尺寸（禁止内联像素宽撑破网格轨道） */
+.cockpit-canvas-host {
+  position: relative;
+  overflow: hidden;
+}
+.cockpit-canvas-host > canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+/* Full-page driving settings: stable navigation, readable rows, no nested drawer. */
+.settings-page{position:absolute;inset:0;z-index:70;background:linear-gradient(125deg,#18242c,#10161c 65%);color:#e8edf0;display:flex;flex-direction:column;pointer-events:auto;cursor:default;padding:32px 5vw;outline:none}
+.settings-page header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #344049;padding-bottom:24px;gap:20px}.settings-kicker{font:11px monospace;letter-spacing:3px;color:#ddb665}.settings-page h1{font-size:34px;font-weight:800;margin-top:6px}.settings-page button,.settings-page select{cursor:pointer}.settings-page button:focus-visible,.settings-page input:focus-visible,.settings-page select:focus-visible{outline:2px solid #f6bf52;outline-offset:4px}
+.settings-resume,.settings-primary{background:#f6bf52;color:#171b20;padding:14px 24px;font-weight:800;border-radius:4px}.settings-page kbd{padding:4px 8px;font:12px monospace;border:1px solid #61707c;border-radius:3px;margin-left:12px}.settings-resume kbd{border-color:#927443}
+.settings-layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:5vw;flex:1;min-height:0;padding:28px 0}.settings-layout nav{display:flex;flex-direction:column;gap:8px}.settings-layout nav>button{padding:18px 14px;display:flex;align-items:center;gap:16px;text-align:left;border-left:3px solid transparent;color:#bac4cc}.settings-layout nav>button>span{font:12px monospace;color:#83909b}.settings-layout nav button[aria-current]{background:#29343b;border-left-color:#f6bf52;color:#fff}.settings-layout nav button[aria-current]>span{color:#f6bf52}.settings-layout nav strong{font-size:18px;display:block}.settings-layout small{display:block;color:#9aa8b3;font-size:12px;line-height:1.7;margin-top:5px}.settings-current{margin-top:auto;padding:18px 14px}.settings-current strong{font-size:14px!important;color:#e5bd70;margin:6px 0}.settings-layout main{overflow:auto;padding:0 20px 36px 0;scrollbar-color:#52616c transparent}.settings-heading span{font-size:12px;color:#9eacb7}.settings-heading h2{font-size:28px;font-weight:800;margin:7px 0 18px}.settings-intro{font-size:15px;line-height:1.8;color:#b5c0c8;margin-bottom:24px}.settings-layout section{margin-bottom:30px}.settings-layout h3{color:#e6bd72;font-size:12px;font-weight:700;letter-spacing:2px;border-bottom:1px solid #34414a;padding:0 0 12px}.settings-row{display:flex;justify-content:space-between;align-items:center;gap:30px;min-height:76px;border-bottom:1px solid #2c3740;padding:14px 4px}.settings-row strong{font-size:15px;font-weight:600}.settings-row select{background:#26343e;color:#f4f7fa;padding:12px 36px 12px 14px;border:1px solid #4c5b67;border-radius:4px;max-width:56%;min-width:220px}.settings-row input[type=checkbox]{width:24px;height:24px;accent-color:#efb64f;flex-shrink:0}.range-row>div{width:240px;flex-shrink:0}.range-row output{display:block;text-align:right;font:16px monospace;color:#f4c15c;margin-bottom:8px}.range-row input{width:100%;accent-color:#f4c15c}.settings-note{font-size:12px;line-height:1.9;color:#a4b1bc;padding:14px 0}.binding-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.binding-grid button{display:flex;justify-content:space-between;align-items:center;background:#25313a;border:1px solid #3b4955;padding:14px 16px;border-radius:4px}.binding-grid button[aria-pressed=true]{border-color:#efb64f;color:#efb64f}.destination-list{display:flex;flex-direction:column;margin-top:10px}.destination-list button{text-align:left;border-bottom:1px solid #34414a;padding:16px 4px;display:flex;justify-content:space-between}.destination-list span{color:#e6bd72;font-size:12px}.settings-page footer{padding-top:20px;border-top:1px solid #34414a;display:flex;justify-content:space-between;align-items:center;gap:20px;font-size:12px;color:#9aa8b3}.settings-page footer button{padding:10px 18px;color:#dce3e9;border:1px solid #42515d;margin-left:10px;border-radius:4px}
+@media(max-width:850px){.settings-page{padding:16px 20px}.settings-layout{grid-template-columns:170px 1fr;gap:20px}.settings-row{flex-wrap:wrap;gap:12px}.settings-row select,.range-row>div{max-width:100%;width:100%}.settings-current{display:none}.settings-page h1{font-size:25px}.binding-grid{grid-template-columns:1fr}.settings-layout nav>button{padding:12px 8px}.settings-layout nav small{display:none}.settings-page footer>span{display:none}}
+@media(max-width:560px){.settings-layout{display:flex;flex-direction:column}.settings-layout nav{flex-direction:row;overflow:auto}.settings-layout nav>button>span{display:none}.settings-layout nav strong{font-size:13px;white-space:nowrap}.settings-layout main{padding-right:4px}.settings-resume{padding:10px}.settings-page footer button{margin-left:0;margin-right:8px}}
+.driving-guide{position:absolute;inset:0;z-index:90;display:grid;place-items:center;background:#0a1119e8;pointer-events:auto;cursor:default;padding:24px}.guide-card{width:min(720px,100%);background:#1b2832;border:1px solid #465562;border-radius:8px;padding:32px;color:#eff3f6;box-shadow:0 24px 100px #0008}.guide-card header,.guide-card footer{display:flex;justify-content:space-between;align-items:center;gap:16px}.guide-card header{font-size:11px;letter-spacing:2px;color:#e6bd72}.guide-card header button{letter-spacing:0;color:#bdc8d2;padding:12px}.guide-progress{display:flex;gap:8px;margin:22px 0}.guide-progress span{height:3px;background:#43515c;flex:1}.guide-progress span.active{background:#f1ba52}.guide-card small{color:#9dafbd;font-size:12px}.guide-card h2{font-size:29px;font-weight:800;margin:14px 0}.guide-card p{line-height:1.9;color:#bdc9d3;min-height:64px}.guide-practice{height:180px;background:#111c25;border:1px dashed #516373;display:flex;align-items:center;justify-content:center;gap:30px;margin-top:24px;touch-action:none;border-radius:5px}.guide-keys{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}.guide-keys kbd{background:#2f3c47;border:1px solid #77848f;border-bottom:4px solid #657481;padding:16px;font:20px monospace;border-radius:6px}.guide-keys kbd.pressed{background:#d5a54c;color:#141b21}.guide-wheel{width:110px;height:110px;border:9px solid #d2b183;border-radius:50%;position:relative}.guide-wheel i{position:absolute;left:0;right:0;top:40px;height:12px;background:#8f9fa8}.guide-wheel b{position:absolute;left:40px;top:40px;width:12px;height:52px;background:#8f9fa8}.guide-feedback{font-size:12px;color:#c4ceaa;margin:16px 0;min-height:20px}.guide-card footer{border-top:1px solid #3a4955;padding-top:20px}.guide-card footer>button:first-child{padding:12px;color:#b9c5cf}.guide-card button:disabled{opacity:.3}.guide-card button:focus-visible{outline:2px solid #f6bf52;outline-offset:4px}@media(max-width:650px){.guide-card{padding:22px}.guide-card h2{font-size:23px}.guide-practice{height:150px;gap:12px}.guide-keys kbd{font-size:16px;padding:10px}}

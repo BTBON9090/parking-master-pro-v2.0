@@ -1,168 +1,118 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { CarType, DayTime, LevelData, UserSettings, WeatherType, InputState, Language, ParkingResultType, ParkingSpot } from './types';
-import { GENERATE_LEVEL, STEERING_WHEEL_MAX_ROTATION, TRANSLATIONS, CAR_MODELS, LEVEL_LIST } from './constants';
-import GameCanvas from './components/GameCanvas';
+import { CarType, DayTime, LevelData, UserSettings, WeatherType, InputState, Language, ParkingResultType, CameraView, KeyBindings } from './types';
+import { serializeToLevelData } from './utils/polyline';
+import { GENERATE_LEVEL, CAR_MODELS, DEFAULT_MIRROR_ADJUSTMENTS, DEFAULT_VEHICLE_TUNING, DEFAULT_STEERING_CURVES, DEFAULT_HOOD_CAMERA_ADJUSTMENT, DEFAULT_KEY_BINDINGS, hoodCameraDefaultForCar } from './constants';
+import GameCanvas3D from './components/GameCanvas3D';
 import UIOverlay from './components/UIOverlay';
-import { Lock } from 'lucide-react';
-
-// ... (Menu Component remains unchanged) ...
-
-const Menu: React.FC<{ 
-  start: () => void, 
-  settings: UserSettings, 
-  updateSettings: (s: Partial<UserSettings>) => void,
-  currentCar: CarType,
-  setCar: (c: CarType) => void,
-  lang: Language,
-  setLang: (l: Language) => void,
-  selectedLevel: number,
-  setSelectedLevel: (id: number) => void
-}> = ({ start, settings, updateSettings, currentCar, setCar, lang, setLang, selectedLevel, setSelectedLevel }) => {
-  const t = TRANSLATIONS[lang];
-
-  return (
-    <div className="relative h-full w-full bg-gray-900 text-white overflow-y-auto">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_#1f2937,_#000000)] z-0"></div>
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20 z-0"></div>
-
-        <div className="relative z-10 flex flex-col items-center justify-center min-h-full p-8">
-            <div className="absolute top-6 right-6 flex gap-2">
-                <button onClick={() => setLang(Language.CN)} className={`px-4 py-1 rounded-full text-sm font-bold transition-all ${lang === Language.CN ? 'bg-yellow-500 text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}>CN</button>
-                <button onClick={() => setLang(Language.EN)} className={`px-4 py-1 rounded-full text-sm font-bold transition-all ${lang === Language.EN ? 'bg-yellow-500 text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}>EN</button>
-            </div>
-
-            <div className="text-center mb-8">
-                <h1 className="text-6xl md:text-8xl font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500 drop-shadow-lg">
-                    PARKING <span className="text-yellow-500">MASTER</span>
-                </h1>
-                <div className="w-full h-2 bg-yellow-500 mt-2 skew-x-12"></div>
-                <p className="mt-4 text-gray-400 tracking-[0.5em] text-sm uppercase">Professional Simulator 2D</p>
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full max-w-7xl">
-                
-                <div className="space-y-8">
-                     <div className="bg-gray-800/50 backdrop-blur p-6 rounded-2xl border border-gray-700 shadow-xl">
-                        <h3 className="text-xl font-bold mb-6 text-blue-400 uppercase tracking-widest border-b border-gray-700 pb-2">{t.initialSetup}</h3>
-                        <div className="space-y-4">
-                            <OptionRow label={t.weather} checked={settings.weatherEnabled} onChange={e => updateSettings({weatherEnabled: e.target.checked})} />
-                            <OptionRow label={t.ghostWheel} checked={settings.wheelGhost} onChange={e => updateSettings({wheelGhost: e.target.checked})} />
-                            <OptionRow label={t.autoSignal} checked={settings.autoTurnSignal} onChange={e => updateSettings({autoTurnSignal: e.target.checked})} />
-                        </div>
-                    </div>
-
-                    <div className="bg-gray-800/50 backdrop-blur p-6 rounded-2xl border border-gray-700 shadow-xl flex flex-col">
-                        <h3 className="text-xl font-bold mb-6 text-green-400 uppercase tracking-widest border-b border-gray-700 pb-2">{t.vehicle}</h3>
-                        <div className="grid grid-cols-2 gap-4 flex-1">
-                            {Object.keys(CarType).map((key) => {
-                                const car = CAR_MODELS[key as CarType];
-                                const isSelected = currentCar === key;
-                                return (
-                                    <button 
-                                        key={key} 
-                                        onClick={() => setCar(key as CarType)}
-                                        className={`relative p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-start justify-between h-28 group ${isSelected ? 'border-yellow-500 bg-yellow-500/10' : 'border-gray-700 bg-gray-800 hover:bg-gray-700'}`}
-                                    >
-                                        <div className="flex justify-between w-full">
-                                            <span className={`font-bold text-sm ${isSelected ? 'text-yellow-400' : 'text-gray-300'}`}>{car.name}</span>
-                                            {isSelected && <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>}
-                                        </div>
-                                        <div className="w-full h-2 bg-gray-700 rounded mt-auto overflow-hidden">
-                                            <div className="h-full" style={{ width: `${(car.maxSpeed / 8) * 100}%`, backgroundColor: car.color }}></div>
-                                        </div>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </div>
-
-                <div className="lg:col-span-2 bg-gray-800/50 backdrop-blur p-6 rounded-2xl border border-gray-700 shadow-xl flex flex-col">
-                    <h3 className="text-xl font-bold mb-6 text-purple-400 uppercase tracking-widest border-b border-gray-700 pb-2">{t.selectLevel}</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {LEVEL_LIST.map((level) => {
-                             const isLocked = level.locked;
-                             const isSelected = selectedLevel === level.id;
-                             return (
-                                 <button
-                                    key={level.id}
-                                    disabled={isLocked}
-                                    onClick={() => setSelectedLevel(level.id)}
-                                    className={`relative p-6 rounded-xl border-2 transition-all duration-200 flex flex-col gap-2 h-40 text-left 
-                                        ${isLocked 
-                                            ? 'border-gray-800 bg-gray-900/50 text-gray-600 cursor-not-allowed' 
-                                            : isSelected 
-                                                ? 'border-yellow-500 bg-yellow-500/20 shadow-[0_0_20px_rgba(234,179,8,0.1)]' 
-                                                : 'border-gray-700 bg-gray-800 hover:border-gray-500'
-                                        }
-                                    `}
-                                 >
-                                     {isLocked && <div className="absolute top-4 right-4 opacity-50"><Lock size={20}/></div>}
-                                     <div className="text-3xl font-black italic opacity-20 absolute bottom-2 right-4">0{level.id}</div>
-                                     <div className={`font-bold text-lg ${isSelected ? 'text-yellow-400' : 'text-gray-200'}`}>{t.levels[level.id as keyof typeof t.levels] || level.name}</div>
-                                     <div className="text-xs text-gray-400 mt-2">{level.desc}</div>
-                                 </button>
-                             )
-                        })}
-                    </div>
-
-                    <div className="mt-auto pt-8 flex justify-end">
-                        <button 
-                            onClick={start} 
-                            className="group relative px-12 py-6 bg-yellow-500 text-black font-black text-3xl uppercase tracking-wider rounded-xl overflow-hidden shadow-2xl shadow-yellow-500/40 hover:scale-105 transition-transform w-full md:w-auto"
-                        >
-                            <div className="absolute inset-0 w-full h-full bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                            <span className="relative z-10 flex items-center justify-center gap-4">
-                                {t.start} 
-                                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                            </span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-  );
-};
-
-const OptionRow: React.FC<{label: string, checked: boolean, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void}> = ({label, checked, onChange}) => (
-    <label className="flex items-center justify-between cursor-pointer group p-2 rounded hover:bg-white/5 transition-colors">
-        <span className="text-gray-300 font-medium group-hover:text-white">{label}</span>
-        <input type="checkbox" checked={checked} onChange={onChange} className="w-5 h-5 accent-yellow-500 bg-gray-700 border-gray-600 rounded focus:ring-yellow-500 focus:ring-offset-gray-800" />
-    </label>
-);
-
+import MainMenu from './components/MainMenu';
+import MapEditor from './components/MapEditor';
+import ErrorBoundary from './components/ErrorBoundary';
+import { steeringWheelMaxDeg, getPowertrain, canSelectGear, gearRejectionReason } from './utils/powertrain';
+import { configureMenuAudio, playUiClick } from './utils/menuAudio';
+import {cameraDragMode} from './utils/cameraLook';
+import { isEditableTarget, pointerButtonStillHeld } from './utils/inputGuards';
+import { adjustHeadLook, resetHeadLook, setHeadLookTarget } from './utils/headLook';
+import {
+  SteeringInputSmoother,
+  autoCenterWheelAngle,
+  effectiveSteeringWheelMaxDeg,
+  STEER_LEFT_KEY,
+  STEER_RIGHT_KEY,
+  KEYBOARD_STEER_DELTA_PER_FRAME,
+  KNOB_STEER_STEP_DEG,
+  applySymmetricSteeringDelta,
+  snapSteeringCenter,
+  SteeringActivityClock,
+} from './utils/steering';
+import { resolveKeyboardPedals, shouldHandleHandbrakeKey } from './utils/keyboardPedals';
 
 function App() {
   const [isInGame, setIsInGame] = useState(false);
+  const [editorMode, setEditorMode] = useState(false);
+  // 本次游戏是否由地图编辑器「测试」发起；若是，退出游戏应返回编辑器而非选关页
+  const [gameFromEditor, setGameFromEditor] = useState(false);
+  const [menuEntryStep, setMenuEntryStep] = useState<0 | 1 | 2>(0);
   const [isPaused, setIsPaused] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const [lang, setLang] = useState<Language>(Language.CN);
   
   const [level, setLevel] = useState(1);
   const [money, setMoney] = useState(100);
   const [levelData, setLevelData] = useState<LevelData | null>(null);
   const [rewardAnimation, setRewardAnimation] = useState<{show: boolean, amount: number, type: ParkingResultType}>({show: false, amount: 0, type: 'good'});
+  const [completedSpots, setCompletedSpots] = useState<Set<string>>(new Set());
   
-  // Auto Parking State
-  const [autoParkTarget, setAutoParkTarget] = useState<ParkingSpot | null>(null);
-
   // Default Weather and Lights OFF
   const [weather, setWeather] = useState(WeatherType.SUNNY);
   const [dayTime, setDayTime] = useState(DayTime.DAY);
-  const [currentCar, setCurrentCar] = useState<CarType>(CarType.SEDAN);
+  const [currentCar, setCurrentCar] = useState<CarType>(CarType.SUV);
+  const [cameraView, setCameraView] = useState<CameraView>('HOOD');
+  const inspectionRef=useRef(false);
+  const handleInspectionChange=useCallback((active:boolean)=>{
+    inspectionRef.current=active;
+    if(active){setCameraView('FOLLOW_FAR');if(document.pointerLockElement)document.exitPointerLock();}
+  },[]);
+  const overviewCanvasRef = useRef<HTMLCanvasElement>(null);
+  const globalOverviewCanvasRef = useRef<HTMLCanvasElement>(null);
+  const [globalOverviewOpen, setGlobalOverviewOpen] = useState(false);
   
   const [settings, setSettings] = useState<UserSettings>({
     soundEnabled: true,
-    volume: 0.2, 
+    absEnabled: true,
+    radarSoundEnabled: true,
+    engineSoundEnabled: true,
+    steeringSoundEnabled: true,
+    volume: 0.8,
+    cabinVolume: 0.7, exteriorVolume: 0.85,
+    rideHeightMm: 0,
+    logitechKnobMode: false,
     wheelGhost: false,
-    autoTurnSignal: true, 
-    weatherEnabled: false, 
-    steeringSensitivity: 2.5, 
-    pedalSensitivity: 1.0,
-    turnAssist: false,
-    orientation: 'landscape'
+    autoTurnSignal: true,
+    weatherEnabled: false,
+    shadowsEnabled: true,    // 近范围硬边太阳阴影默认开启；远端不投射
+    steeringSensitivity: 1,
+    // 默认载入当前车型（海豹 08）的专属转向曲线
+    steeringCurve: { ...DEFAULT_STEERING_CURVES[CarType.SUV] },
+    vehicleTuning: structuredClone(DEFAULT_VEHICLE_TUNING),
+    turnAssist: true,
+    hideVehicleBody: false,
+    rearviewMirrors: true,
+    mirrorSwapSides: false,
+    mirrorAdjustments: {
+      left: { ...DEFAULT_MIRROR_ADJUSTMENTS.left },
+      right: { ...DEFAULT_MIRROR_ADJUSTMENTS.right },
+      centre: { ...DEFAULT_MIRROR_ADJUSTMENTS.centre },
+    },
+    hoodCameraAdjustment: { ...DEFAULT_HOOD_CAMERA_ADJUSTMENT },
+    // 驾驶舱样式包（components/cockpit/stylePacks.ts）。缺省 = 默认包 APEX GT，
+    // 后续会开放多车型样式包选择。
+    cockpitPackId: 'apex-gt',
+    keyBindings: { ...DEFAULT_KEY_BINDINGS, hoodCameraDefaultForCar },
+    debugPhysics: {
+      enabled: false,
+      driveAxleOffset: 1.0,        // 默认后驱推
+      motionReferenceOffset: 0.51,
+      steerContactLateral: 0,
+      guideAxleFraction: 1.0,      // 前轴
+      maxSteerMultiplier: 1.0,
+      frontWheelVisualAngleDeg: 48,
+      halfTrackFactor: 0.46,
+      ackermannSplitGain: 0.82,
+      differentialGain: 0.37,
+    },
   });
+
+  // The in-game weather switch now has an immediate, visible result. Turning
+  // it on enters a representative rainy lesson; turning it off restores the
+  // clear daytime baseline without requiring the level to be restarted.
+  useEffect(() => {
+    if (!levelData) return;
+    if (settings.weatherEnabled) {
+      setWeather(current => current === WeatherType.SUNNY ? WeatherType.RAINY : current);
+    } else {
+      setWeather(WeatherType.SUNNY);
+      setDayTime(DayTime.DAY);
+    }
+  }, [settings.weatherEnabled, levelData]);
 
   const [inputState, setInputState] = useState<InputState>({
     throttle: 0,
@@ -171,14 +121,33 @@ function App() {
     brake: 0,
     steeringWheelAngle: 0,
     gear: 0, 
-    handbrake: true,
+    handbrake: false,
     lights: false, 
-    engineStarted: false 
+    engineStarted: true
   });
   
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
+  // Mouse/keyboard steering smoothing. The smoother keeps the full queued
+  // displacement instead of throwing away the tail on release; see
+  // utils/steering.ts for the regression-tested behaviour.
+  const steeringSmootherRef = useRef(new SteeringInputSmoother());
+  const steeringInputFrameRef = useRef<number | null>(null);
+  const steeringKeyboardFrameRef = useRef<number | null>(null);
+  const rightButtonDownRef = useRef(false);
+  const draggingRef = useRef(false);
+  const steeringActivityRef = useRef(new SteeringActivityClock());
+  const cameraViewStateRef = useRef<CameraView>(cameraView);
+  const lookDragRef = useRef<{
+    active: boolean;
+    lastX: number;
+    lastY: number;
+    mode: 'orbit' | 'head';
+    moved: boolean;
+  }>({ active: false, lastX: 0, lastY: 0, mode: 'orbit', moved: false });
+  const touchSteerRef = useRef<{ active: boolean; pointerId: number; lastX: number }>({ active: false, pointerId: -1, lastX: 0 });
+  const keyboardSteerHeldRef = useRef({ left: false, right: false });
+  const keyboardPedalHeldRef = useRef({ w: false, s: false, shift: false, handbrake: false });
+  const steeringFallbackNotifiedRef = useRef(false);
+  const steeringAtLockRef = useRef(false);
 
   const inputRef = useRef<InputState>(inputState);
   
@@ -187,305 +156,902 @@ function App() {
       if (isPaused) return; 
       setInputState(prev => {
           const next = updater(prev);
+          if (next.gear !== prev.gear && !canSelectGear(getPowertrain(currentCar), carSpeedRef.current, next.gear)) next.gear = prev.gear;
           inputRef.current = next;
           return next;
       });
-  }, [isPaused]);
+  }, [isPaused, currentCar]);
 
   useEffect(() => {
       inputRef.current = inputState;
   }, [inputState]);
 
-  const lastInteractionRef = useRef(0);
-  const carSpeedRef = useRef(0);
-
-  // Helper to safely stop auto park and reset controls
-  const stopAutoPark = useCallback(() => {
-      if (autoParkTarget) {
-          setAutoParkTarget(null);
-          // RESET CONTROLS so manual driving works immediately
-          updateInput(prev => ({
-              ...prev,
-              throttle: 0,
-              gasPressed: false,
-              brake: 0,
-              steeringWheelAngle: 0,
-              // Keep engine/gear state or reset gear to N? Better keep Gear if moving, but clear throttle
-              // Let's reset to safe state
-          }));
-      }
-  }, [autoParkTarget, updateInput]);
+  // Input handlers are bound once per game session; a ref keeps the plain
+  // left-drag decision (orbit vs. head look) on the current camera mode
+  // without re-binding every listener or resetting the steering smoother.
+  useEffect(() => {
+      cameraViewStateRef.current = cameraView;
+  }, [cameraView]);
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile('ontouchstart' in window || navigator.maxTouchPoints > 0);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+      resetHeadLook(true);
+  }, [cameraView, isInGame]);
+
+  useEffect(() => {
+      const reset = () => resetHeadLook(true);
+      window.addEventListener('blur', reset);
+      return () => window.removeEventListener('blur', reset);
   }, []);
+
+  useEffect(() => {
+    const releaseControls = () => {
+      setInputState(prev => {
+        const next = {...prev, gasPressed:false, shiftPressed:false, throttle:0, brake:0,
+          handbrake:keyboardPedalHeldRef.current.handbrake ? false : prev.handbrake};
+        inputRef.current=next; return next;
+      });
+      draggingRef.current = false;
+      rightButtonDownRef.current = false;
+      lookDragRef.current.active = false;
+      touchSteerRef.current.active = false;
+      keyboardSteerHeldRef.current.left = false;
+      keyboardSteerHeldRef.current.right = false;
+      keyboardPedalHeldRef.current.w = false;
+      keyboardPedalHeldRef.current.s = false;
+      keyboardPedalHeldRef.current.shift = false;
+      keyboardPedalHeldRef.current.handbrake = false;
+      // Pause releases the mouse/buttons without changing the saved head view.
+      // Explicit double-click / Alt+K still recentres; window blur has its own reset.
+      steeringSmootherRef.current.reset();
+      if (steeringInputFrameRef.current !== null) {
+        cancelAnimationFrame(steeringInputFrameRef.current);
+        steeringInputFrameRef.current = null;
+      }
+      if (steeringKeyboardFrameRef.current !== null) {
+        cancelAnimationFrame(steeringKeyboardFrameRef.current);
+        steeringKeyboardFrameRef.current = null;
+      }
+      if(document.pointerLockElement) document.exitPointerLock();
+    };
+    if(isPaused) releaseControls();
+    window.addEventListener('blur',releaseControls);
+    return()=>window.removeEventListener('blur',releaseControls);
+  },[isPaused]);
+
+
+  // Desktop cockpit controls share one restrained mechanical click. The
+  // menu owns its own capture handler, so this runs in-game only.
+  useEffect(() => {
+      configureMenuAudio({ enabled: settings.soundEnabled, volume: settings.volume });
+  }, [settings.soundEnabled, settings.volume]);
+
+  useEffect(() => {
+      if (!isInGame || !settings.soundEnabled) return;
+      const handleUiClick = (event: MouseEvent) => {
+          const target = event.target as HTMLElement | null;
+          if (target?.closest('button,[role="button"],input,select')) playUiClick();
+      };
+      document.addEventListener('click', handleUiClick, true);
+      return () => document.removeEventListener('click', handleUiClick, true);
+  }, [isInGame, settings.soundEnabled]);
+
+  const carSpeedRef = useRef(0);
 
   useEffect(() => {
       if (isPaused) return;
       const interval = setInterval(() => {
           const now = Date.now();
-          const isInteracting = isDragging || (now - lastInteractionRef.current < 200);
+          // Refs are the authoritative steering-held signal. React state can
+          // trail the browser event by one render, which previously allowed
+          // auto-centering to fight the active mouse input for a frame and
+          // made the dashboard wheel visibly oscillate.
+          const keyboardSteering = keyboardSteerHeldRef.current.left || keyboardSteerHeldRef.current.right;
+          // Only steering actions feed this clock. Throttle/brake/gear repeats
+          // used to refresh the old generic interaction timestamp, so holding
+          // W kept auto-centre disabled forever.
+          const isInteracting = steeringActivityRef.current.isSteeringActive(
+            now,
+            draggingRef.current || rightButtonDownRef.current || keyboardSteering,
+          );
 
-          if (!isInteracting && !autoParkTarget) {
+          // If speed rose while the wheel was already turned, bleed the input
+          // back to the current speed-sensitive lock even while the player is
+          // still holding a steering input. This keeps the dashboard wheel and
+          // the front-wheel path consistent without a snap.
+          const effectiveWheelMax = effectiveSteeringWheelMaxDeg(
+            CAR_MODELS[currentCar],
+            Math.abs(carSpeedRef.current),
+          );
+          if (Math.abs(inputRef.current.steeringWheelAngle) > effectiveWheelMax + 0.01) {
+             updateInput(prev => {
+                 if (Math.abs(prev.steeringWheelAngle) <= effectiveWheelMax + 0.01) return prev;
+                 const sign = Math.sign(prev.steeringWheelAngle) || 1;
+                 return { ...prev, steeringWheelAngle: sign * Math.max(effectiveWheelMax, Math.abs(prev.steeringWheelAngle) - 1.2) };
+             });
+          }
+
+          // A sub-degree release magnet covers mouse, keyboard, touch and the
+          // Logitech dial even when full auto-centring is disabled. It is
+          // deliberately skipped while any input is active, so crossing zero
+          // remains continuous.
+          if (!isInteracting) {
+             const currentAngle = inputRef.current.steeringWheelAngle;
+             const snappedAngle = snapSteeringCenter(currentAngle, false);
+             if (snappedAngle !== currentAngle) {
+                 updateInput(prev => ({ ...prev, steeringWheelAngle: snapSteeringCenter(prev.steeringWheelAngle, false) }));
+             }
+          }
+
+          if (!settings.logitechKnobMode && !isInteracting) {
              if (inputRef.current.steeringWheelAngle !== 0) {
                  updateInput(prev => {
                      if (prev.steeringWheelAngle !== 0) {
-                         const decay = 0.975; 
-                         let newAngle = prev.steeringWheelAngle * decay;
-                         if (Math.abs(newAngle) < 0.5) newAngle = 0;
+                         // Hands-off return only; disabled while any steering
+                         // input is active (see isInteracting above). 0 turns
+                         // auto-centring off entirely.
+                         const newAngle = autoCenterWheelAngle(
+                             prev.steeringWheelAngle,
+                             Math.abs(carSpeedRef.current),
+                             Math.max(0, settings.steeringCurve.autoCenteringSpeed ?? 1),
+                             33,
+                         );
+                         if (newAngle === prev.steeringWheelAngle) return prev;
                          return { ...prev, steeringWheelAngle: newAngle };
                      }
                      return prev;
                  });
              }
           }
-      }, 16); 
+      }, 33);
 
       return () => clearInterval(interval);
-  }, [updateInput, isDragging, isPaused, autoParkTarget]);
+  }, [updateInput, isPaused, settings.logitechKnobMode, settings.steeringCurve.autoCenteringSpeed, currentCar]);
 
-  const startLevel = (lvl: number) => {
-    const data = GENERATE_LEVEL(lvl);
-    
+  useEffect(() => {
+      const wheelMax = effectiveSteeringWheelMaxDeg(CAR_MODELS[currentCar], Math.abs(carSpeedRef.current));
+      const atLock = Math.abs(inputState.steeringWheelAngle) >= wheelMax - 0.5;
+      if (settings.logitechKnobMode && atLock && !steeringAtLockRef.current) {
+          steeringAtLockRef.current = true;
+          window.dispatchEvent(new CustomEvent('steering-lock-feedback', {
+              detail: { direction: Math.sign(inputState.steeringWheelAngle) || 1 },
+          }));
+          navigator.vibrate?.([38, 24, 55]);
+
+          const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+          if (AudioContextClass) {
+              const context = new AudioContextClass();
+              const gain = context.createGain();
+              const oscillator = context.createOscillator();
+              oscillator.type = 'sine';
+              oscillator.frequency.value = 115;
+              gain.gain.setValueAtTime(0.0001, context.currentTime);
+              gain.gain.exponentialRampToValueAtTime(0.12, context.currentTime + 0.008);
+              gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.105);
+              oscillator.connect(gain);
+              gain.connect(context.destination);
+              oscillator.start();
+              oscillator.stop(context.currentTime + 0.11);
+              oscillator.addEventListener('ended', () => context.close());
+          }
+      } else if (!atLock || !settings.logitechKnobMode) {
+          steeringAtLockRef.current = false;
+      }
+  }, [inputState.steeringWheelAngle, settings.logitechKnobMode, currentCar]);
+
+  // 应用一个 LevelData 并进入 3D 游戏（编辑器测试 / 自定义关卡 / 内置关卡 共用）
+  const playLevelData = (data: LevelData) => {
     let initWeather = WeatherType.SUNNY;
     let initDayTime = DayTime.DAY;
-    
     if (settings.weatherEnabled) {
-        const weathers = [WeatherType.SUNNY, WeatherType.RAINY, WeatherType.SUNNY, WeatherType.FOGGY];
+        const weathers = [WeatherType.SUNNY, WeatherType.RAINY, WeatherType.SUNNY, WeatherType.FOGGY, WeatherType.SNOWY];
         initWeather = weathers[Math.floor(Math.random() * weathers.length)];
         initDayTime = Math.random() > 0.7 ? DayTime.NIGHT : DayTime.DAY;
     }
-
     setLevelData(data);
     setWeather(initWeather);
     setDayTime(initDayTime);
-    
-    const initialInput = { 
-        throttle: 0,
-        gasPressed: false,
-        shiftPressed: false,
-        brake: 0, 
-        steeringWheelAngle: 0, 
-        gear: 0, 
-        handbrake: true, 
-        lights: false, 
-        engineStarted: false 
+    const initialInput = {
+        throttle: 0, gasPressed: false, shiftPressed: false, brake: 0,
+        steeringWheelAngle: 0, gear: 0, handbrake: false, lights: false, engineStarted: true
     };
     setInputState(initialInput);
     inputRef.current = initialInput;
-    setAutoParkTarget(null);
-    
-    lastInteractionRef.current = Date.now();
+    steeringActivityRef.current.reset();
     carSpeedRef.current = 0;
     setRewardAnimation({show: false, amount: 0, type: 'good'});
+    setCompletedSpots(new Set());
     setIsPaused(false);
+    setEditorMode(false);
+    setIsInGame(true);
+  };
+
+  const startLevel = (lvl: number) => {
+    playLevelData(GENERATE_LEVEL(lvl));
   };
 
   const resetCurrentLevel = () => {
-      startLevel(level);
+      keyboardSteerHeldRef.current={left:false,right:false};
+      keyboardPedalHeldRef.current={w:false,s:false,shift:false,handbrake:false};
+      draggingRef.current=false;rightButtonDownRef.current=false;
+      lookDragRef.current.active=false;touchSteerRef.current.active=false;
+      parkForTravel();
+      const next={...inputRef.current,engineStarted:true};
+      inputRef.current=next;setInputState(next);
+      window.dispatchEvent(new Event('vehicle-recover'));
+      setIsPaused(false);
   };
 
   const startGame = () => {
+      setGameFromEditor(false);
       setIsInGame(true);
       startLevel(level);
   };
 
-  // INPUT HANDLERS WITH INTERVENTION CHECK
-  const handleManualIntervention = useCallback(() => {
-      if (autoParkTarget) {
-          stopAutoPark();
+  const exitToTrackSelection = () => {
+      setGlobalOverviewOpen(false);
+      setIsPaused(false);
+      setMenuEntryStep(2);
+      setIsInGame(false);
+  };
+
+  // 退出当前游戏：编辑器测试发起 → 回到编辑器（保留地图状态）；否则 → 选关页
+  const exitGame = () => {
+      setGlobalOverviewOpen(false);
+      setIsPaused(false);
+      if (gameFromEditor) {
+          setIsInGame(false);
+          setEditorMode(true);
+          setGameFromEditor(false);
+      } else {
+          exitToTrackSelection();
       }
-      lastInteractionRef.current = Date.now();
-  }, [autoParkTarget, stopAutoPark]);
+  };
+
+  // 设置 / 调校热键：暂停时也必须能按（否则打开设置后同一个键关不掉）。
+  useEffect(() => {
+    if (!isInGame || settings.logitechKnobMode) return;
+    const onHotkey = (event: KeyboardEvent) => {
+      if (event.repeat) return;
+      if (isEditableTarget(event.target) || event.isComposing) return;
+      const key = event.key.toLowerCase();
+      const bindings = { ...DEFAULT_KEY_BINDINGS, ...(settings.keyBindings || {}) };
+      if (key === bindings.settings) window.dispatchEvent(new CustomEvent('toggle-settings'));
+      if (key === bindings.tuning) window.dispatchEvent(new CustomEvent('toggle-tuning'));
+      if (key === bindings.reset) {event.preventDefault();resetCurrentLevel();}
+    };
+    window.addEventListener('keydown', onHotkey);
+    return () => window.removeEventListener('keydown', onHotkey);
+  }, [isInGame, settings.logitechKnobMode, settings.keyBindings]);
+
+  // High-gear start stall: the physics loop reports it, App owns the ignition
+  // state. Releasing the throttle here is deliberate: keeping W held would
+  // immediately re-stall after the next restart.
+  useEffect(() => {
+    const handleEngineStalled = () => {
+      updateInput(prev => ({ ...prev, engineStarted: false, gasPressed: false, throttle: 0 }));
+    };
+    window.addEventListener('engine-stalled', handleEngineStalled);
+    return () => window.removeEventListener('engine-stalled', handleEngineStalled);
+  }, [updateInput]);
+
+  // Steering operations only. The name is kept for the existing call sites,
+  // but throttle, gear, handbrake and camera input must never call it.
+  const handleManualIntervention = useCallback(() => {
+      steeringActivityRef.current.markSteering(Date.now());
+  }, []);
 
   useEffect(() => {
-    if (isMobile || !isInGame || isPaused) return;
+    if (!isInGame || isPaused) return;
+
+    steeringSmootherRef.current.setSmoothing(settings.steeringCurve.inputSmoothing);
 
     const applySteeringDelta = (delta: number) => {
-        handleManualIntervention(); // Stop Auto Pilot on steer
-        
+        handleManualIntervention();
+
         const currentSpeed = Math.abs(carSpeedRef.current);
-        const damping = Math.max(0.2, 1 - (currentSpeed / 8)); 
-        
+        const speedRatio = Math.min(1, currentSpeed / 8);
+        const curve = settings.steeringCurve;
+        const damping = curve.highSpeedFloor + (1 - curve.highSpeedFloor) / (1 + 2.2 * Math.pow(speedRatio, 1.6));
+
+        // Per-car steering wheel lock: real lock-to-lock is capped by the car's
+        // steeringRatio × maxSteerAngle (and by the input device's physical
+        // range). Each car therefore stops at its own wheel-lock, not a global
+        // value. Re-read on every call so a car switch is picked up instantly.
+        const wheelMax = effectiveSteeringWheelMaxDeg(CAR_MODELS[currentCar], Math.abs(carSpeedRef.current));
+
         updateInput(prev => {
-            const sensitivity = 0.2 * settings.steeringSensitivity * damping;
-            let newAngle = prev.steeringWheelAngle + (delta * sensitivity);
-            
-            if (newAngle > STEERING_WHEEL_MAX_ROTATION) newAngle = STEERING_WHEEL_MAX_ROTATION;
-            if (newAngle < -STEERING_WHEEL_MAX_ROTATION) newAngle = -STEERING_WHEEL_MAX_ROTATION;
+            // Manual steering uses one symmetric gain in both directions.
+            // The old angle-dependent `centeringGain` made identical outward
+            // and return deltas produce different angles and prevented exact
+            // recentering. The three curve gains now shape a single calibrated
+            // rate; turn lights remain a 12-cell display only.
+            const curveGain = (curve.firstHalfGain + curve.secondHalfGain + curve.thirdHalfGain) / 3;
+            const sensitivity = 0.58 * settings.steeringSensitivity * damping * (0.8 + curveGain * 0.2);
+            const newAngle = applySymmetricSteeringDelta(prev.steeringWheelAngle, delta, wheelMax, sensitivity);
+            if (newAngle === prev.steeringWheelAngle) return prev;
             return { ...prev, steeringWheelAngle: newAngle };
         });
     };
 
-    const handleWheel = (e: WheelEvent) => {
-      e.preventDefault(); 
-      applySteeringDelta(e.deltaY);
+    let lastSteeringPumpAt = 0;
+    let lastKeyboardSteerAt = 0;
+    let keyboardSteerRampMs = 0;
+    let keyboardSteerDirection = 0;
+    const scheduleSteeringPump = () => {
+        if (steeringInputFrameRef.current !== null) return;
+        steeringInputFrameRef.current = requestAnimationFrame(pumpSteering);
+    };
+    const pumpSteering = () => {
+        steeringInputFrameRef.current = null;
+        const now = performance.now();
+        const elapsedFrames = lastSteeringPumpAt > 0
+            ? Math.max(0.1, Math.min(4, (now - lastSteeringPumpAt) / (1000 / 60)))
+            : 1;
+        lastSteeringPumpAt = now;
+        const slice = steeringSmootherRef.current.take(elapsedFrames);
+        if (Math.abs(slice) > 0.001) applySteeringDelta(slice);
+        if (steeringSmootherRef.current.hasPending()) scheduleSteeringPump();
+    };
+    const queueSteeringDelta = (delta: number) => {
+        if (!Number.isFinite(delta) || Math.abs(delta) < 0.001) return;
+        steeringSmootherRef.current.push(delta);
+        scheduleSteeringPump();
+    };
+    const flushSteeringDelta = () => {
+        if (steeringInputFrameRef.current !== null) {
+            cancelAnimationFrame(steeringInputFrameRef.current);
+            steeringInputFrameRef.current = null;
+        }
+        lastSteeringPumpAt = 0;
+        const remaining = steeringSmootherRef.current.flush();
+        if (Math.abs(remaining) > 0.001) applySteeringDelta(remaining);
+    };
+    const resetSteeringDelta = () => {
+        if (steeringInputFrameRef.current !== null) {
+            cancelAnimationFrame(steeringInputFrameRef.current);
+            steeringInputFrameRef.current = null;
+        }
+        lastSteeringPumpAt = 0;
+        steeringSmootherRef.current.reset();
     };
 
+    const notifySteeringFallback = () => {
+        if (steeringFallbackNotifiedRef.current) return;
+        steeringFallbackNotifiedRef.current = true;
+        window.dispatchEvent(new CustomEvent('steering-fallback-notice'));
+    };
+
+    // Held-key steering fallback for browsers/windows where pointer lock is
+    // unavailable or was dismissed. It is time-scaled to 60 Hz so 120 Hz
+    // displays do not steer twice as fast, and does not occupy A/D/arrows.
+    const keyboardSteerTick = () => {
+        steeringKeyboardFrameRef.current = null;
+        const held = keyboardSteerHeldRef.current;
+        const direction = (held.right ? 1 : 0) - (held.left ? 1 : 0);
+        if (direction === 0) {
+            lastKeyboardSteerAt = 0;
+            return;
+        }
+        const now = performance.now();
+        const elapsedFrames = lastKeyboardSteerAt > 0
+            ? Math.max(0.05, Math.min(4, (now - lastKeyboardSteerAt) / (1000 / 60)))
+            : 1;
+        lastKeyboardSteerAt = now;
+        if (direction !== keyboardSteerDirection) {
+            keyboardSteerDirection = direction;
+            keyboardSteerRampMs = 0;
+        }
+        keyboardSteerRampMs += elapsedFrames * (1000 / 60);
+        // Short tap = fine correction; held key ramps progressively to the
+        // full keyboard rate over ~0.9 s.
+        const ramp = 0.30 + 0.70 * Math.min(1, keyboardSteerRampMs / 900);
+        handleManualIntervention();
+        queueSteeringDelta(direction * KEYBOARD_STEER_DELTA_PER_FRAME * ramp * elapsedFrames);
+        steeringKeyboardFrameRef.current = requestAnimationFrame(keyboardSteerTick);
+    };
+    const ensureKeyboardSteerLoop = () => {
+        if (steeringKeyboardFrameRef.current !== null) return;
+        lastKeyboardSteerAt = 0;
+        steeringKeyboardFrameRef.current = requestAnimationFrame(keyboardSteerTick);
+    };
+
+    // 3D 模式：滚轮已由 canvas 接管用于缩放。右键按住后进入
+    // pointer lock，因此鼠标到达屏幕边缘仍可继续打方向。如果 pointer lock
+    // 被拒绝/不可用，右键拖拽仍然有效，并会提示可发现的键盘降级。
     const handleMouseDown = (e: MouseEvent) => {
-        if (e.button === 0) { 
-            setIsDragging(true);
-            setDragStartPos({ x: e.clientX, y: e.clientY });
+        // Plain left drag is the look gesture now: in an exterior camera it
+        // orbits 360° around the car; in HOOD it turns the driver's head with
+        // low sensitivity. UI drags never reach here because the target must
+        // be the game canvas, and right-button steering stays independent.
+        if (e.button === 0 && !e.altKey && e.target instanceof HTMLCanvasElement
+          && !rightButtonDownRef.current && !(document.pointerLockElement instanceof HTMLCanvasElement)) {
+            e.preventDefault();
+            lookDragRef.current = {
+                active: true,
+                lastX: e.clientX,
+                lastY: e.clientY,
+                mode: cameraDragMode(cameraViewStateRef.current,inspectionRef.current),
+                moved: false,
+            };
+            return;
+        }
+        // Ignore right-clicks that originate inside overlay UI (tuning panel,
+        // settings modal, mirror adjuster, etc.) so those controls keep working
+        // instead of triggering pointer-lock steering.
+        if (e.button === 2 && e.target instanceof HTMLCanvasElement) {
+            e.preventDefault();
+            rightButtonDownRef.current = true;
+            draggingRef.current = true;
             handleManualIntervention();
+            const canvas = e.target;
+            if (typeof canvas.requestPointerLock !== 'function') {
+                notifySteeringFallback();
+                return;
+            }
+            try {
+                const request = canvas.requestPointerLock() as unknown;
+                if (request && typeof (request as Promise<void>).catch === 'function') {
+                    (request as Promise<void>).catch(() => notifySteeringFallback());
+                }
+            } catch {
+                notifySteeringFallback();
+            }
         }
     };
 
-    const handleMouseUp = () => {
-        setIsDragging(false);
+    const releaseMouseSteering = (flush = false) => {
+        rightButtonDownRef.current = false;
+        draggingRef.current = false;
+        if (flush) flushSteeringDelta(); else resetSteeringDelta();
+        if (document.pointerLockElement instanceof HTMLCanvasElement) document.exitPointerLock();
+    };
+    const handleDoubleClick = (e: MouseEvent) => {
+        if (e.button !== 0 || !(e.target instanceof HTMLCanvasElement) || cameraViewStateRef.current !== 'HOOD') return;
+        e.preventDefault();
+        lookDragRef.current.active = false;
+        resetHeadLook(true);
+    };
+    const handleMouseUp = (e: MouseEvent) => {
+        if (e.button === 0) lookDragRef.current.active = false;
+        // Only release steering if the right button was actually held. A click
+        // inside the tuning panel's number input must not abort a turn.
+        if (e.button === 2 && (rightButtonDownRef.current || draggingRef.current || Boolean(document.pointerLockElement))) {
+            // Flush the queued displacement instead of cancelling it: a quick
+            // flick followed by mouse-up used to lose its final movement.
+            releaseMouseSteering(true);
+        }
     };
 
     const handleMouseMove = (e: MouseEvent) => {
-        setMousePos({ x: e.clientX, y: e.clientY });
-        
-        if (isDragging) {
-            applySteeringDelta(e.movementX * 2.5);
+        if ((rightButtonDownRef.current || document.pointerLockElement instanceof HTMLCanvasElement)
+            && !pointerButtonStillHeld(rightButtonDownRef.current, e.buttons, 2)) releaseMouseSteering();
+        if (lookDragRef.current.active && !pointerButtonStillHeld(true,e.buttons,1)) lookDragRef.current.active = false;
+        if (lookDragRef.current.active) {
+            const dx = e.clientX - lookDragRef.current.lastX;
+            const dy = e.clientY - lookDragRef.current.lastY;
+            lookDragRef.current.lastX = e.clientX;
+            lookDragRef.current.lastY = e.clientY;
+            if (lookDragRef.current.mode === 'head') {
+                // Interior look is deliberately low-sensitivity: about
+                // 0.11°/px yaw and 0.05°/px pitch. The pitch limits live in
+                // utils/headLook.ts (15° down / 10° up).
+                adjustHeadLook(-dx * 0.11, -dy * 0.05);
+                return;
+            }
+            if (!lookDragRef.current.moved && Math.hypot(dx, dy) >= 1.5) {
+                lookDragRef.current.moved = true;
+                setCameraView('ORBIT');
+            }
+            if (lookDragRef.current.moved) {
+                window.dispatchEvent(new CustomEvent('camera-orbit-nudge', {
+                    detail: { dx, dy },
+                }));
+            }
+            return;
         }
+        if (pointerButtonStillHeld(rightButtonDownRef.current, e.buttons, 2)) {
+            handleManualIntervention();
+            // Accumulate hardware-rate events; the time-scaled smoother applies
+            // a stable slice per animation frame without discarding the tail.
+            queueSteeringDelta(e.movementX * 1.7);
+        }
+    };
+
+    const handlePointerLockChange = () => {
+        if (!document.pointerLockElement || !rightButtonDownRef.current) releaseMouseSteering();
+    };
+    const handleMousePointerEnd = (e: PointerEvent) => {
+        if (e.pointerType !== 'mouse') return;
+        if ((rightButtonDownRef.current || draggingRef.current || document.pointerLockElement instanceof HTMLCanvasElement)
+          && (e.type === 'pointercancel' || (e.buttons & 2) === 0)) releaseMouseSteering(e.type === 'pointerup');
+        if (e.type === 'pointercancel' || (e.buttons & 1) === 0) lookDragRef.current.active=false;
+    };
+
+    const handleTouchPointerDown = (e: PointerEvent) => {
+        if (e.pointerType !== 'touch' || !(e.target instanceof HTMLCanvasElement)) return;
+        e.preventDefault();
+        touchSteerRef.current = { active: true, pointerId: e.pointerId, lastX: e.clientX };
+        try { (e.target as HTMLElement).setPointerCapture(e.pointerId); } catch { /* optional */ }
+    };
+    const handleTouchPointerMove = (e: PointerEvent) => {
+        if (!touchSteerRef.current.active || e.pointerId !== touchSteerRef.current.pointerId) return;
+        const dx = e.clientX - touchSteerRef.current.lastX;
+        touchSteerRef.current.lastX = e.clientX;
+        queueSteeringDelta(dx * 1.7);
+    };
+    const handleTouchPointerUp = (e: PointerEvent) => {
+        if (!touchSteerRef.current.active || e.pointerId !== touchSteerRef.current.pointerId) return;
+        touchSteerRef.current.active = false;
+        flushSteeringDelta();
+    };
+
+    const handlePointerLockError = () => notifySteeringFallback();
+
+    const handleContextMenu = (e: MouseEvent) => {
+        if (e.target instanceof HTMLCanvasElement) e.preventDefault();
+    };
+    const knobDirectionForEvent = (event: KeyboardEvent) => {
+        if (!settings.logitechKnobMode) return 0;
+        const key = event.key.toLowerCase();
+        const code = event.code.toLowerCase();
+        if (['audiovolumeup', 'volumeup', 'mediatracknext'].includes(key)
+            || ['audiovolumeup', 'volumeup', 'mediatracknext'].includes(code)) return 1;
+        if (['audiovolumedown', 'volumedown', 'mediatrackprevious'].includes(key)
+            || ['audiovolumedown', 'volumedown', 'mediatrackprevious'].includes(code)) return -1;
+        return 0;
+    };
+
+    const mapDrivingKey = (key: string) => {
+        if (!settings.logitechKnobMode) return key;
+        const rightHandMap: Record<string, string> = {
+            o: 'q', i: 'w', k: 's', j: 'd', l: 'a', m: 'b', p: 'v',
+        };
+        return rightHandMap[key] ?? key;
+    };
+
+    const requestGearChange = (target: number) => {
+        const current = inputRef.current;
+        if (target === current.gear) return;
+        const reason = gearRejectionReason(getPowertrain(currentCar), carSpeedRef.current, target);
+        if (reason) {
+            window.dispatchEvent(new CustomEvent('gear-shift-rejected', {
+                detail: {
+                    reason,
+                    requested: target,
+                    current: current.gear,
+                    speedKmh: Math.abs(carSpeedRef.current) * 15,
+                },
+            }));
+            return;
+        }
+        const targetTop = getPowertrain(currentCar).gearTops[Math.abs(target) - 1];
+        if (target > 0 && target < current.gear && targetTop && Math.abs(carSpeedRef.current) > targetTop * 0.90) {
+            window.dispatchEvent(new CustomEvent('gear-shift-warning', {
+                detail: { reason: 'over-rev', requested: target, current: current.gear, speedKmh: Math.abs(carSpeedRef.current) * 15 },
+            }));
+        }
+        updateInput(prev => ({ ...prev, gear: target }));
+    };
+
+    const applyKeyboardPedals = () => {
+        const intent = resolveKeyboardPedals(
+          keyboardPedalHeldRef.current.w,
+          keyboardPedalHeldRef.current.s,
+          keyboardPedalHeldRef.current.shift,
+        );
+        updateInput(prev => ({
+            ...prev,
+            gasPressed: intent.gasPressed,
+            shiftPressed: intent.shiftPressed,
+            brake: intent.brake,
+        }));
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
+        // Number/range/text fields own their keystrokes. Without this guard,
+        // typing in the live-tuning panel also changed camera/gear/throttle.
+        // IME composition is likewise left to the editor.
+        if (isEditableTarget(e.target) || e.isComposing) return;
+        // Alt+J / Alt+L / Alt+K are deliberate look-only bindings. They avoid
+        // the Logitech mode's j/l/k driving actions and all custom bindings.
+        if (e.altKey && !e.repeat) {
+            const lookKey = e.key.toLowerCase();
+            if (lookKey === 'c') {
+                e.preventDefault();
+                steeringSmootherRef.current.reset();
+                keyboardSteerHeldRef.current.left = false;
+                keyboardSteerHeldRef.current.right = false;
+                updateInput(prev => ({ ...prev, steeringWheelAngle: 0 }));
+                return;
+            }
+            if (lookKey === 'j' || lookKey === 'l' || lookKey === 'k') {
+                e.preventDefault();
+                if (lookKey === 'j') setHeadLookTarget(75, 0);
+                else if (lookKey === 'l') setHeadLookTarget(-75, 0);
+                else resetHeadLook();
+                return;
+            }
+        }
+        const knobDirection = knobDirectionForEvent(e);
+        if (knobDirection !== 0) {
+            e.preventDefault();
+            queueSteeringDelta(knobDirection * KNOB_STEER_STEP_DEG);
+            return;
+        }
+        const rawKey = e.key.toLowerCase();
+        const k = mapDrivingKey(rawKey);
+        const bindings = { ...DEFAULT_KEY_BINDINGS, ...(settings.keyBindings || {}) } as KeyBindings;
+        const action = (Object.keys(bindings) as Array<keyof KeyBindings>)
+            .find(name => bindings[name] === k) ?? null;
+
+        // Shift/W/S pedal state is tracked independently so Shift pressed
+        // before W, Shift released after W, or W+S cannot leave a stuck pedal.
+        if (k === 'shift') {
+            keyboardPedalHeldRef.current.shift = true;
+            applyKeyboardPedals();
+            return;
+        }
+        if (action === 'accelerate' || k === 'arrowup') {
+            keyboardPedalHeldRef.current.w = true;
+            // Pedal input deliberately does not mark steering activity.
+            applyKeyboardPedals();
+            return;
+        }
+        if (action === 'brake' || k === 'arrowdown') {
+            keyboardPedalHeldRef.current.s = true;
+            applyKeyboardPedals();
+            return;
+        }
+        if (action === 'handbrake') {
+            if (!shouldHandleHandbrakeKey(isInGame, isPaused, isEditableTarget(e.target))) return;
+            e.preventDefault();
+            keyboardPedalHeldRef.current.handbrake = true;
+            updateInput(prev => ({ ...prev, handbrake: true }));
+            return;
+        }
         if (e.repeat) return;
-        const k = e.key.toLowerCase();
 
-        if (k === 'm') {
-            window.dispatchEvent(new CustomEvent('toggle-settings'));
+        // Independent keyboard steering fallback (comma/period). If the player
+        // deliberately bound one of these keys to a driving action, that bind
+        // wins and the fallback stays out of the way.
+        if (!action && (k === STEER_LEFT_KEY || k === STEER_RIGHT_KEY)) {
+            e.preventDefault();
+            if (k === STEER_LEFT_KEY) keyboardSteerHeldRef.current.left = true;
+            else keyboardSteerHeldRef.current.right = true;
+            keyboardSteerRampMs = 0;
+            ensureKeyboardSteerLoop();
+            return;
         }
 
-        // Detect Driving Keys for intervention
-        if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'q', 'e', ' '].includes(k)) {
-            handleManualIntervention();
-        }
-
-        if (k === 'w' || k === 'arrowup') {
-             updateInput(prev => ({ 
-                 ...prev, 
-                 gasPressed: true,
-                 handbrake: (prev.gear !== 0 && prev.engineStarted) ? false : prev.handbrake 
-             }));
-        }
-        if (k === 'shift') updateInput(prev => ({ ...prev, shiftPressed: true }));
-        if (k === 'd' || k === 'arrowright') {
-            updateInput(prev => {
-                if (prev.gear === -1) return { ...prev, gear: 0 };
-                if (prev.gear < 5) return { ...prev, gear: prev.gear + 1 };
-                return prev;
+        if (action === 'camera') {
+            resetHeadLook(true);
+            const cameraOrder: CameraView[] = [
+                'REAR_RIGHT', 'REAR_LEFT', 'FRONT_LEFT', 'FRONT_RIGHT',
+                'FOLLOW_FAR', 'FOLLOW_NEAR', 'TOP', 'SIDE_LEFT', 'SIDE_RIGHT',
+                'HOOD', 'REVERSE',
+            ];
+            setCameraView(previous => {
+                const available=inspectionRef.current?cameraOrder.filter(v=>v!=='HOOD'):cameraOrder;
+                const index = available.indexOf(previous);
+                return available[(index + 1 + available.length) % available.length];
             });
         }
-        if (k === 'a' || k === 'arrowleft') {
-            updateInput(prev => {
-                if (prev.gear > 0) return { ...prev, gear: prev.gear - 1 };
-                return prev;
-            });
+
+        if (action === 'gearUp' || k === 'arrowright') {
+            const gear = inputRef.current.gear;
+            requestGearChange(gear === -1 ? 0 : Math.min(5, gear + 1));
         }
-        if (k === 'q') updateInput(prev => ({ ...prev, gear: -1 }));
-        if (k === 'p') updateInput(prev => ({ ...prev, gear: 0, handbrake: true, throttle: 0, gasPressed: false }));
-        if (k === 'e') updateInput(prev => ({ ...prev, brake: 1.0 }));
-        if (k === ' ') updateInput(prev => ({ ...prev, handbrake: true }));
-        if (k === 'l') updateInput(prev => ({ ...prev, lights: !prev.lights }));
-        if (k === 'o') updateInput(prev => ({ ...prev, engineStarted: !prev.engineStarted }));
+        if (action === 'gearDown' || k === 'arrowleft') {
+            const gear = inputRef.current.gear;
+            if (gear > -1) requestGearChange(gear - 1);
+        }
+        if (k === 'q') requestGearChange(-1);
+        if (k === 'v') updateInput(prev => ({ ...prev, gear: 0, handbrake: true, throttle: 0, gasPressed: false }));
+        if (action === 'lights') updateInput(prev => {const mode=((prev.headlightMode??(prev.lights?1:0))+1)%3 as 0|1|2;return {...prev,lights:mode!==0,headlightMode:mode};});
+        if (action === 'engine') updateInput(prev => ({ ...prev, engineStarted: !prev.engineStarted }));
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
-         const k = e.key.toLowerCase();
-         if (k === 'w' || k === 'arrowup') updateInput(prev => ({ ...prev, gasPressed: false }));
-         if (k === 'shift') updateInput(prev => ({ ...prev, shiftPressed: false }));
-         if (k === 'e') updateInput(prev => ({ ...prev, brake: 0 }));
-         if (k === ' ') updateInput(prev => ({ ...prev, handbrake: false }));
+         // Release paths are intentionally NOT focus-guarded: if focus moves
+         // into a number field while W is held, releasing W must still clear
+         // the throttle instead of leaving it stuck on.
+         const k = mapDrivingKey(e.key.toLowerCase());
+         if (k === STEER_LEFT_KEY) keyboardSteerHeldRef.current.left = false;
+         if (k === STEER_RIGHT_KEY) keyboardSteerHeldRef.current.right = false;
+         if (!keyboardSteerHeldRef.current.left && !keyboardSteerHeldRef.current.right) {
+            lastKeyboardSteerAt = 0;
+            keyboardSteerRampMs = 0;
+            keyboardSteerDirection = 0;
+        }
+         const bindings = { ...DEFAULT_KEY_BINDINGS, ...(settings.keyBindings || {}) } as KeyBindings;
+         if (k === 'shift') {
+             keyboardPedalHeldRef.current.shift = false;
+             applyKeyboardPedals();
+             return;
+         }
+         if (k === bindings.accelerate || k === 'arrowup') {
+             keyboardPedalHeldRef.current.w = false;
+             applyKeyboardPedals();
+             return;
+         }
+         if (k === bindings.brake || k === 'arrowdown') {
+             keyboardPedalHeldRef.current.s = false;
+             applyKeyboardPedals();
+             return;
+         }
+         if (k === bindings.handbrake) {
+             if (shouldHandleHandbrakeKey(isInGame, isPaused, isEditableTarget(e.target))) e.preventDefault();
+             keyboardPedalHeldRef.current.handbrake = false;
+             updateInput(prev => ({ ...prev, handbrake: false }));
+             return;
+         }
     };
 
-    window.addEventListener('wheel', handleWheel, { passive: false });
     window.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mouseup', handleMouseUp);
     window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('dblclick', handleDoubleClick);
+    window.addEventListener('pointerup', handleMousePointerEnd);
+    window.addEventListener('pointercancel', handleMousePointerEnd);
+    window.addEventListener('pointerdown', handleTouchPointerDown, { passive: false });
+    window.addEventListener('pointermove', handleTouchPointerMove, { passive: false });
+    window.addEventListener('pointerup', handleTouchPointerUp);
+    window.addEventListener('pointercancel', handleTouchPointerUp);
+    window.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('pointerlockchange', handlePointerLockChange);
+    document.addEventListener('pointerlockerror', handlePointerLockError);
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
     
     return () => {
-        window.removeEventListener('wheel', handleWheel);
+        if (steeringInputFrameRef.current !== null) {
+            cancelAnimationFrame(steeringInputFrameRef.current);
+            steeringInputFrameRef.current = null;
+        }
+        if (steeringKeyboardFrameRef.current !== null) {
+            cancelAnimationFrame(steeringKeyboardFrameRef.current);
+            steeringKeyboardFrameRef.current = null;
+        }
+        resetSteeringDelta();
+        releaseMouseSteering();
         window.removeEventListener('mousedown', handleMouseDown);
         window.removeEventListener('mouseup', handleMouseUp);
         window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('dblclick', handleDoubleClick);
+        window.removeEventListener('pointerup', handleMousePointerEnd);
+        window.removeEventListener('pointercancel', handleMousePointerEnd);
+        window.removeEventListener('pointerdown', handleTouchPointerDown);
+        window.removeEventListener('pointermove', handleTouchPointerMove);
+        window.removeEventListener('pointerup', handleTouchPointerUp);
+        window.removeEventListener('pointercancel', handleTouchPointerUp);
+        window.removeEventListener('contextmenu', handleContextMenu);
+        document.removeEventListener('pointerlockchange', handlePointerLockChange);
+        document.removeEventListener('pointerlockerror', handlePointerLockError);
         window.removeEventListener('keydown', handleKeyDown);
         window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [isMobile, isInGame, settings.steeringSensitivity, updateInput, isDragging, isPaused, handleManualIntervention]);
+  }, [isInGame, settings.steeringSensitivity, settings.steeringCurve, settings.logitechKnobMode, updateInput, isPaused, handleManualIntervention, currentCar]);
 
   const handleCrash = useCallback((cost: number) => {
       setMoney(m => Math.max(0, m - cost)); 
-      if (autoParkTarget) {
-          stopAutoPark();
-      }
-  }, [autoParkTarget, stopAutoPark]);
+  }, []);
 
   const handleParkingSuccess = useCallback((spotId: string, reward: number, type: ParkingResultType) => {
       setMoney(m => m + reward);
       setRewardAnimation({show: true, amount: reward, type});
-      stopAutoPark(); // Success -> Stop
+      if (type === 'perfect' || type === 'good') {
+        setCompletedSpots(prev => new Set(prev).add(spotId));
+      }
       setTimeout(() => setRewardAnimation({show: false, amount: 0, type: 'good'}), 2500);
-  }, [stopAutoPark]);
+  }, []);
+
+  // Travel / garage actions are allowed while paused. The normal driving
+  // updater deliberately rejects paused input, so use an explicit safe reset.
+  const parkForTravel = () => {
+      const next = {...inputRef.current, gear:0, throttle:0, gasPressed:false, shiftPressed:false, brake:0, handbrake:true, steeringWheelAngle:0};
+      inputRef.current = next;
+      setInputState(next);
+      steeringSmootherRef.current.reset();
+      steeringActivityRef.current.reset();
+      window.dispatchEvent(new Event('free-drive-stop'));
+  };
+
+  // 选车时同时载入该车型的专属转向曲线默认值（每辆车都有自己的手感）
+  const handleSetCar = useCallback((c: CarType) => {
+      setCurrentCar(c);
+      setSettings(prev => ({ ...prev, steeringCurve: { ...DEFAULT_STEERING_CURVES[c] }, hoodCameraAdjustment: hoodCameraDefaultForCar(c) }));
+  }, []);
 
   return (
-    <div className="w-full h-full bg-black overflow-hidden relative select-none cursor-crosshair">
-      {!isInGame ? (
-        <Menu 
-            start={startGame} 
-            settings={settings} 
-            updateSettings={(s) => setSettings(prev => ({...prev, ...s}))} 
+    <div className="w-full h-full overflow-hidden relative select-none cursor-crosshair" style={{ background: 'var(--bg)' }}>
+      {/* 地图编辑器：编辑中正常显示；测试游玩期间隐藏挂载以保留地图状态（inactive 关闭其全局热键/画布循环） */}
+      {(editorMode || gameFromEditor) && (
+        <div style={{ display: editorMode && !isInGame ? 'block' : 'none', width: '100%', height: '100%' }}>
+          <ErrorBoundary label="地图编辑器" onRecover={() => setEditorMode(false)}>
+            <MapEditor
+              inactive={isInGame}
+              onBack={() => setEditorMode(false)}
+              onPlayLevel={(ld) => { setGameFromEditor(true); playLevelData(ld); }}
+            />
+          </ErrorBoundary>
+        </div>
+      )}
+      {!editorMode && !isInGame && (
+        <MainMenu
+            start={startGame}
+            settings={settings}
+            updateSettings={(s) => setSettings(prev => ({...prev, ...s}))}
             currentCar={currentCar}
-            setCar={setCurrentCar}
+            setCar={handleSetCar}
             lang={lang}
             setLang={setLang}
             selectedLevel={level}
             setSelectedLevel={setLevel}
+            initialStep={menuEntryStep}
+            onOpenEditor={(currentStep) => {
+              setMenuEntryStep(currentStep as 0|1|2);
+              setEditorMode(true);
+            }}
+            onPlayCustom={(record) => { setGameFromEditor(false); playLevelData(serializeToLevelData(record)); }}
         />
-      ) : (
-        <>
+      )}
+      {isInGame && (
+        <ErrorBoundary label="游戏视图" onRecover={exitGame}>
           {levelData && (
-              <GameCanvas 
+              <GameCanvas3D
                 levelData={levelData}
                 settings={settings}
                 currentCarId={currentCar}
                 weather={weather}
                 dayTime={dayTime}
-                isMobile={isMobile}
-                inputRef={inputRef} // Pass the Ref instead of value
+                inputRef={inputRef}
                 onCrash={handleCrash}
+                onRecover={resetCurrentLevel}
+                onInspectionChange={handleInspectionChange}
                 onParkingSuccess={handleParkingSuccess}
                 carSpeedRef={carSpeedRef}
                 isPaused={isPaused}
-                autoParkingTarget={autoParkTarget}
-                setAutoParkingTarget={setAutoParkTarget}
-                updateInput={updateInput}
+                cameraView={cameraView}
+                overviewCanvasRef={overviewCanvasRef}
+                globalOverviewCanvasRef={globalOverviewCanvasRef}
+                globalOverviewOpen={globalOverviewOpen}
+                completedSpots={completedSpots}
               />
           )}
-          <UIOverlay 
-            isMobile={isMobile}
+          <UIOverlay
             money={money}
             level={level}
             settings={settings}
             updateSettings={(s) => setSettings(prev => ({...prev, ...s}))}
             inputState={inputState}
-            setInputState={setInputState}
-            exitGame={() => setIsInGame(false)}
+            setInputState={value => updateInput(prev => typeof value === 'function' ? value(prev) : value)}
+            exitGame={exitGame}
             resetLevel={resetCurrentLevel}
             lang={lang}
             setLang={setLang}
             showReward={rewardAnimation}
             carSpeed={carSpeedRef.current}
-            cursorPos={isDragging ? dragStartPos : mousePos}
-            isDragging={isDragging}
             onSettingsToggle={setIsPaused}
             currentCarId={currentCar}
-            levelData={levelData}
-            onAutoPark={(spot) => {
-                if (spot === null) stopAutoPark();
-                else setAutoParkTarget(spot);
+            onChangeCar={c => {
+              parkForTravel();
+              handleSetCar(c);
             }}
-            isAutoParking={!!autoParkTarget}
+            onChangeMap={id => { setLevel(id); startLevel(id); setIsPaused(true); }}
+            onTravel={pose => {
+              parkForTravel();
+              window.dispatchEvent(new CustomEvent('test-teleport', {detail:pose}));
+            }}
+            levelData={levelData}
+            cameraView={cameraView}
+            onCameraViewChange={view=>setCameraView(inspectionRef.current&&view==='HOOD'?'FOLLOW_FAR':view)}
+            overviewCanvasRef={overviewCanvasRef}
+            globalOverviewCanvasRef={globalOverviewCanvasRef}
+            globalOverviewOpen={globalOverviewOpen}
+            setGlobalOverviewOpen={setGlobalOverviewOpen}
+            completedSpots={completedSpots}
           />
-        </>
+        </ErrorBoundary>
       )}
     </div>
   );

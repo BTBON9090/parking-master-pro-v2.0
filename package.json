@@ -6,16 +6,22 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "tsx tests/driving.test.ts && tsx tests/systems.test.ts && tsx tests/obstacles.test.ts && tsx tests/presentation.test.ts && tsx scripts/probe-curb-start.ts && tsx tests/openWorld.test.ts && tsx tests/expansionVehicles.test.ts && tsx tests/round14.test.ts && tsx tests/crashDebris.test.ts && tsx tests/wheelArch.test.ts && tsx tests/chassisSupport.test.ts && tsx tests/vehicleAudio.test.ts && tsx tests/vehicleDamage.test.ts && tsx tests/suspensionDynamics.test.ts && tsx scripts/probe-terrain18.ts && tsx tests/round19.test.ts && tsx tests/round20.test.ts",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "cannon-es": "^0.20.0",
+    "lucide-react": "^0.554.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "lucide-react": "^0.554.0"
+    "three": "^0.185.1"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
+    "@types/three": "^0.185.1",
     "@vitejs/plugin-react": "^5.0.0",
+    "tsx": "^4.23.15",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }

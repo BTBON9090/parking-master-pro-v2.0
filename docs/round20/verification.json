@@ -1,0 +1,89 @@
+{
+  "round": 20,
+  "date": "2026-10-25",
+  "implementation": "Codex directly; no DeepSeek",
+  "automated": {
+    "full_suite": "npm test: PASS before final audio-toggle guard; all suites completed",
+    "final_audio_guard": "npx tsx tests/vehicleAudio.test.ts: PASS after final edit",
+    "typecheck": "npm run typecheck: PASS",
+    "build": "npm run build: PASS",
+    "warning": "Main JavaScript bundle 1.53 MB uncompressed / 449.44 kB gzip; Vite chunk-size advisory remains",
+    "garage_aisle_sweeps": 4374,
+    "floor_projection": "B1/B2/B3 PASS; line endpoints use current road-height hint",
+    "pickup_triangles_asset": 7365,
+    "pickup_with_runtime_liner_triangles": 7375
+  },
+  "browser": [
+    {
+      "case": "B2 / B3 radar guides",
+      "result": "PASS: all three colour bars on active floor; no ceiling bars",
+      "evidence": [
+        "b2-radar-grounded.png",
+        "b3-radar-grounded.png",
+        "final-b2.png"
+      ]
+    },
+    {
+      "case": "Garage columns",
+      "result": "PASS: pillars in back-to-back bay separation; six longitudinal driving aisles clear"
+    },
+    {
+      "case": "Lighting",
+      "result": "PASS visual: roof/hood/side distinct, grounded shadows, seat/door separation",
+      "evidence": [
+        "final-b2.png",
+        "pickup-in-game.png"
+      ]
+    },
+    {
+      "case": "Camera on vehicle change",
+      "result": "PASS: L80 to TAI7 preserved custom orbit and B2 location",
+      "evidence": [
+        "orbit-before-swap.png",
+        "orbit-after-swap.png"
+      ]
+    },
+    {
+      "case": "Settings and guide",
+      "result": "PASS: five setting sections, independent cabin/exterior sliders, first-entry completion, left-drag practice and double-click centering"
+    },
+    {
+      "case": "Headlights",
+      "result": "PASS: L cycles off/low/high with distinct telltale and beam range"
+    },
+    {
+      "case": "Recorded clips",
+      "result": "11/11 decoded, ACTIVE; event transitions and mute tested automatically; no human listening sign-off"
+    },
+    {
+      "case": "Fuel pickup",
+      "result": "PASS: first gear 34 km/h then second gear 40 km/h; braking stop. Shift+W starts gravel ascent to 27 km/h; very light W alone did not climb this slope"
+    },
+    {
+      "case": "Garage speed table",
+      "result": "PASS: x580 to687 at y242, 5.5 cm smooth table traversed, wheel contact restored"
+    },
+    {
+      "case": "Down ramp",
+      "result": "PASS contact sampling during descent: -55.91u road height, four grounded wheels, zero wheel-bottom gaps. Manual run overshot ramp-end turn and struck end barrier; not recorded as a clean full driving lap"
+    },
+    {
+      "case": "Forestry route",
+      "result": "PASS: entry and partial gravel ascent driven, no console errors; closed profile tested in 506 samples. Whole circuit not manually driven",
+      "evidence": [
+        "forestry-route.png"
+      ]
+    }
+  ],
+  "performance_observed": {
+    "garage_mean_ms": "16.7–17.7; approximately 56–60 fps",
+    "mountain_mean_ms": "32.9–36.4; approximately 28–30 fps; p95 54.8–62.5 ms",
+    "scope": "Observed on this device/browser with mirrors and shadows; not a general benchmark. Mountain optimization remains a follow-up."
+  },
+  "limitations": [
+    "No subjective listening verification",
+    "New pickup is an original generic vehicle with simulation tuning, not an OEM replica",
+    "New forestry route is fictional, not a measured Beijing road"
+  ],
+  "left_running": "http://127.0.0.1:3000/, scene 6, B2, TAI7, right-front view, neutral and stopped"
+}

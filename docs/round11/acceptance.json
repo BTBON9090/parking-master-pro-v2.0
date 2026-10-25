@@ -1,0 +1,25 @@
+{
+  "issue": "左侧轮胎上路缘时车身反向倾斜",
+  "cause": "车辆坐标+X为左、+Y为上。绕Z正转抬高左侧；原代码用右侧减左侧，符号相反。",
+  "fix": "统一roadRollTargetRad的坐标约定，使用左侧高度减右侧高度；保留已有侧倾幅度、阻尼、轮胎接触与悬架行程。",
+  "regression": "从两款实际GLB的Body组采集左右车顶网格，验证左右上缘及平地、四个车头方向、15/30/60/120fps的车顶世界高度，并检查离开路缘后回平。原40组动态越障测试继续通过。",
+  "checks": {
+    "typecheck": "passed",
+    "npm_test": "passed",
+    "build": "passed",
+    "diff_check": "passed"
+  },
+  "live": "浏览器完整重载后实测乐道L80左右轮上缘；高侧车身均抬高，四轮间隙均0，四轮接地。新增右侧路缘测试点。",
+  "live_pitch_roll": {
+    "left": "0.0° / 4.4°",
+    "right": "0.0° / -4.4°"
+  },
+  "evidence": [
+    "left-curb-corrected.png",
+    "right-curb-corrected.png",
+    "left-curb-telemetry.txt",
+    "right-curb-telemetry.txt",
+    "tests.log"
+  ],
+  "limitation": "本次修正车身侧倾方向；沿用轻量悬架标定，未宣称厂家真实姿态控制参数。"
+}

@@ -1,0 +1,254 @@
+Browser tab: 1, Title: "停车大师 Pro · Driving Academy", URL: "http://127.0.0.1:3000/".
+1 AXWebArea 停车大师 Pro · Driving Academy, URL: 127.0.0.1:3000/
+	2 container
+		3 container
+			4 text 左后视镜
+			5 text 右后视镜
+			6 container
+				7 text 车内后视镜
+			8 text 资金 $ 90 关卡 0 1
+			9 button 实时调参
+			10 button Settings [M]
+			11 text ENG LIGHT
+			12 button PARK
+			13 slider Description: 球形视角控制, Value: 0
+			14 button 左正视角 F · CYCLE
+				15 text 左正视角
+				16 text F · CYCLE
+			17 button 关闭所有声音
+				18 image
+			19 button 打开全局俯瞰地图
+				20 text 车辆俯瞰
+				21 text 展开全局
+			22 container
+				23 text 路线地图
+				24 button 收起地图
+			25 container
+				26 image
+					27 text 桥
+					28 text 非铺装
+					29 text 非铺装
+				30 image
+			31 container 全局俯瞰地图
+				32 container
+					33 heading 全局俯瞰地图, Value: 3
+						34 text 全局俯瞰地图
+					35 text 青色圆环与白色箭头为本车位置及朝向
+					36 button 关闭全局俯瞰地图
+				37 container
+					38 text X  734  · Y  667
+			39 button 非铺装训练入口
+			40 button 训练提示
+			41 container
+				42 container
+					43 image RPM 0 转速 x1000
+						44 text 0
+						45 text 1
+						46 text 2
+						47 text 3
+						48 text 4
+						49 text 5
+						50 text 6
+						51 text 7
+						52 text 8
+						53 text 9
+						54 text 10
+						55 text 11
+						56 text 12
+						57 text 13
+						58 text 14
+						59 text 15
+						60 text 16
+						61 text 17
+						62 text 18
+						63 text RPM
+						64 text 转速 x1000
+					65 text DRIVE TRAINING
+					66 text 0 KM/H GEAR N
+					67 image SPEED 0 KM/H
+						68 text 0
+						69 text 40
+						70 text 80
+						71 text 120
+						72 text 160
+						73 text 200
+						74 text 240
+						75 text SPEED
+						76 text KM/H
+		77 text 车辆实时标定
+		78 button
+		79 container
+			80 button 车型参数 · 乐道 L80 ULTRA+
+				81 text 车型参数
+				82 text  · 
+				83 text 乐道 L80 ULTRA+
+			84 text AWD  /  4.5 s 0-100 齿比 1.00 正常带 / 红线 0-120/317 km/h 主减速 8.40 轮径 0.79 m 转向比 15 : 1 方向盘锁 ±540° 前轮锁 ±37.6°
+			85 button 实时状态 30 Hz
+				86 text 实时状态
+				87 text 30 Hz
+			88 text 车速 0 km/h 转速 0 / 18000 档位 N 前轮转角 δ 0.0° 有效轨迹转角 0.0° 方向盘 0° / ±540° 转弯半径 R ∞ 横摆率 ω 0.000 rad/s 纵向加速度 0.00 g 横向加速度 0.00 g 换挡接合 100% 帧间隔 mean/p95 16.9 / 22.5 ms 单帧位移/速度跃变 0.00 u / 0.000 u 音频素材 7/7 · ACTIVE 地形 / 升沉 0.00 / 0.00 u 俯仰 / 侧倾 0.0° / -4.4° 四轮行程 1.30 / -1.30 / 1.30 / -1.30 四轮接地 G / G / G / G · 2.60 / 0.00 / 2.60 / 0.00 轮底-路面间隙 0.00 / 0.00 / 0.00 / 0.00 u 路面层 asphalt 实际油门 / 刹车 0% / 100% 纵向 g / 动态俯仰 -0.00g / 0.00° 路面高度 / NPC 0.00u / 30 后轮转向 0.00°
+			89 checkbox 转向, Value: 1
+			90 checkbox 驱动, Value: 0
+			91 checkbox 几何, Value: 0
+			92 checkbox 后视镜, Value: 0
+			93 checkbox 驾驶眼位, Value: 0
+			94 checkbox 显示辅助线 ON 实时显示前进或倒车轨迹, Value: 1
+				95 text 显示辅助线
+				96 text ON
+				97 text 实时显示前进或倒车轨迹
+			98 checkbox 隐藏车身 OFF 保留车轮、转向与悬架动画, Value: 0
+				99 text 隐藏车身
+				100 text OFF
+				101 text 保留车轮、转向与悬架动画
+			102 checkbox 碰撞线框 OFF 青色=玩家，红=地面，黄=高架层, Value: 0
+				103 text 碰撞线框
+				104 text OFF
+				105 text 青色=玩家，红=地面，黄=高架层
+			106 text 验收测试点（停稳后传送）
+			107 button 平直加速 1180,3900 · 东向直行, Help: 1180, 3900 · 东向直行
+				108 text 平直加速
+				109 text 1180
+				110 text ,
+				111 text 3900
+				112 text  · 
+				113 text 东向直行
+			114 button 坡上朝上 5650,4500 · 东向上坡中段, Help: 5650, 4500 · 东向上坡中段
+				115 text 坡上朝上
+				116 text 5650
+				117 text ,
+				118 text 4500
+				119 text  · 
+				120 text 东向上坡中段
+			121 button 坡上朝下 7350,4500 · 东向下坡中段, Help: 7350, 4500 · 东向下坡中段
+				122 text 坡上朝下
+				123 text 7350
+				124 text ,
+				125 text 4500
+				126 text  · 
+				127 text 东向下坡中段
+			128 button 空车位前 4200,5350 · 东向 空车位, Help: 4200, 5350 · 东向 空车位
+				129 text 空车位前
+				130 text 4200
+				131 text ,
+				132 text 5350
+				133 text  · 
+				134 text 东向 空车位
+			135 button 路缘入口 1300,4480 · 南向 路缘, Help: 1300, 4480 · 南向 路缘
+				136 text 路缘入口
+				137 text 1300
+				138 text ,
+				139 text 4480
+				140 text  · 
+				141 text 南向 路缘
+			142 button 轮胎越障 700.2302,669.3647 · 正对 26 cm 实体路缘；低速轻油门应受阻，有速度时逐轮越过, Help: 700.2302, 669.3647 · 正对 26 cm 实体路缘；低速轻油门应受阻，有速度时逐轮越过
+				143 text 轮胎越障
+				144 text 700.2302
+				145 text ,
+				146 text 669.3647
+				147 text  · 
+				148 text 正对 26 cm 实体路缘；低速轻油门应受阻，有速度时逐轮越过
+			149 button 越障助跑 625.39,674.23 · 留出约 10 m 助跑距离，轻油门起步后观察越障减速, Help: 625.39, 674.23 · 留出约 10 m 助跑距离，轻油门起步后观察越障减速
+				150 text 越障助跑
+				151 text 625.39
+				152 text ,
+				153 text 674.23
+				154 text  · 
+				155 text 留出约 10 m 助跑距离，轻油门起步后观察越障减速
+			156 button 单侧路缘 734.45,667.14 · 左侧轮胎贴路缘；停车时检查胎面、侧壁与独立悬架, Help: 734.45, 667.14 · 左侧轮胎贴路缘；停车时检查胎面、侧壁与独立悬架
+				157 text 单侧路缘
+				158 text 734.45
+				159 text ,
+				160 text 667.14
+				161 text  · 
+				162 text 左侧轮胎贴路缘；停车时检查胎面、侧壁与独立悬架
+			163 button 砂石路 1500,4750 · 南向 砂石 gate, Help: 1500, 4750 · 南向 砂石 gate
+				164 text 砂石路
+				165 text 1500
+				166 text ,
+				167 text 4750
+				168 text  · 
+				169 text 南向 砂石 gate
+			170 button 环岛 4270,4500 · 东向 环岛, Help: 4270, 4500 · 东向 环岛
+				171 text 环岛
+				172 text 4270
+				173 text ,
+				174 text 4500
+				175 text  · 
+				176 text 东向 环岛
+			177 button 桥坡入口 5300,4500 · 东向上坡, Help: 5300, 4500 · 东向上坡
+				178 text 桥坡入口
+				179 text 5300
+				180 text ,
+				181 text 4500
+				182 text  · 
+				183 text 东向上坡
+			184 button 桥上入口 6050,4500 · 东向 桥面, Help: 6050, 4500 · 东向 桥面
+				185 text 桥上入口
+				186 text 6050
+				187 text ,
+				188 text 4500
+				189 text  · 
+				190 text 东向 桥面
+			191 button 桥下 6500,4250 · 南向 穿桥下, Help: 6500, 4250 · 南向 穿桥下
+				192 text 桥下
+				193 text 6500
+				194 text ,
+				195 text 4250
+				196 text  · 
+				197 text 南向 穿桥下
+			198 button S 弯 7900,5520 · 沿道路切线, Help: 7900, 5520 · 沿道路切线
+				199 text S 弯
+				200 text 7900
+				201 text ,
+				202 text 5520
+				203 text  · 
+				204 text 沿道路切线
+			205 button 崎岖路 1500,5000 · 北向 崎岖 gate, Help: 1500, 5000 · 北向 崎岖 gate
+				206 text 崎岖路
+				207 text 1500
+				208 text ,
+				209 text 5000
+				210 text  · 
+				211 text 北向 崎岖 gate
+			212 button 碰撞验证 2040,4100 · 南向 静态 NPC 尾, Help: 2040, 4100 · 南向 静态 NPC 尾
+				213 text 碰撞验证
+				214 text 2040
+				215 text ,
+				216 text 4100
+				217 text  · 
+				218 text 南向 静态 NPC 尾
+			219 text 桥上/桥下为同一 XY 的不同高度层；传送仅在低速安全状态生效。 转向灵敏度 1.0x 鼠标或旋钮输入的整体倍率。只影响打方向速度，不改变车型最大转角。
+			220 slider (settable, integer) Description: 转向灵敏度, Value: 1
+			221 stepper (settable, integer) Description: 转向灵敏度 1.0x, Value: 1
+			222 text 第一半圈增益 0.30 方向盘中心到半圈的响应。调低更容易保持直线。
+			223 slider (settable, float) Description: 第一半圈增益, Value: 0.30000001192092896, Details: 0.3
+			224 stepper (settable, float) Description: 第一半圈增益 0.30, Value: 0.30000001192092896, Details: 0.3
+			225 text 第二半圈增益 0.49 控制中段转向速度，影响一般弯道和倒库修正。
+			226 slider (settable, float) Description: 第二半圈增益, Value: 0.49000000953674316, Details: 0.49
+			227 stepper (settable, float) Description: 第二半圈增益 0.49, Value: 0.49000000953674316, Details: 0.49
+			228 text 第三半圈增益 1.63 控制接近打死时的后段响应，调大可更快到达满舵。
+			229 slider (settable, float) Description: 第三半圈增益, Value: 1.6299999952316284, Details: 1.63
+			230 stepper (settable, float) Description: 第三半圈增益 1.63, Value: 1.6299999952316284, Details: 1.63
+			231 text 输入平滑 0.11 调小更柔和稳定，调大更直接跟手。
+			232 slider (settable, float) Description: 输入平滑, Value: 0.10999999940395355, Details: 0.11
+			233 stepper (settable, float) Description: 输入平滑 0.11, Value: 0.10999999940395355, Details: 0.11
+			234 text 高速最低响应 0.28 高速时保留的最低转向响应。调大后高速更灵敏。
+			235 slider (settable, float) Description: 高速最低响应, Value: 0.2800000011920929, Details: 0.28
+			236 stepper (settable, float) Description: 高速最低响应 0.28, Value: 0.2800000011920929, Details: 0.28
+			237 text 方向盘自动回正速度 1.00 松开转向操作后的回正速度倍率。1 保持原速度，0 关闭自动回正，数值越大回正越快。
+			238 slider (settable, integer) Description: 方向盘自动回正速度, Value: 1
+			239 stepper (settable, integer) Description: 方向盘自动回正速度 1.00, Value: 1
+			240 text 车型转向锁 1.00x 当前车型最大实际转角倍率，调大会缩小最小转弯半径。
+			241 slider (settable, integer) Description: 车型转向锁, Value: 1
+			242 stepper (settable, integer) Description: 车型转向锁 1.00x, Value: 1
+			243 text 转向系统响应 1.00x 前轮跟随方向盘和车身横摆的速度，调大更跟手。
+			244 slider (settable, integer) Description: 转向系统响应, Value: 1
+			245 stepper (settable, integer) Description: 转向系统响应 1.00x, Value: 1
+			246 text 轮胎不足转向 1.00x 调大会让高速轨迹更容易推头，0 表示不附加不足转向。
+			247 slider (settable, integer) Description: 轮胎不足转向, Value: 1
+			248 stepper (settable, integer) Description: 轮胎不足转向 1.00x, Value: 1
+			249 button 复制参数
+		250 text T 键开关 / 调参不中断驾驶
+		251 button 复制全部
+
+The focused UI element is 156 button 单侧路缘 734.45,667.14 · 左侧轮胎贴路缘；停车时检查胎面、侧壁与独立悬架, Help: 734.45, 667.14 · 左侧轮胎贴路缘；停车时检查胎面、侧壁与独立悬架

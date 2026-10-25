@@ -1,0 +1,29 @@
+{
+  "radar": [
+    {
+      "floor": -48,
+      "detected": 93,
+      "guideElevation": -48
+    },
+    {
+      "floor": -96,
+      "detected": 132,
+      "guideElevation": -96
+    },
+    {
+      "floor": -144,
+      "detected": 65,
+      "guideElevation": -144
+    }
+  ],
+  "aisleSweeps": 4374,
+  "pickup": {
+    "fuel": true,
+    "gears": 5
+  },
+  "trail": {
+    "samples": 506,
+    "lengthM": 302.4677486160397,
+    "maxStep": 1.2292661205215438
+  }
+}

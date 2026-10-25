@@ -1,0 +1,4 @@
+Browser tab: 2, Title: "停车大师 Pro · Driving Academy", URL: "http://127.0.0.1:3000/".
+The following is a diff from the previous accessibility tree with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.
+~			81 text 车速 0 km/h 转速 1110 / 6500 档位 3 前轮转角 δ 0.0° 有效轨迹转角 0.0° 方向盘 0° / ±458° 转弯半径 R ∞ 横摆率 ω 0.000 rad/s 纵向加速度 0.00 g 横向加速度 0.00 g 换挡接合 100% 帧间隔 mean/p95 16.8 / 22.7 ms 单帧位移/速度跃变 0.00 u / 0.000 u 音频素材 7/7 · ACTIVE 地形 / 升沉 0.00 / 0.00 u 俯仰 / 侧倾 -0.0° / 0.0° 四轮行程 0.00 / 0.00 / 0.00 / 0.00 四轮接地 G / G / G / G · 0.00 / 0.00 / 0.00 / 0.00 路面层 asphalt 实际油门 / 刹车 0% / 0% 纵向 g / 动态俯仰 0.00g / -0.00° 路面高度 / NPC 0.00u / 30 后轮转向 0.00°
+The focused UI element is 1 AXWebArea 停车大师 Pro · Driving Academy, URL: 127.0.0.1:3000/

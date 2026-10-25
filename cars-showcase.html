@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>车模展厅 · 小米 SU7 / 小米 YU7 / 尊界 V8</title>
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+        background: #0a0d13;
+        color: #e8eef7;
+        font-family: "Rajdhani", "Noto Sans SC", -apple-system, "PingFang SC", sans-serif;
+        user-select: none;
+      }
+      #stage { position: fixed; inset: 0; }
+      #labels { position: fixed; inset: 0; pointer-events: none; }
+      .label {
+        position: absolute;
+        left: 0;
+        top: 0;
+        text-align: center;
+        white-space: nowrap;
+        transform: translate(-50%, -50%);
+        text-shadow: 0 4px 24px rgba(0, 0, 0, 0.9);
+      }
+      .label b {
+        display: block;
+        font-size: 20px;
+        font-style: italic;
+        letter-spacing: 0.04em;
+      }
+      .label span {
+        display: block;
+        margin-top: 3px;
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        color: #f0a63c;
+      }
+      #hint {
+        position: fixed;
+        left: 26px;
+        bottom: 22px;
+        font-size: 11px;
+        letter-spacing: 0.28em;
+        color: #6f7d90;
+      }
+      #error {
+        display: none;
+        position: fixed;
+        left: 20px;
+        top: 20px;
+        z-index: 10;
+        padding: 10px 16px;
+        background: #7f1d1d;
+        color: #fff;
+        font-size: 13px;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <div id="labels"></div>
+    <div id="hint">DEVELOPMENT SHOWCASE · cars-showcase.html</div>
+    <div id="error"></div>
+    <script type="module" src="/cars-showcase.ts"></script>
+  </body>
+</html>
