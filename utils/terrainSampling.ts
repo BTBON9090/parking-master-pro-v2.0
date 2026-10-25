@@ -1,5 +1,5 @@
 import { garageSurface } from './garage';
-import { worldSurfaceSample } from './openWorld';
+import { worldHeight, worldSurfaceSample } from './openWorld';
 import type { LevelData } from '../types';
 import { sampleElevatedRoad } from './elevatedRoad';
 import { isTrainingTerrain, trainingTerrainGradient, trainingTerrainHeight } from './trainingTerrain';
@@ -68,5 +68,6 @@ export function sampleTerrainSurface(level: LevelData, x: number, y: number, cur
 }
 
 export function sampleWheelSurfaceHeight(level: LevelData, x: number, y: number, currentHeight = 0): number {
+  if(level.openWorld && x>=8500) return worldHeight(x,y);
   return sampleTerrainSurface(level, x, y, currentHeight).height;
 }

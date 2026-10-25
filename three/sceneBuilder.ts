@@ -169,6 +169,7 @@ export async function buildScene(
     });
   }
 
+  const curveStudMatrices:THREE.Matrix4[]=[];
   // High-resolution Catmull-Rom ribbons replace rectangular curve chains.
   levelData.curvedRoads?.forEach(curved => {
     try {
@@ -341,11 +342,11 @@ export async function buildScene(
       const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
       const studLat = Math.max(2, widthAt(i) / 2 - 3.2);
       for (const side of [-1, 1]) {
-        const stud = new THREE.Mesh(trackGeo(new THREE.BoxGeometry(1.4, 0.28, 0.75)), Mats.roadStud());
+        const stud = new THREE.Object3D();
         stud.position.copy(samples[i]).addScaledVector(normal, side * studLat);
         stud.position.y = elevation + 0.2;
         stud.rotation.y = Math.atan2(tangent.x, tangent.z);
-        scene.add(stud);
+        stud.updateMatrix();curveStudMatrices.push(stud.matrix.clone());
       }
     }
 
@@ -360,6 +361,11 @@ export async function buildScene(
       console.warn('[buildScene] 跳过异常道路:', err);
     }
   });
+
+  if(curveStudMatrices.length){
+    const studs=new THREE.InstancedMesh(trackGeo(new THREE.BoxGeometry(1.4,.28,.75)),Mats.roadStud(),curveStudMatrices.length);
+    curveStudMatrices.forEach((m,i)=>studs.setMatrixAt(i,m));studs.instanceMatrix.needsUpdate=true;studs.computeBoundingSphere();scene.add(studs);
+  }
 
   // ===== 路口连接件 / 桥面 =====
   // 普通路口：在交叉点铺一块沥青方块，填补两条未相连道路之间的空隙。

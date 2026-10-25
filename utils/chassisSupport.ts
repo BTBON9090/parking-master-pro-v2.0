@@ -51,13 +51,14 @@ export function stepChassis(s:ChassisState,input:ChassisInput){
   const points=wheels.map((w,i)=>{const p=hubPose(w,0,q);return {x:p.hub.x,z:p.hub.z,h:support(i,p.hub,p.axle)};});
   gradient=fitPlane(points);pitch=-Math.atan(gradient.z);roll=Math.atan2(gradient.x,Math.hypot(1,gradient.z));
  }
- const loads=cornerLoads(wheels,input.mass,input.cgM,input.frontBias,pitch,roll,input.longG,input.latG);
+ let loads=cornerLoads(wheels,input.mass,input.cgM,input.frontBias,pitch,roll,input.longG,input.latG);
  const compression=loads.forces.map((f,i)=>(f-input.mass*9.80665*(wheels[i].z>0?input.frontBias:1-input.frontBias)/2)/(spec.spring*SPRING_SCALE)*10);
  const avg=(values:number[],predicate:(w:RigWheel)=>boolean)=>values.reduce((a,v,i)=>a+(predicate(wheels[i])?v:0),0)/wheels.filter(predicate).length;
  const wb=Math.max(...wheels.map(w=>w.z))-Math.min(...wheels.map(w=>w.z));
  const track=Math.max(...wheels.map(w=>w.x))-Math.min(...wheels.map(w=>w.x));
  const pitchTarget=clamp((avg(compression,w=>w.z>0)-avg(compression,w=>w.z<0))/wb,-.07,.07);
- const rollTarget=clamp((avg(compression,w=>w.x<0)-avg(compression,w=>w.x>0))/track/(1+spec.antiRoll*2),-.09,.09);
+ const gentleRoll=.35+.65*Math.min(1,Math.abs(input.latG)/.65);
+ const rollTarget=clamp((avg(compression,w=>w.x<0)-avg(compression,w=>w.x>0))/track/(1+spec.antiRoll*2)*gentleRoll,-.09,.09);
  const heaveTarget=-avg(compression,()=>true)+input.rideHeight;
  if(!s.initialized){s.loadPitch.p=pitchTarget;s.loadRoll.p=rollTarget;s.loadHeave.p=heaveTarget;}
  dampedSpring(s.loadPitch,pitchTarget,dt,1.7,spec.damping);
@@ -134,7 +135,10 @@ export function stepChassis(s:ChassisState,input:ChassisInput){
  });
  const contacts=wheels.map((w,i)=>{const p=hubPose(w,s.offsets[i],q),h=support(i,p.hub,p.axle);
   return {height:h,gap:s.height+p.hub.y-w.radius-h,hub:p.hub,axle:p.axle};});
- if(!s.airborne&&loads.margin<-.025)s.unstableTime+=dt;else s.unstableTime=Math.max(0,s.unstableTime-dt*2);
+ // Stability follows the actual sprung-body attitude: load roll shifts the
+ // centre of mass beyond the road plane before a wheel can support it.
+ loads=cornerLoads(wheels,input.mass,input.cgM,input.frontBias,s.pitch,s.roll,input.longG,input.latG);
+ if(!s.airborne&&loads.margin<-.005)s.unstableTime+=dt;else s.unstableTime=Math.max(0,s.unstableTime-dt*2);
  s.lastTarget=target;s.lastGradient=gradient;
  return {height:s.height,pitch:s.pitch,roll:s.roll,offsets:s.offsets,contacts,loads,
   unstable:s.unstableTime>.3,airborne:s.airborne,verticalVelocity:s.worldVelocity,roadPitch:pitch,roadRoll:roll,neutralHeight:target};

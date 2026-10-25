@@ -1,3 +1,4 @@
+import {buildTrainingCampus} from './utils/trainingCampus';
 import { buildGarageLevel } from './utils/garage';
 import { EXPANSION_CARS, EXPANSION_TUNING, EXPANSION_STEERING } from './utils/expansionVehicles';
 import { WORLD_DESTINATIONS } from './utils/openWorld';
@@ -605,13 +606,9 @@ export const TRANSLATIONS = {
 export const GARAGE_CARS: CarType[] = [CarType.SUV, CarType.SEAL08, CarType.TAI7, CarType.LI_I9, CarType.N90, CarType.TRUCK];
 
 export const LEVEL_LIST = [
-    { id: 1, name: "城市与青岚山", desc: "从东四城市街区驶入青岚山：连续盘山路、观景支线与溪谷浅水捷径。" },
-    { id: 7, name: "青岚山 · 山路出发", desc: "同一开放世界的山路入口，起伏、回头弯与砂石路自由探索。", locked: false },
-    { id: 2, name: "Underground", desc: "Tight pillars and dark corners.", locked: false },
-    { id: 3, name: "The Escape", desc: "Angled bays with a clear one-way manoeuvring aisle.", locked: false },
-    { id: 4, name: "驾校", desc: "连贯完成坡道、倒库、侧方、曲线窄桥、路口与环岛。", locked: false },
-    { id: 5, name: "驾校 2", desc: "还原综合训练基地：外环、直角弯、双 S 弯、压线检测与紧凑停车。", locked: false },
-    { id: 6, name: "三层地库", desc: "真正上下叠放的 B1 / B2 / B3，连续双向坡道、楼层导引与宽敞停车区。", locked: false }
+ {id:1,name:'城市与青岚山',desc:'城市街区、盘山公路、林场窄路与溪谷浅水。',locked:false,thumbnail:'/thumbnails/map-1.svg'},
+ {id:4,name:'综合驾驶试验场',desc:'合并双驾校、紧凑车库和斜列停车场：坡道、S 弯、窄桥与泊车。',locked:false,thumbnail:'/thumbnails/map-4.svg'},
+ {id:6,name:'三层地库',desc:'B1 / B2 / B3、双向坡道与楼层停车挑战。',locked:false,thumbnail:'/thumbnails/map-6.svg'}
 ];
 
 // --- MAP GENERATION HELPERS ---
@@ -791,7 +788,7 @@ const createBarrier = (x: number, y: number, rotation: number): Obstacle => ({
 });
 
 // Rich City Map Generator
-export const GENERATE_LEVEL = (level: number): LevelData => {
+export const generateLegacyLevel = (level: number): LevelData => {
   if (level === 6) return buildGarageLevel();
   if (level === 1 || level === 7) {
     const world = buildBeijingLevel();
@@ -1128,3 +1125,5 @@ export const GENERATE_LEVEL = (level: number): LevelData => {
   }
   return { levelId: level, mapWidth: mapSizeW, mapHeight: mapSizeH, spots, obstacles, markings, startPos, roadSurfaces, curvedRoads, slopeZones, training };
 };
+
+export const GENERATE_LEVEL=(id:number):LevelData=>[2,3,4,5].includes(id)?buildTrainingCampus(generateLegacyLevel):generateLegacyLevel(id===7?1:id);

@@ -1,3 +1,4 @@
+import {CrashDriverReaction} from './crashDriverReaction';
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import { ConvexHull } from 'three/examples/jsm/math/ConvexHull.js';
@@ -8,6 +9,8 @@ export class CrashDebris {
  readonly group=new THREE.Group();
  readonly world=new CANNON.World({gravity:new CANNON.Vec3(0,-98.1,0)});
  private pieces:Array<{mesh:THREE.Object3D;body:CANNON.Body;ground:CANNON.Body;groundHeight:number}>=[];
+ reaction:CrashDriverReaction|null=null;
+ private driverRest=0;
  private bounds?:{width:number;height:number};
  private geometries:THREE.BufferGeometry[]=[];
  private materials:THREE.Material[]=[];
@@ -171,6 +174,19 @@ export class CrashDebris {
   this.world.addBody(body);this.group.add(mesh);this.pieces.push({mesh,body,ground,groundHeight:this.surface(mesh.position.x,mesh.position.z,mesh.position.y)});return body;
  }
  step(dt:number){
+  this.reaction?.step(Math.min(.1,dt));
+  if(!this.reaction){
+   const driver=this.pieces.filter(p=>p.mesh.name.startsWith('driver-'));
+   if(driver.length===6 && driver.every(p=>p.body.velocity.length()<2.5 && p.body.angularVelocity.length()<1.2))this.driverRest+=dt;else this.driverRest=0;
+   if(this.driverRest>1.2){
+    const torso=driver[0].mesh.position.clone();torso.y=this.surface(torso.x,torso.z,driver[0].groundHeight);
+    const bodies=new Set(driver.map(d=>d.body));
+    for(const c of [...this.world.constraints])if(bodies.has(c.bodyA)||bodies.has(c.bodyB))this.world.removeConstraint(c);
+    for(const d of driver){this.world.removeBody(d.body);this.world.removeBody(d.ground);}
+    this.reaction=new CrashDriverReaction(driver.map(d=>d.mesh),torso,()=>this.focus);
+    this.group.add(this.reaction.root);this.pieces=this.pieces.filter(p=>!bodies.has(p.body));
+   }
+  }
   if(this.pieces.every(p=>p.body.sleepState===CANNON.Body.SLEEPING))return;
   // Continue simulating until bodies sleep naturally, including after 18 s.
   const elapsed=Math.max(0,Math.min(.1,dt));
@@ -212,5 +228,5 @@ export class CrashDebris {
   }
  }
 
- dispose(){this.group.removeFromParent();this.geometries.forEach(g=>g.dispose());this.materials.forEach(m=>m.dispose());this.world.constraints.slice().forEach(c=>this.world.removeConstraint(c));this.world.bodies.slice().forEach(b=>this.world.removeBody(b));}
+ dispose(){this.reaction?.dispose();this.group.removeFromParent();this.geometries.forEach(g=>g.dispose());this.materials.forEach(m=>m.dispose());this.world.constraints.slice().forEach(c=>this.world.removeConstraint(c));this.world.bodies.slice().forEach(b=>this.world.removeBody(b));}
 }

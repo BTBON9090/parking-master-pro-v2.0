@@ -1,3 +1,4 @@
+import { disposeResources } from '../three/disposeResources';
 import { sensedObstacle, parkingPulse } from '../utils/proximity';
 import { garageFloorAt, GARAGE_LEVELS } from '../utils/garage';
 // @refresh reset
@@ -436,6 +437,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     const overviewPixels = overviewCanvas ? new Uint8Array(240 * 150 * 4) : null;
     const overviewImage = overviewContext?.createImageData(240, 150) || null;
     let lastOverviewRenderAt = 0;
+    let overviewReadPending = false;
     const overviewCamera = new THREE.PerspectiveCamera(34, 240 / 150, 1, 1200);
 
     // ===== Camera (球坐标，跟随车辆) =====
@@ -607,6 +609,8 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     scene.background = new THREE.Color(0x87ceeb);
     let animationId: number = 0;
     let lastCrashAt = 0;
+    let recoveryPose={x:carState.current.x,y:carState.current.y,rotation:carState.current.rotation,roadHeight:carState.current.roadHeight};
+    let recoveryCandidate={...recoveryPose},accidentRecoveryPose={...recoveryPose},lastRecoveryAt=0;
     let wreck:CrashDebris|null=null;
     let damageModel:VehicleDamage|null=null;
     const looseDebris:CrashDebris[]=[];
@@ -806,7 +810,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       const ccCur = CAR_MODELS[currentCarId];
       const staticLevelData = { ...levelData, obstacles: obstaclesRef.current };
       built = await buildScene(staticLevelData, ccCur, currentCarId);
-      if (disposed) return;
+      if (disposed) {disposeResources([built.scene,...(built.streamingChunks?.values()??[])]);return;}
       // buildScene computes actual parked-model hulls on the level objects;
       // copy them onto the live JSON-cloned obstacle refs used by collision.
       const sourceObstacles = new Map<string, Obstacle>(staticLevelData.obstacles.map(obs => [obs.id, obs]));
@@ -1798,8 +1802,11 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     };
     let resolutionWindowStartedAt = performance.now();
     let resolutionFrameCount = 0;
+    let simulationCpuMs=0,renderCpuMs=0;
 
     const render = () => {
+      if(disposed)return;
+      const cpuStart=performance.now();
       animationId = requestAnimationFrame(render);
       if (!built || !scene) return;
 
@@ -1994,6 +2001,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           impactMotion.time=0;damage=0;setDamagePercent(0);impactReadout={closing:0,yaw:0,speedAfter:0,obstacle:'—'};
           if(wreck){wreck.dispose();wreck=null;}destroyed=false;setWrecked(false);
           rollover?.dispose();rollover=null;setOverturned(false);chassisState=createChassisState();
+          recoveryPose={x:car.x,y:car.y,rotation:car.rotation,roadHeight:car.roadHeight};recoveryCandidate={...recoveryPose};accidentRecoveryPose={...recoveryPose};lastRecoveryAt=simulationClockMs;
         }
         const pt = getPowertrain(cc.id);
         const vehicleTune = settingsRef.current.vehicleTuning?.[cc.id] ?? DEFAULT_VEHICLE_TUNING[cc.id];
@@ -2325,6 +2333,10 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
                 wheelGap: [...suspensionTelemetryRef.current.wheelGap],
                 surface: ldCur.openWorld && car.x>=8500 ? worldSurface(car.x,car.y).kind : suspensionTelemetryRef.current.surface,
                 carId: cc.id,
+                simulationSeconds:simulationClockMs/1000,
+                driverReaction:wreck?.reaction?.phase??(destroyed?'飞出 / 落地':rollover?'翻滚':'驾驶中'),
+                gpuResources:`${renderer.info.memory.geometries} / ${renderer.info.memory.textures} / ${renderer.info.programs?.length??0}`,
+                cpuMs:`${simulationCpuMs.toFixed(1)} / ${renderCpuMs.toFixed(1)} ms`,
                 frameAvgMs: frameAvg,
                 frameP95Ms: p95,
                 positionStepMax,
@@ -2470,6 +2482,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           car.speed=(response.velocity.x*Math.cos(car.rotation)+response.velocity.y*Math.sin(car.rotation))/(SPEED_UNIT_KMH/3.6);
           car.driftSlip=0;
           if(response.closing>2 && simulationClockMs-lastDamageAt>650 && !destroyed && !rollover){
+            accidentRecoveryPose={...recoveryPose};
             damage=Math.min(1,damage+response.damage);lastDamageAt=simulationClockMs;setDamagePercent(Math.round(damage*100));
             setDamageTier(previous=>previous==='moderate'&&response.tier==='light'?previous:response.tier);
             if(!response.catastrophic){
@@ -2813,7 +2826,11 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
             wheelTravel:pose.offsets, wheelContacts:pose.contacts.map(c=>c.height),wheelGap:pose.contacts.map(c=>c.gap),
             wheelGrounded:pose.contacts.map(c=>!pose.airborne&&isWheelGroundedByGap(c.gap)),
             surface:(isGravelSurface(car.x,car.y)||(ldCur.openWorld&&worldSurface(car.x,car.y).gravel))?'gravel':'asphalt'};
+          if(!destroyed && impactMotion.time<=0 && !pose.unstable && !pose.airborne && Math.abs(pose.pitch)<.45 && Math.abs(pose.roll)<.4 && simulationClockMs-lastRecoveryAt>1000){
+            recoveryPose=recoveryCandidate;recoveryCandidate={x:car.x,y:car.y,rotation:car.rotation,roadHeight:car.roadHeight};lastRecoveryAt=simulationClockMs;
+          }
           if(pose.unstable&&!destroyed){
+            accidentRecoveryPose={...recoveryPose};
             rollover=new VehicleRollover(playerParts.group,{mass:cc.weight,width:cc.width,length:cc.length,height:cc.height,
               cgHeight:cc.dynamics.cgHeightM*10,wheels:rigWheels.map((w,i)=>({position:playerParts.wheelMounts[i].position.clone(),radius:w.radius,width:w.halfWidth*2,steer:w.steer})),
               velocity:new THREE.Vector3(Math.cos(car.rotation),0,Math.sin(car.rotation)).multiplyScalar(car.speed*SPEED_UNIT_KMH/3.6*10),
@@ -3096,7 +3113,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
               material.color.setHex(on ? onColor : offColor);
               material.emissive.setHex(on ? onColor : 0x000000);
               if (material instanceof THREE.MeshStandardMaterial) material.emissiveIntensity = on ? intensity : 0;
-              material.needsUpdate = true;
+              // Colour/emission are uniforms: no shader recompilation per frame.
             }
           });
         };
@@ -3319,6 +3336,13 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         } // end if (frameDelta > 0)
       }  // end if (!paused)
 
+      // The main camera and three mirrors share one world transform snapshot.
+      // Cameras update their own local mounts below; visibility/intensity
+      // changes do not require re-walking the entire static city each pass.
+      scene.updateMatrixWorld();
+      scene.matrixWorldAutoUpdate = false;
+      const renderCpuStart=performance.now();
+      simulationCpuMs=simulationCpuMs*.9+(renderCpuStart-cpuStart)*.1;
       renderer.setScissorTest(false);
       renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
       if (!isPausedRef.current) renderer.shadowMap.needsUpdate = settingsRef.current.shadowsEnabled;
@@ -3507,7 +3531,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
 
       const overviewNow = performance.now();
       if (overviewTarget && overviewContext && overviewPixels && overviewImage
-        && overviewNow - lastOverviewRenderAt >= 100) {
+        && !overviewReadPending && overviewNow - lastOverviewRenderAt >= 100) {
         lastOverviewRenderAt = overviewNow;
         const overviewSlope = sampleSlope(levelDataRef.current, car.x, car.y, car.rotation,car.roadHeight);
         const overviewForwardX = Math.cos(car.rotation);
@@ -3536,7 +3560,10 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         playerParts.wheels.forEach(wheel => { wheel.visible = true; });
         renderer.setRenderTarget(overviewTarget);
         renderer.render(scene, overviewCamera);
-        renderer.readRenderTargetPixels(overviewTarget, 0, 0, 240, 150, overviewPixels);
+        // Fence the tiny overview readback instead of synchronously waiting for
+        // every preceding main/mirror GPU command. Same pixels and 10 Hz rate.
+        overviewReadPending = true;
+        const overviewRead = renderer.readRenderTargetPixelsAsync(overviewTarget, 0, 0, 240, 150, overviewPixels);
         renderer.setRenderTarget(null);
         if (driverInterior) driverInterior.group.visible = overviewInteriorWasVisible;
         if (firstPersonView) {
@@ -3549,30 +3576,33 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         // 恢复大灯和倒车灯
         roadHeadlights.forEach((l, i) => { l.intensity = savedHeadlightIntensities[i]; });
         roadTaillights.forEach((l, i) => { l.intensity = savedReverseIntensities[i]; });
-        // WebGL's origin is bottom-left; Canvas2D's is top-left.
-        for (let row = 0; row < 150; row++) {
-          const sourceOffset = (149 - row) * 240 * 4;
-          overviewImage.data.set(overviewPixels.subarray(sourceOffset, sourceOffset + 240 * 4), row * 240 * 4);
-        }
-        overviewContext.putImageData(overviewImage, 0, 0);
+        void overviewRead.then(() => {
+          if (disposed) return;
+          // WebGL's origin is bottom-left; Canvas2D's is top-left.
+          for (let row = 0; row < 150; row++) {
+            const sourceOffset = (149 - row) * 240 * 4;
+            overviewImage.data.set(overviewPixels.subarray(sourceOffset, sourceOffset + 240 * 4), row * 240 * 4);
+          }
+          overviewContext.putImageData(overviewImage, 0, 0);
+        }).catch(error => {
+          if (!disposed) console.warn('Overview readback failed', error);
+        }).finally(() => { overviewReadPending = false; });
       }
+      renderCpuMs=renderCpuMs*.9+(performance.now()-renderCpuStart)*.1;
     };
 
     // 启动渲染循环的函数（场景加载完成后调用）
     function startRenderLoop() {
-      if (animationId) return;
+      if (disposed || animationId) return;
       render();
     }
 
 
     const recoverInPlace=()=>{
       const car=carState.current;
-      // Recover at the vehicle's last pose. Flying fragments can cross the
+      if(destroyed || rollover || damage>0)Object.assign(car,accidentRecoveryPose);
+      // Recover at the vehicle's last safe pose. Flying fragments can cross the
       // world boundary, so their centroid is not a valid recovery position.
-      if(rollover && built){
-        const forward=new THREE.Vector3(0,0,1).applyQuaternion(built.playerCarParts.group.quaternion);
-        if(Math.hypot(forward.x,forward.z)>.1)car.rotation=Math.atan2(forward.z,forward.x);
-      }
       car.speed=0;car.yawRate=0;car.driftSlip=0;car.slipAngle=0;car.steeringAngle=0;
       car.roadHeight=sampleTerrainSurface(levelDataRef.current,car.x,car.y,car.roadHeight).height;
       throttleState.current=0;carSpeedRef.current=0;tyreLateralG=0;airborneActive=false;
@@ -3619,20 +3649,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       physics.dispose();
       // 模型缓存释放
       disposeModelCache();
-      // 释放场景几何体
-      if (scene) {
-        scene.traverse(obj => {
-          if (obj instanceof THREE.Mesh) {
-            obj.geometry.dispose();
-          }
-        });
-      }
-      built?.streamingChunks?.forEach(chunk => {
-        if (chunk.parent === scene) return;
-        chunk.traverse(object => {
-          if (object instanceof THREE.Mesh) object.geometry.dispose();
-        });
-      });
+      disposeResources([scene,...(built?.streamingChunks?.values()??[])]);
       skidMarks.forEach(mark => (mark.material as THREE.Material).dispose());
       skidMarks.length = 0;
       skidMarkMat.dispose();
@@ -3641,6 +3658,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       mirrorTarget.dispose(); mirrorQuadGeo.dispose(); mirrorQuadMat.dispose();
       speedEffect.dispose();
       renderer.dispose();
+      renderer.forceContextLoss();
       overviewTarget?.dispose();
       markerRingMaterial.dispose();
       markerArrowMaterial.dispose();
@@ -3678,7 +3696,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     <div ref={mountRef} className="block w-full h-full touch-none" />
     {(damagePercent>0 || overturned) && <div role="status" className="pointer-events-none absolute top-24 left-1/2 -translate-x-1/2 z-50 rounded-xl px-5 py-3 text-center" style={{background:'#19262bea',color:'#f4d7a4',border:'1px solid #ac7653'}}>
       <strong>{overturned?'车辆失稳 / 翻覆':wrecked?'严重损坏 · 车辆解体':`${damageTier==='moderate'?'中度碰撞 · 局部变形':'轻微碰撞 · 部件脱落'} · 车损 ${damagePercent}%`}</strong>
-      {(wrecked || overturned) && <><p className="text-sm my-2">{overturned?'重心越出轮胎支撑范围 · 可重置车辆':'场景持续模拟 · 左键拖动环视，滚轮缩放'}</p><button className="pointer-events-auto rounded px-5 py-2 bg-amber-400 text-black" onClick={onRecover}>重置车辆并继续</button></>}
+      {(wrecked || overturned) && <><p className="text-sm my-2">场景持续模拟 · 按 R 返回事故前安全位置<br/>左键拖动环视，滚轮缩放</p></>}
     </div>}
   </>;
 });

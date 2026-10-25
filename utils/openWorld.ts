@@ -60,19 +60,50 @@ for(const r of WORLD_ROUTES)for(let i=1;i<r.samples.length;i++){
   const key=`${x},${y}`;if(!buckets.has(key))buckets.set(key,[]);buckets.get(key)!.push(s);
  }
 }
+// Each grid cell keeps a small nearest-segment tree per route. This returns
+// the same closest point as the exhaustive scan, without scanning every
+// neighbouring road sample on every suspension iteration.
+interface SegmentNode {x0:number;y0:number;x1:number;y1:number;left?:SegmentNode;right?:SegmentNode;segments?:Segment[]}
+function segmentTree(segments:Segment[]):SegmentNode {
+ const node:SegmentNode={x0:Infinity,y0:Infinity,x1:-Infinity,y1:-Infinity};
+ for(const s of segments){node.x0=Math.min(node.x0,s.a.x,s.b.x);node.y0=Math.min(node.y0,s.a.y,s.b.y);node.x1=Math.max(node.x1,s.a.x,s.b.x);node.y1=Math.max(node.y1,s.a.y,s.b.y);}
+ if(segments.length<=6){node.segments=segments;return node;}
+ const axis=node.x1-node.x0>node.y1-node.y0?'x':'y';
+ segments.sort((a,b)=>a.a[axis]+a.b[axis]-b.a[axis]-b.b[axis]);
+ const mid=segments.length>>1;node.left=segmentTree(segments.slice(0,mid));node.right=segmentTree(segments.slice(mid));return node;
+}
+const roadIndex=new Map<string,SegmentNode[]>();
+for(const [key,segments] of buckets){
+ const routes=new Map<string,Segment[]>();
+ for(const s of segments){if(!routes.has(s.route.id))routes.set(s.route.id,[]);routes.get(s.route.id)!.push(s);}
+ roadIndex.set(key,[...routes.values()].map(segmentTree));
+}
+buckets.clear();
 function roadContacts(x:number,y:number){
- const closest=new Map<string,{distance:number;height:number;route:WorldRoute;along:number}>();
- for(const s of buckets.get(`${Math.floor(x/CELL)},${Math.floor(y/CELL)}`)||[]){
-  const dx=s.b.x-s.a.x,dy=s.b.y-s.a.y,t=clamp(((x-s.a.x)*dx+(y-s.a.y)*dy)/(dx*dx+dy*dy||1));
-  const d=Math.hypot(x-s.a.x-t*dx,y-s.a.y-t*dy),old=closest.get(s.route.id);
-  if(!old||d<old.distance)closest.set(s.route.id,{distance:d,height:s.a.h+(s.b.h-s.a.h)*t,route:s.route,along:s.a.distance+(s.b.distance-s.a.distance)*t});
+ const closest:Array<{distance:number;height:number;route:WorldRoute;along:number}>=[];
+ const bound=(n:SegmentNode)=>Math.max(n.x0-x,0,x-n.x1)**2+Math.max(n.y0-y,0,y-n.y1)**2;
+ for(const tree of roadIndex.get(`${Math.floor(x/CELL)},${Math.floor(y/CELL)}`)||[]){
+  let best=Infinity,bestSegment:Segment|undefined,bestT=0;
+  const visit=(n:SegmentNode)=>{
+   if(bound(n)>best)return;
+   if(n.segments){for(const s of n.segments){
+    const dx=s.b.x-s.a.x,dy=s.b.y-s.a.y,t=clamp(((x-s.a.x)*dx+(y-s.a.y)*dy)/(dx*dx+dy*dy||1));
+    const d=(x-s.a.x-t*dx)**2+(y-s.a.y-t*dy)**2;
+    if(d<best){best=d;bestSegment=s;bestT=t;}
+   }}else{const l=n.left!,r=n.right!;if(bound(l)<bound(r)){visit(l);visit(r);}else{visit(r);visit(l);}}
+  };
+  visit(tree);
+  if(bestSegment){const s=bestSegment,t=bestT;closest.push({distance:Math.sqrt(best),height:s.a.h+(s.b.h-s.a.h)*t,route:s.route,along:s.a.distance+(s.b.distance-s.a.distance)*t});}
  }
- return [...closest.values()].sort((a,b)=>a.distance-b.distance);
+ return closest.sort((a,b)=>a.distance-b.distance);
 }
 export function nearestWorldRoad(x:number,y:number){return roadContacts(x,y)[0]??null;}
-function roughness(x:number,y:number){
- const n=.42*Math.sin(x*.23)*Math.sin(y*.17)+.22*Math.sin(x*.51+y*.32);
- let h=n;
+// Fixed-seed smooth noise: repeatable contact, without periodic washboard waves.
+function lattice(x:number,y:number){let n=Math.imul(x,374761393)^Math.imul(y,668265263)^0x45d9f3b;n=Math.imul(n^(n>>>13),1274126177);return ((n^(n>>>16))>>>0)/4294967295*2-1;}
+function noise(x:number,y:number,scale:number){const a=Math.floor(x/scale),b=Math.floor(y/scale),u=smooth(x/scale-a),v=smooth(y/scale-b);return (lattice(a,b)*(1-u)+lattice(a+1,b)*u)*(1-v)+(lattice(a,b+1)*(1-u)+lattice(a+1,b+1)*u)*v;}
+export function roughness(x:number,y:number){
+ const patch=.45+.55*smooth((noise(x,y,125)+1)/2);
+ let h=patch*(1.5*noise(x,y,23)+.65*noise(x+531,y-173,9)+.24*noise(x-76,y+911,4));
  for(const p of WORLD_PUDDLES){const q=((x-p.x)/p.rx)**2+((y-p.y)/p.ry)**2;if(q<1)h-=p.depth*(1-q)**2;}
  return h;
 }
@@ -99,13 +130,13 @@ function terrainBed(x:number,y:number){
  const step=40,x0=Math.floor(x/step)*step,y0=Math.floor(y/step)*step,tx=(x-x0)/step,ty=(y-y0)/step;
  return (bedNode(x0,y0)*(1-tx)+bedNode(x0+step,y0)*tx)*(1-ty)+(bedNode(x0,y0+step)*(1-tx)+bedNode(x0+step,y0+step)*tx)*ty;
 }
-function designHeight(x:number,y:number):number {
+function designHeight(x:number,y:number,contacts=roadContacts(x,y)):number {
  const b=MOUNTAIN_BOUNDS;
  if(x<8180||x>b.x1||y<b.y0||y>b.y1)return 0;
  const terrain=terrainBed(x,y);
- const contacts=roadContacts(x,y),road=contacts[0];
+ const road=contacts[0];
  if(!road)return terrain;
- const half=road.route.width/2,blend=1-smooth((road.distance-half)/85);
+ const blend=Math.max(...contacts.map(r=>1-smooth((r.distance-r.route.width/2)/85)));
  let sum=0,weight=0;
  for(const r of contacts){
   const w=(1-smooth((r.distance-r.route.width*.35)/60))**2;
@@ -120,7 +151,7 @@ function designHeight(x:number,y:number):number {
 const terrainVertices=new Map<string,number>();
 export function terrainVertexHeight(x:number,y:number):number {
  const key=`${x},${y}`,cached=terrainVertices.get(key);if(cached!==undefined)return cached;
- const r=nearestWorldRoad(x,y),h=designHeight(x,y)-(r&&r.distance<r.route.width/2+38?3.5:0);
+ const r=nearestWorldRoad(x,y),h=designHeight(x,y)-(r&&r.distance<r.route.width/2+100?8*(1-smooth((r.distance-r.route.width/2-40)/60)):0);
  terrainVertices.set(key,h);return h;
 }
 function terrainTriangleHeight(x:number,y:number):number {
@@ -131,11 +162,11 @@ function terrainTriangleHeight(x:number,y:number):number {
  return u+v<=1?h00+(h10-h00)*u+(h01-h00)*v:h11+(h01-h11)*(1-u)+(h10-h11)*(1-v);
 }
 export function worldHeight(x:number,y:number):number {
- const r=nearestWorldRoad(x,y),edge=r?r.distance-r.route.width/2:Infinity;
- if(edge<=0)return designHeight(x,y);
+ const contacts=roadContacts(x,y),r=contacts[0],edge=r?r.distance-r.route.width/2:Infinity;
+ if(edge<=0)return designHeight(x,y,contacts);
  const terrain=terrainTriangleHeight(x,y);
  if(edge>=60)return terrain;
- const t=smooth(edge/60);return Math.max(designHeight(x,y),terrain)*(1-t)+terrain*t;
+ const t=smooth(edge/60);return designHeight(x,y,contacts)*(1-t)+terrain*t;
 }
 export function worldTreePlacements(){
  const out:{x:number;y:number;h:number;s:number}[]=[];
@@ -161,7 +192,12 @@ export function worldSurface(x:number,y:number){
  const offRoad=x>=8600&&!onRoad;
  return {kind:wet?'wet':onRoad&&r.route.gravel?'gravel':offRoad?'grass':'asphalt',gravel:!!(onRoad&&r.route.gravel),wet,grip:wet?.62:onRoad&&r.route.gravel?.77:offRoad?.68:1,rolling:wet?2.1:onRoad&&r.route.gravel?1.7:offRoad?1.9:1};
 }
-export function worldSurfaceSample(x:number,y:number){const e=.3;return {height:worldHeight(x,y),gradeX:(worldHeight(x+e,y)-worldHeight(x-e,y))/(2*e),gradeY:(worldHeight(x,y+e)-worldHeight(x,y-e))/(2*e)};}
+const surfaceCache=new Map<string,{height:number;gradeX:number;gradeY:number}>();
+export function worldSurfaceSample(x:number,y:number){
+ const key=x+','+y,cached=surfaceCache.get(key);if(cached)return cached;
+ const e=.75,result={height:worldHeight(x,y),gradeX:(worldHeight(x+e,y)-worldHeight(x-e,y))/(2*e),gradeY:(worldHeight(x,y+e)-worldHeight(x,y-e))/(2*e)};
+ if(surfaceCache.size>12000)surfaceCache.clear();surfaceCache.set(key,result);return result;
+}
 
 /** Same centripetal interpolation used by the rendered city ribbons. */
 const curveCache=new WeakMap<CurvedRoadSurface,{x:number;y:number}[]>();

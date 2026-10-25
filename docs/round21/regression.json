@@ -1,0 +1,38 @@
+{
+  "campus": {
+    "size": [
+      4200,
+      2600
+    ],
+    "spots": 12,
+    "curves": 15,
+    "slopes": 2
+  },
+  "shoulder": {
+    "edgeChecks": 729,
+    "maxEdgeJumpCm": 0.004247999378890199
+  },
+  "roughnessRangeCm": 21.348773038025314,
+  "sway": {
+    "gentleAtPoint1G": 0.14596046900845147,
+    "hardAtPoint8G": 2.594852782372474
+  },
+  "disposal": [
+    1,
+    1,
+    1
+  ],
+  "driver": {
+    "recoveryAt": 5.633333333333334,
+    "phases": [
+      "爬起来",
+      "回头看看残骸",
+      "跪下",
+      "抱头痛哭"
+    ]
+  },
+  "rollover": {
+    "elapsed": 5.000000000000038,
+    "travel": 164.51064006220562
+  }
+}

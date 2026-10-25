@@ -1,3 +1,4 @@
+import {disposeResources} from '../three/disposeResources';
 /**
  * 主菜单 3D 车模展示台
  * ====================
@@ -140,7 +141,7 @@ const CarPreview3D: React.FC<CarPreview3DProps> = ({ carType, accentColor = '#f5
       dom.removeEventListener('pointercancel', up);
       stageRef.current = null;
       scene.traverse(obj => { if (obj instanceof THREE.Mesh) obj.geometry.dispose(); });
-      renderer.dispose();
+      renderer.dispose();renderer.forceContextLoss();
       if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -153,7 +154,7 @@ const CarPreview3D: React.FC<CarPreview3DProps> = ({ carType, accentColor = '#f5
     let cancelled = false;
     let current: THREE.Group | null = null;
     buildVehicleParts(carType, CAR_MODELS[carType]).then(parts => {
-      if (cancelled || !stageRef.current) return;
+      if (cancelled || !stageRef.current) {disposeResources([parts.group]);return;}
       // 程序化车型在展厅里把车门半开、尾翼抬起，直观展示部件绑定；
       // GLB 车型没有这些绑定，applyShowroomPose 会自动跳过。
       applyShowroomPose(parts.extras, 0.55);
@@ -171,7 +172,7 @@ const CarPreview3D: React.FC<CarPreview3DProps> = ({ carType, accentColor = '#f5
     }).catch(() => undefined);
     return () => {
       cancelled = true;
-      if (current && stageRef.current) stageRef.current.remove(current);
+      if (current) {current.removeFromParent();disposeResources([current]);}
     };
   }, [carType]);
 

@@ -1,3 +1,4 @@
+import {assetUrl} from './assetUrl';
 import {roadMix} from './motorAudio';
 /**
  * CC0 recording layers. No oscillator is used for the engine/road/gravel/skid
@@ -154,7 +155,7 @@ export function initRecordingAudio(context: AudioContext): Promise<RecordingAudi
   master.connect(limiter);
   limiter.connect(context.destination);
   initPromise = Promise.allSettled(ASSETS.map(async asset => {
-    const response = await fetch(asset.url, { signal });
+    const response = await fetch(assetUrl(asset.url), { signal });
     if (!response.ok) throw new Error(`${asset.url}: ${response.status}`);
     const data = await response.arrayBuffer();
     const decoded = await context.decodeAudioData(data);

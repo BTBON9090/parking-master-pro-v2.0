@@ -2,22 +2,22 @@
   {
     "speedMps": 2,
     "airtimeSeconds": 0,
-    "maxWheelGapM": 9.96442253153873e-8,
-    "minWheelGapM": -9.962576541511226e-8,
-    "maxHeightM": 22.47581849971761
+    "maxWheelGapM": 9.997945653594797e-8,
+    "minWheelGapM": -9.997730217037315e-8,
+    "maxHeightM": 22.475392428203357
   },
   {
     "speedMps": 25,
-    "airtimeSeconds": 1.2333333333333303,
-    "maxWheelGapM": 2.2638657406743734,
-    "minWheelGapM": -9.794736968160578e-8,
-    "maxHeightM": 23.314465809836307
+    "airtimeSeconds": 1.3541666666666632,
+    "maxWheelGapM": 2.261441156494823,
+    "minWheelGapM": -9.997427525831881e-8,
+    "maxHeightM": 23.314491004094116
   },
   {
     "speedMps": 35,
-    "airtimeSeconds": 2.5916666666666903,
-    "maxWheelGapM": 10.058688602904818,
-    "minWheelGapM": -7.123475427306403e-8,
-    "maxHeightM": 27.228424206609663
+    "airtimeSeconds": 2.608333333333358,
+    "maxWheelGapM": 10.06268093492675,
+    "minWheelGapM": -9.798787630188599e-8,
+    "maxHeightM": 27.228562565602896
   }
 ]

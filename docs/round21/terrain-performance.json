@@ -1,0 +1,1 @@
+{"queries":12000,"beforeMilliseconds":593.198083,"afterMilliseconds":80.032708,"maxHeightOrGradeDifference":2.2737367544323206e-13,"equivalenceLocations":12000,"note":"Node CPU probe on Apple M1; actual frame timing separately recorded. Same exact segment projections, BVH nearest query."}

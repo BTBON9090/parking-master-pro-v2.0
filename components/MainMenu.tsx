@@ -1,3 +1,4 @@
+import {assetUrl} from '../utils/assetUrl';
 /**
  * 主菜单 —— 3A 竞速游戏风格（尘埃 / 极品飞车 / 地平线）
  * =====================================================
@@ -313,7 +314,7 @@ const MainMenu: React.FC<MainMenuProps> = ({
                       ? { background: 'rgba(245,158,11,0.10)', border: '1px solid var(--amber)', boxShadow: '0 0 18px rgba(245,158,11,0.18)' }
                       : { background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
                   >
-                    <div className="flex items-center justify-between">
+                    <img src={assetUrl("thumbnails/"+key+".png")} alt={c.name+"车辆外观"} className="w-full h-28 object-cover rounded mb-2" loading="lazy"/><div className="flex items-center justify-between">
                       <span className="font-display italic text-lg" style={{ color: isSelected ? 'var(--amber)' : 'var(--text)', fontWeight: 900 }}>{c.name}</span>
                       <span className="mono text-[9px] font-bold px-1.5 py-0.5 tracking-[0.14em]"
                             style={{ background: isSelected ? 'var(--amber)' : 'rgba(255,255,255,0.07)', color: isSelected ? '#0b0b0d' : 'var(--text-dim)' }}>
@@ -398,14 +399,14 @@ const MainMenu: React.FC<MainMenuProps> = ({
                     key={level.id}
                     disabled={isLocked}
                     onClick={() => setSelectedLevel(level.id)}
-                    className="clip-angle-sm relative p-4 h-32 text-left transition-all duration-150 overflow-hidden"
+                    className="clip-angle-sm relative p-4 h-56 text-left transition-all duration-150 overflow-hidden"
                     style={isLocked
                       ? { background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', cursor: 'not-allowed', opacity: 0.45 }
                       : isSelected
                         ? { background: 'rgba(245,158,11,0.12)', border: '1px solid var(--amber)', boxShadow: '0 0 20px rgba(245,158,11,0.16)' }
                         : { background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
                   >
-                    <span className="font-display italic absolute -bottom-3 right-1 font-black mono select-none"
+                    <img src={assetUrl(level.thumbnail)} alt={level.name+"路线缩略图"} className="w-full h-28 object-contain rounded mb-2"/><span className="font-display italic absolute -bottom-3 right-1 font-black mono select-none"
                           style={{ fontSize: 74, color: isSelected ? 'var(--amber)' : 'rgba(255,255,255,0.06)', lineHeight: 1 }}>
                       0{level.id}
                     </span>

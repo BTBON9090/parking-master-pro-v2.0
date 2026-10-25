@@ -5,43 +5,43 @@
     "maxGapCm": 5.3290705182007514e-14,
     "maxAxleDriftMm": 7.105427357601002e-13,
     "minTreadGapCm": -5.911793676816046e-7,
-    "maxTravelCm": 6.059759775540741,
+    "maxTravelCm": 5.008822080312202,
     "fastestGapCm": 1.1368683772161603e-12
   },
   {
     "id": "SEAL08",
     "cases": 45,
-    "maxGapCm": 3.552713678800501e-14,
-    "maxAxleDriftMm": 3.552713678800501e-13,
+    "maxGapCm": 5.3290705182007514e-14,
+    "maxAxleDriftMm": 7.105427357601002e-13,
     "minTreadGapCm": -5.266868230435762e-7,
-    "maxTravelCm": 3.5988661204091588,
+    "maxTravelCm": 3.08007827164662,
     "fastestGapCm": 1.1368683772161603e-12
   },
   {
     "id": "TAI7",
     "cases": 45,
-    "maxGapCm": 5.3290705182007514e-14,
-    "maxAxleDriftMm": 5.329070518200751e-13,
+    "maxGapCm": 3.552713678800501e-14,
+    "maxAxleDriftMm": 3.552713678800501e-13,
     "minTreadGapCm": -5.481838538656802e-7,
-    "maxTravelCm": 6.715369774020558,
+    "maxTravelCm": 5.4992374682286425,
     "fastestGapCm": 1.1368683772161603e-12
   },
   {
     "id": "LI_I9",
     "cases": 45,
     "maxGapCm": 5.3290705182007514e-14,
-    "maxAxleDriftMm": 5.329070518200751e-13,
+    "maxAxleDriftMm": 3.552713678800501e-13,
     "minTreadGapCm": -5.69681590789628e-7,
-    "maxTravelCm": 5.910877580645202,
+    "maxTravelCm": 4.904701653822544,
     "fastestGapCm": 1.1368683772161603e-12
   },
   {
     "id": "N90",
     "cases": 45,
-    "maxGapCm": 3.552713678800501e-14,
-    "maxAxleDriftMm": 5.329070518200751e-13,
+    "maxGapCm": 5.3290705182007514e-14,
+    "maxAxleDriftMm": 3.552713678800501e-13,
     "minTreadGapCm": -5.69681590789628e-7,
-    "maxTravelCm": 6.055244494755346,
+    "maxTravelCm": 4.997734154220227,
     "fastestGapCm": 1.1368683772161603e-12
   },
   {
@@ -50,7 +50,7 @@
     "maxGapCm": 3.552713678800501e-14,
     "maxAxleDriftMm": 7.105427357601002e-13,
     "minTreadGapCm": -5.696815863487359e-7,
-    "maxTravelCm": 8.392554909803401,
+    "maxTravelCm": 6.7754524646882865,
     "fastestGapCm": 1.1368683772161603e-12
   }
 ]

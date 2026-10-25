@@ -10,6 +10,12 @@ export interface DrivingTestPoint {
   /** Short direction/expected-action hint shown in the T panel. */
   hint?: string;
 }
+export const CAMPUS_TEST_POINTS:DrivingTestPoint[]=[
+ {id:'campus-main',label:'四区连接主路',x:1700,y:1400,rotation:0,hint:'沿主路通向曲线、紧凑倒库和斜列停车区'},
+ {id:'campus-s',label:'加宽 S 弯入口',x:2890,y:605,rotation:-1.46,hint:'顺白色边线低速通过连续 S 弯'},
+ {id:'campus-tight',label:'紧凑倒库入口',x:2410,y:1550,rotation:Math.PI/2,hint:'南行进入两侧错位窄车位'},
+ {id:'campus-angle',label:'斜列车位入口',x:3160,y:1700,rotation:Math.PI/2,hint:'前方左转进入斜列泊车区'},
+];
 export const GARAGE_TEST_POINTS: DrivingTestPoint[] = [
  {id:'garage-b2-aisle',label:'B2 车位与雷达线',x:800,y:522,rotation:0,deckHeight:-96,hint:'检查三色线贴当前地板、柱子位于车位之间'},
  {id:'garage-b3-aisle',label:'B3 车位与雷达线',x:800,y:522,rotation:0,deckHeight:-144,hint:'最下层辅助线、车位与阴影'},
@@ -20,6 +26,7 @@ export const GARAGE_TEST_POINTS: DrivingTestPoint[] = [
  {id:'garage-b2-up',label:'B2 上行坡道入口',x:1625,y:770,rotation:-Math.PI/2,deckHeight:-96,hint:'靠右上坡返回 B1'},
 ];
 export const DRIVING_TEST_POINTS: DrivingTestPoint[] = [
+ {id:'rollover-bank',label:'极陡横坡失稳',x:11980,y:2760,rotation:.709,hint:'约 54° 横坡；高重心皮卡翻滚，低重心车型临界角不同'},
   {id:'handling-field',label:'高速转向空地',x:10500,y:10000,rotation:0,hint:'远离障碍的平坦空地；加速后转弯，检查侧滑与车身回正'},
   { id: 'straight', label: '平直加速', x: 1180, y: 3900, rotation: 0, hint: '东向直行' },
   { id: 'long-straight', label: '主路长直道', x: 1450, y: 543, rotation: Math.atan2(-6,404), hint: '东四十条东向车道；用于高速相机检查，接近路口请刹车' },
@@ -37,6 +44,7 @@ export const DRIVING_TEST_POINTS: DrivingTestPoint[] = [
   { id: 'curb-right-side', label: '右侧路缘', x: 734.45, y: 667.14, rotation: 1.50588764 + Math.PI, hint: '同一路缘掉转车头，检查右侧车轮与车身应同时抬高' },
   { id: 'gravel', label: '砂石路', x: 1500, y: 4750, rotation: Math.PI / 2, hint: '南向 砂石 gate' },
   {id:'ring-lane',label:'环岛车道',x:4700,y:4762,rotation:0,hint:'外侧车道顺环行箭头出发'},
+  {id:'impact-frontal-fast',label:'高速正碰长助跑',x:2450,y:5700,rotation:-Math.PI/2,hint:'约 150 m 加速后正撞厂房，检查解体与小人恢复动作'},
   {id:'impact-frontal',label:'正碰助跑',x:2450,y:4900,rotation:-Math.PI/2,hint:'面向厂房；用于检查严重碰撞与重置'},
   {id:'impact-glance',label:'擦碰助跑',x:2000,y:3600,rotation:.2,hint:'斜向厂房外墙；检查沿墙滑移与旋转'},
   { id: 'roundabout', label: '环岛', x: 4270, y: 4500, rotation: 0, hint: '东向 环岛' },

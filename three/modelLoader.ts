@@ -1,3 +1,4 @@
+import {assetUrl} from '../utils/assetUrl';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { CarType, CarConfig } from '../types';
@@ -103,7 +104,7 @@ export async function loadModel(name: string): Promise<THREE.Group> {
   const def = MODEL_REGISTRY[name];
   if (!def) throw new Error(`Unknown model: ${name}`);
 
-  const url = `/models/${def.file.split('/').map(encodeURIComponent).join('/')}`;
+  const url = assetUrl(`models/${def.file.split('/').map(encodeURIComponent).join('/')}`);
   const gltf = await loader.loadAsync(url);
   const group = gltf.scene;
 

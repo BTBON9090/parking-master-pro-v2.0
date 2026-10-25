@@ -6,7 +6,7 @@ import { getPowertrain, SPEED_UNIT_KMH } from '../utils/powertrain';
 import { ackermannAngles } from '../utils/driving';
 import { Sliders, X, Activity, Cpu, RotateCcw, Copy, Check, Gauge, Wrench, Route, CarFront, GripHorizontal, ChevronDown, ChevronUp, Scan } from 'lucide-react';
 import HoodCameraLocator from './HoodCameraLocator';
-import { DRIVING_TEST_POINTS, GARAGE_TEST_POINTS } from '../utils/testPoints';
+import { DRIVING_TEST_POINTS, GARAGE_TEST_POINTS, CAMPUS_TEST_POINTS } from '../utils/testPoints';
 
 /**
  * In-game floating tuning panel. Opens with the `T` hotkey (toggle-tuning
@@ -46,6 +46,10 @@ interface Readout {
   steerWheelMaxDeg?: number;
   /** Actual model axle geometry streamed from the physics loop. */
   wheelbase?: number;
+  simulationSeconds?:number;
+  driverReaction?:string;
+  gpuResources?:string;
+  cpuMs?:string;
   frameAvgMs?: number;
   frameP95Ms?: number;
   positionStepMax?: number;
@@ -199,6 +203,9 @@ const TuningPanel: React.FC<TuningPanelProps> = ({
     [isCN ? '帧间隔 mean/p95' : 'Frame mean/p95',
       `${(readout.frameAvgMs ?? 0).toFixed(1)} / ${(readout.frameP95Ms ?? 0).toFixed(1)} ms`,
       (readout.frameP95Ms ?? 0) > 25 ? 'var(--amber)' : 'var(--green)'],
+    ['场景时间 / 事故动作', `${(readout.simulationSeconds??0).toFixed(1)} s · ${readout.driverReaction??'驾驶中'}`, 'var(--cyan)'],
+    ['GPU 几何 / 贴图 / 程序', readout.gpuResources??'—', 'var(--text-dim)'],
+    ['CPU 模拟 / 渲染提交', readout.cpuMs??'—', 'var(--text-dim)'],
     [isCN ? '单帧位移/速度跃变' : 'Step / speed jump',
       `${(readout.positionStepMax ?? 0).toFixed(2)} u / ${(readout.speedStepMax ?? 0).toFixed(3)} u`,
       (readout.speedStepMax ?? 0) > 0.2 ? 'var(--amber)' : 'var(--text-dim)'],
@@ -515,7 +522,7 @@ const TuningPanel: React.FC<TuningPanelProps> = ({
             {isCN ? '验收测试点（停稳后传送）' : 'ACCEPTANCE POINTS (STOP FIRST)'}
           </div>
           <div className="grid grid-cols-2 gap-1.5">
-            {(levelId===6 ? GARAGE_TEST_POINTS : DRIVING_TEST_POINTS).map(point => (
+            {(levelId===6 ? GARAGE_TEST_POINTS : levelId===4 ? CAMPUS_TEST_POINTS : DRIVING_TEST_POINTS).map(point => (
               <button key={point.id} type="button"
                 onClick={() => window.dispatchEvent(new CustomEvent('test-teleport', { detail: point }))}
                 className="rounded-md px-2 py-1.5 text-[9px] text-left"
