@@ -194,7 +194,7 @@ const SettingsSection: React.FC<{ title: string; icon: React.ReactNode; children
 
 /** 车状态指示灯：无背景悬浮灯。熄灭 = 暗色轮廓，点亮 = 彩色发光。 */
 const Telltale: React.FC<{ on: boolean; color: string; icon: React.ReactNode; label: string; onClick?: () => void; onHold?: (held:boolean)=>void }> = ({ on, color, icon, label, onClick, onHold }) => (
-    <div className="flex flex-col items-center gap-[3px] w-9" onClick={onClick} onPointerDown={e=>{if(onHold){e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);onHold(true);}}} onPointerUp={()=>onHold?.(false)} onPointerCancel={()=>onHold?.(false)} onLostPointerCapture={()=>onHold?.(false)} style={{ cursor: onClick ? 'pointer' : undefined }} role={onClick || onHold ? 'button' : undefined} aria-pressed={onClick || onHold ? on : undefined} onKeyDown={e=>{if(onClick&&(e.key==='Enter'||e.key===' ')){e.preventDefault();e.stopPropagation();onClick();}}} tabIndex={onClick || onHold ? 0 : undefined}>
+    <div className="flex flex-col items-center gap-[3px] w-9" onClick={onClick} onPointerDown={e=>{if(onHold){e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);onHold(true);}}} onPointerUp={()=>onHold?.(false)} onPointerCancel={()=>onHold?.(false)} onLostPointerCapture={()=>onHold?.(false)} style={{ cursor: onClick ? 'pointer' : undefined }} role={onClick || onHold ? 'button' : undefined} aria-pressed={onClick || onHold ? on : undefined} onKeyDown={e=>{if(onClick&&e.key==='Enter'){e.preventDefault();e.stopPropagation();onClick();}}} tabIndex={onClick || onHold ? 0 : undefined}>
         <div
             className="w-[26px] h-[26px] rounded-full flex items-center justify-center transition-all duration-150"
             style={on
