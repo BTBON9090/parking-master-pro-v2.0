@@ -1,5 +1,5 @@
 export const APP_VERSION='0.22.0';
-export const RELEASE_PAGE='https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/index.html';
+export const RELEASE_PAGE='https://cdn.btbon.cn/parking-master/index.html';
 export const GITHUB_LATEST='https://api.github.com/repos/BTBON9090/parking-master-pro-v2.0/releases/latest';
 export function isNewerVersion(next:string,current:string){
  const parse=(s:string)=>/^v?(\d+)\.(\d+)\.(\d+)$/.exec(s)?.slice(1).map(Number);
