@@ -1,3 +1,6 @@
+import {loadSettings,saveSettings} from './utils/settingsStorage';
+import {isTouchDevice} from './utils/device';
+import {parkingBrakeApplied} from './utils/parkingBrake';
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { CarType, DayTime, LevelData, UserSettings, WeatherType, InputState, Language, ParkingResultType, CameraView, KeyBindings } from './types';
 import { serializeToLevelData } from './utils/polyline';
@@ -55,7 +58,8 @@ function App() {
   const globalOverviewCanvasRef = useRef<HTMLCanvasElement>(null);
   const [globalOverviewOpen, setGlobalOverviewOpen] = useState(false);
   
-  const [settings, setSettings] = useState<UserSettings>({
+  const [settings, setSettings] = useState<UserSettings>(()=>loadSettings({
+    renderQuality: 'auto',
     soundEnabled: true,
     absEnabled: true,
     radarSoundEnabled: true,
@@ -86,7 +90,7 @@ function App() {
     // 驾驶舱样式包（components/cockpit/stylePacks.ts）。缺省 = 默认包 APEX GT，
     // 后续会开放多车型样式包选择。
     cockpitPackId: 'apex-gt',
-    keyBindings: { ...DEFAULT_KEY_BINDINGS, hoodCameraDefaultForCar },
+    keyBindings: { ...DEFAULT_KEY_BINDINGS },
     debugPhysics: {
       enabled: false,
       driveAxleOffset: 1.0,        // 默认后驱推
@@ -99,7 +103,8 @@ function App() {
       ackermannSplitGain: 0.82,
       differentialGain: 0.37,
     },
-  });
+  }));
+  useEffect(()=>saveSettings(settings),[settings]);
 
   // The in-game weather switch now has an immediate, visible result. Turning
   // it on enters a representative rainy lesson; turning it off restores the
@@ -133,6 +138,8 @@ function App() {
   const steeringInputFrameRef = useRef<number | null>(null);
   const steeringKeyboardFrameRef = useRef<number | null>(null);
   const rightButtonDownRef = useRef(false);
+  const mobileSteeringHeld=useRef(false);
+  useEffect(()=>{const listener=(e:Event)=>{mobileSteeringHeld.current=!!(e as CustomEvent).detail;};window.addEventListener("mobile-steering-active",listener);return()=>window.removeEventListener("mobile-steering-active",listener);},[]);
   const draggingRef = useRef(false);
   const steeringActivityRef = useRef(new SteeringActivityClock());
   const cameraViewStateRef = useRef<CameraView>(cameraView);
@@ -157,6 +164,7 @@ function App() {
       setInputState(prev => {
           const next = updater(prev);
           if (next.gear !== prev.gear && !canSelectGear(getPowertrain(currentCar), carSpeedRef.current, next.gear)) next.gear = prev.gear;
+          next.handbrake = parkingBrakeApplied(!!next.parkingBrake, next.handbrake || keyboardPedalHeldRef.current.handbrake);
           inputRef.current = next;
           return next;
       });
@@ -187,7 +195,7 @@ function App() {
     const releaseControls = () => {
       setInputState(prev => {
         const next = {...prev, gasPressed:false, shiftPressed:false, throttle:0, brake:0,
-          handbrake:keyboardPedalHeldRef.current.handbrake ? false : prev.handbrake};
+          handbrake:!!prev.parkingBrake};
         inputRef.current=next; return next;
       });
       draggingRef.current = false;
@@ -251,7 +259,7 @@ function App() {
           // W kept auto-centre disabled forever.
           const isInteracting = steeringActivityRef.current.isSteeringActive(
             now,
-            draggingRef.current || rightButtonDownRef.current || keyboardSteering,
+            draggingRef.current || rightButtonDownRef.current || keyboardSteering || mobileSteeringHeld.current,
           );
 
           // If speed rose while the wheel was already turned, bleed the input
@@ -559,6 +567,7 @@ function App() {
     // pointer lock，因此鼠标到达屏幕边缘仍可继续打方向。如果 pointer lock
     // 被拒绝/不可用，右键拖拽仍然有效，并会提示可发现的键盘降级。
     const handleMouseDown = (e: MouseEvent) => {
+        if(isTouchDevice())return;
         // Plain left drag is the look gesture now: in an exterior camera it
         // orbits 360° around the car; in HOOD it turns the driver's head with
         // low sensitivity. UI drags never reach here because the target must
@@ -667,22 +676,32 @@ function App() {
         if (e.type === 'pointercancel' || (e.buttons & 1) === 0) lookDragRef.current.active=false;
     };
 
+    let touchTap={time:0,x:0,y:0};
     const handleTouchPointerDown = (e: PointerEvent) => {
-        if (e.pointerType !== 'touch' || !(e.target instanceof HTMLCanvasElement)) return;
+        if (e.pointerType !== 'touch' || !(e.target instanceof HTMLCanvasElement) || touchSteerRef.current.active) return;
         e.preventDefault();
         touchSteerRef.current = { active: true, pointerId: e.pointerId, lastX: e.clientX };
+        lookDragRef.current={active:true,lastX:e.clientX,lastY:e.clientY,mode:cameraViewStateRef.current==='HOOD'?'head':'orbit',moved:false};
         try { (e.target as HTMLElement).setPointerCapture(e.pointerId); } catch { /* optional */ }
     };
     const handleTouchPointerMove = (e: PointerEvent) => {
         if (!touchSteerRef.current.active || e.pointerId !== touchSteerRef.current.pointerId) return;
         const dx = e.clientX - touchSteerRef.current.lastX;
         touchSteerRef.current.lastX = e.clientX;
-        queueSteeringDelta(dx * 1.7);
+        const dy=e.clientY-lookDragRef.current.lastY;lookDragRef.current.lastY=e.clientY;
+        if(Math.abs(dx)+Math.abs(dy)>2)lookDragRef.current.moved=true;
+        if(lookDragRef.current.mode==='head')adjustHeadLook(-dx*.11,-dy*.05);
+        else {setCameraView('ORBIT');window.dispatchEvent(new CustomEvent('camera-orbit-nudge',{detail:{dx,dy}}));}
     };
     const handleTouchPointerUp = (e: PointerEvent) => {
         if (!touchSteerRef.current.active || e.pointerId !== touchSteerRef.current.pointerId) return;
+        if(e.type==='pointerup'&&!lookDragRef.current.moved){
+          const now=performance.now();
+          if(now-touchTap.time<330&&Math.hypot(e.clientX-touchTap.x,e.clientY-touchTap.y)<28){resetHeadLook(true);touchTap.time=0;}
+          else touchTap={time:now,x:e.clientX,y:e.clientY};
+        }
         touchSteerRef.current.active = false;
-        flushSteeringDelta();
+        lookDragRef.current.active = false;
     };
 
     const handlePointerLockError = () => notifySteeringFallback();
@@ -810,6 +829,11 @@ function App() {
             return;
         }
         if (e.repeat) return;
+        if (action === 'parkingBrake') {
+            e.preventDefault();
+            updateInput(prev => ({...prev,parkingBrake:!prev.parkingBrake,handbrake:parkingBrakeApplied(!prev.parkingBrake,keyboardPedalHeldRef.current.handbrake)}));
+            return;
+        }
 
         // Independent keyboard steering fallback (comma/period). If the player
         // deliberately bound one of these keys to a driving action, that bind
@@ -846,7 +870,7 @@ function App() {
             if (gear > -1) requestGearChange(gear - 1);
         }
         if (k === 'q') requestGearChange(-1);
-        if (k === 'v') updateInput(prev => ({ ...prev, gear: 0, handbrake: true, throttle: 0, gasPressed: false }));
+        if (k === 'v') updateInput(prev => ({ ...prev, gear: 0, parkingBrake: true, handbrake: true, throttle: 0, gasPressed: false }));
         if (action === 'lights') updateInput(prev => {const mode=((prev.headlightMode??(prev.lights?1:0))+1)%3 as 0|1|2;return {...prev,lights:mode!==0,headlightMode:mode};});
         if (action === 'engine') updateInput(prev => ({ ...prev, engineStarted: !prev.engineStarted }));
     };
@@ -948,7 +972,7 @@ function App() {
   // Travel / garage actions are allowed while paused. The normal driving
   // updater deliberately rejects paused input, so use an explicit safe reset.
   const parkForTravel = () => {
-      const next = {...inputRef.current, gear:0, throttle:0, gasPressed:false, shiftPressed:false, brake:0, handbrake:true, steeringWheelAngle:0};
+      const next = {...inputRef.current, gear:0, throttle:0, gasPressed:false, shiftPressed:false, brake:0, parkingBrake:true, handbrake:true, steeringWheelAngle:0};
       inputRef.current = next;
       setInputState(next);
       steeringSmootherRef.current.reset();

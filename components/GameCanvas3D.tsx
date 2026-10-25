@@ -1,3 +1,5 @@
+import {qualityProfile,nextResolution} from '../utils/renderQuality';
+import {isTouchDevice} from '../utils/device';
 import { disposeResources } from '../three/disposeResources';
 import { sensedObstacle, parkingPulse } from '../utils/proximity';
 import { garageFloorAt, GARAGE_LEVELS } from '../utils/garage';
@@ -409,9 +411,9 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
 
     // ===== Renderer =====
     const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-    const dprCeiling = Math.min(window.devicePixelRatio || 1, 1.5);
-    const dprFloor = Math.min(dprCeiling, 1.25);
-    let dynamicDpr = dprCeiling;
+    let quality=settingsRef.current.renderQuality??'auto';
+    let profile=qualityProfile(quality,window.devicePixelRatio,isTouchDevice());
+    let dynamicDpr = profile.initial;
     renderer.setPixelRatio(dynamicDpr);
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
@@ -461,7 +463,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     const leftMirrorCamera = new THREE.PerspectiveCamera(40, 2.65, 0.08, 620);
     const rightMirrorCamera = new THREE.PerspectiveCamera(40, 2.65, 0.08, 620);
     const centreMirrorCamera = new THREE.PerspectiveCamera(34, 4, 0.08, 620);
-    const mirrorTarget = new THREE.WebGLRenderTarget(768, 288, { depthBuffer: true });
+    const mirrorTarget = new THREE.WebGLRenderTarget(profile.mirrorWidth, Math.round(profile.mirrorWidth*.375), { depthBuffer: true });
     const mirrorDisplay = new THREE.Scene();
     const mirrorDisplayCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 2);
     mirrorDisplayCamera.position.z = 1;
@@ -567,8 +569,8 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     // 阴影默认关闭（设置里可开启）：开启后阴影既能投射到地面，
     // 也能投射到相邻车辆 / 墙体 / 建筑上。
     sun.castShadow = settingsRef.current.shadowsEnabled;
-    sun.shadow.mapSize.width = 1024;
-    sun.shadow.mapSize.height = 1024;
+    sun.shadow.mapSize.width = profile.shadowSize;
+    sun.shadow.mapSize.height = profile.shadowSize;
     sun.shadow.camera.near = 10;
     sun.shadow.camera.far = 1200;
     sun.shadow.camera.left = -SHADOW_SIZE;
@@ -1810,26 +1812,22 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       animationId = requestAnimationFrame(render);
       if (!built || !scene) return;
 
-      // Dynamic resolution reacts slowly enough to avoid visible pumping.
-      // It only changes the main drawing buffer; CSS layout and mirror
-      // viewport geometry remain stable in logical pixels.
+      const requestedQuality=settingsRef.current.renderQuality??'auto';
+      if(requestedQuality!==quality){
+        quality=requestedQuality;profile=qualityProfile(quality,window.devicePixelRatio,isTouchDevice());
+        dynamicDpr=profile.initial;renderer.setPixelRatio(dynamicDpr);renderer.setSize(window.innerWidth,window.innerHeight,false);
+        mirrorTarget.setSize(profile.mirrorWidth,Math.round(profile.mirrorWidth*.375));
+        sun.shadow.mapSize.set(profile.shadowSize,profile.shadowSize);sun.shadow.map?.dispose();sun.shadow.map=null;renderer.shadowMap.needsUpdate=true;
+        resolutionWindowStartedAt=performance.now();resolutionFrameCount=0;
+      }
       resolutionFrameCount++;
-      const resolutionNow = performance.now();
-      const resolutionElapsed = resolutionNow - resolutionWindowStartedAt;
-      if (resolutionElapsed >= 1600) {
-        const averageFrameMs = resolutionElapsed / Math.max(1, resolutionFrameCount);
-        const nextDpr = averageFrameMs > 20.5
-          ? Math.max(dprFloor, dynamicDpr - 0.1)
-          : averageFrameMs < 15.2
-            ? Math.min(dprCeiling, dynamicDpr + 0.05)
-            : dynamicDpr;
-        if (Math.abs(nextDpr - dynamicDpr) >= 0.025) {
-          dynamicDpr = nextDpr;
-          renderer.setPixelRatio(dynamicDpr);
-          renderer.setSize(window.innerWidth, window.innerHeight, false);
+      const resolutionNow=performance.now();const resolutionElapsed=resolutionNow-resolutionWindowStartedAt;
+      if(resolutionElapsed>=1800){
+        if(quality==='auto'&&!isPausedRef.current){
+          const next=nextResolution(dynamicDpr,resolutionElapsed/Math.max(1,resolutionFrameCount),profile.floor,profile.ceiling);
+          if(Math.abs(next-dynamicDpr)>=.025){dynamicDpr=next;renderer.setPixelRatio(next);renderer.setSize(window.innerWidth,window.innerHeight,false);}
         }
-        resolutionWindowStartedAt = resolutionNow;
-        resolutionFrameCount = 0;
+        resolutionWindowStartedAt=resolutionNow;resolutionFrameCount=0;
       }
 
       // Only the occupied floor is submitted; decks at the same XY must not

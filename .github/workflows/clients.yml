@@ -1,0 +1,41 @@
+name: Build desktop clients and iOS project
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build:client
+      - run: npm run package:win
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-x64
+          path: release/*.exe
+          if-no-files-found: error
+  ios-compile:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run mobile:sync
+      - name: Compile iOS without signing
+        run: xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release -sdk iphoneos -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO -derivedDataPath /tmp/parking-ios build
+      - name: Archive unsigned build for development only
+        run: ditto -c -k --sequesterRsrc /tmp/parking-ios/Build/Products/Release-iphoneos/App.app ios-unsigned-development.app.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios-unsigned-development
+          path: ios-unsigned-development.app.zip

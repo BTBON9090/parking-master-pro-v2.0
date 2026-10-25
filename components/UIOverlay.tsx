@@ -1,3 +1,5 @@
+import {MobileControls} from './MobileControls';
+import {useTouchControls} from '../utils/device';
 import {SettingsPage} from './SettingsPage';
 import {DrivingGuide,GUIDE_VERSION} from './DrivingGuide';
 import { garageFloorAt } from '../utils/garage';
@@ -234,6 +236,9 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
   setGlobalOverviewOpen,
   completedSpots,
 }) => {
+  const touch=useTouchControls();
+  const [portrait,setPortrait]=useState(()=>window.innerHeight>window.innerWidth);
+  useEffect(()=>{const resize=()=>setPortrait(window.innerHeight>window.innerWidth);window.addEventListener('resize',resize);return()=>window.removeEventListener('resize',resize);},[]);
   const [showSettings, setShowSettings] = useState(false);
   const [showGuide,setShowGuide]=useState(()=>localStorage.getItem(GUIDE_VERSION)!=="done");
   // 按键绑定：点击某一行后捕获下一个按键
@@ -789,8 +794,8 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
   }, [inputState.engineStarted]);
 
   useEffect(() => {
-      onSettingsToggle(showSettings || showGuide);
-  }, [showSettings, showGuide, onSettingsToggle]);
+      onSettingsToggle(showSettings || showGuide || (touch&&portrait));
+  }, [showSettings, showGuide, onSettingsToggle,touch,portrait]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -953,8 +958,8 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
   ), [levelData, mapW, mapH, mapViewY, isLevel6, completedSpots, mapCarFloor]);
 
   return (
-    <div className="absolute inset-0 pointer-events-none flex flex-col justify-between z-10 text-white">
-      {cameraView === 'HOOD' && (
+    <div className={`game-hud ${touch?'touch-hud':''} absolute inset-0 pointer-events-none flex flex-col justify-between z-10 text-white`}>
+      {cameraView === 'HOOD' && !touch && (
         <div className="absolute top-[56px] right-4 z-30 pointer-events-none mono text-[8px] tracking-[0.08em] px-2.5 py-1 rounded"
              style={{ background: 'rgba(6,8,11,0.72)', color: 'var(--text-mute)', border: '1px solid rgba(255,255,255,0.10)' }}>
           {lang === Language.CN
@@ -1032,7 +1037,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
       )}
 
       {/* ===== 左上：资金 / 关卡（无背景悬浮排版） ===== */}
-      <div className="absolute top-5 left-6 z-40 pointer-events-auto flex items-start gap-5">
+      <div className="desktop-hud absolute top-5 left-6 z-40 pointer-events-auto flex items-start gap-5">
           <div className="flex items-center gap-4" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.85)' }}>
               <div className="flex flex-col">
                   <span className="text-[9px] font-black tracking-[0.3em] uppercase mb-0.5" style={{ color: 'var(--amber)' }}>{t.money}</span>
@@ -1072,12 +1077,12 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
       </div>
 
       {/* ===== 右上：状态灯 + 球形视角 + 视角切换（无背景紧凑排布） ===== */}
-      <div className="absolute top-4 right-5 z-40 pointer-events-auto flex items-center gap-3">
+      <div className="desktop-hud absolute top-4 right-5 z-40 pointer-events-auto flex items-center gap-3">
           {/* 车状态指示灯 */}
           <div className="flex items-start gap-1.5 pr-2.5" style={{ borderRight: '1px solid rgba(255,255,255,0.14)' }}>
               <Telltale on={inputState.engineStarted} color="var(--green)" icon={<Power size={12} strokeWidth={2.6} />} label="ENG" />
               <Telltale on={inputState.lights} color={inputState.headlightMode===2?"#7ac9ff":"var(--amber)"} icon={<Zap size={12} />} label={inputState.lights?(inputState.headlightMode===2?"远光":"近光"):"LIGHT"} />
-              <Telltale on={inputState.handbrake} color="var(--red)" icon={<Pause size={12} />} label="PARK" onHold={held => setInputState(prev => ({ ...prev, handbrake: held }))} />
+              <Telltale on={inputState.handbrake} color="var(--red)" icon={<Pause size={12} />} label="PARK" onClick={() => setInputState(prev => ({ ...prev, parkingBrake:!prev.parkingBrake, handbrake:!prev.parkingBrake }))} />
           </div>
           {/* 球形视角控制 */}
           <div
@@ -1255,7 +1260,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
               </button>
 
               {/* 路线地图保持独立，仍可折叠。 */}
-              <div className="absolute right-4 top-[118px] z-30 transition-[width,height] duration-200"
+              <div className="hud-map absolute right-4 top-[118px] z-30 transition-[width,height] duration-200"
                    style={{ width: miniMapExpanded ? 300 : 132, height: miniMapExpanded ? 236 : 40 }}>
                   <div className="relative z-20 h-10 px-2 flex items-center justify-between pointer-events-auto rounded-xl overflow-hidden"
                        style={{
@@ -1351,7 +1356,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
       )}
 
       {levelData?.training && (
-          <div className="absolute top-[368px] right-4 z-30 flex flex-col items-end gap-1.5 pointer-events-auto"
+          <div className="hud-tips absolute top-[368px] right-4 z-30 flex flex-col items-end gap-1.5 pointer-events-auto"
                style={{ maxWidth: 'calc(100vw - 2rem)' }}>
               {levelData.levelId === 1 && (
                   <button type="button" disabled={Math.abs(liveCarSpeed) > 0.2}
@@ -1391,7 +1396,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
 
       {/* ===== 挡位教练 / 手动训练标注：只在有换挡建议或熄火时出现 ===== */}
       {(stallNotice || highGearLowSpeed || shiftUpHint || shiftDownHint) && (
-      <div className="absolute bottom-[210px] left-1/2 -translate-x-1/2 z-40 pointer-events-none w-[330px] max-w-[82vw]">
+      <div className="hud-coach absolute bottom-[210px] left-1/2 -translate-x-1/2 z-40 pointer-events-none w-[330px] max-w-[82vw]">
           {stallNotice ? (
               <div className="rounded-lg px-3 py-2 flex items-start gap-2"
                    style={{ background: 'rgba(35,12,12,0.95)', border: '1px solid rgba(239,68,68,0.7)', boxShadow: '0 8px 24px rgba(0,0,0,0.55)' }}>
@@ -1444,7 +1449,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
       )}
 
       {/* ===== 底部座舱总成：第一人称只显示仪表，实体方向盘承担转向 ===== */}
-      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 pointer-events-none z-40">
+      <div className="main-instruments absolute bottom-5 left-1/2 -translate-x-1/2 pointer-events-none z-40">
           <div style={cameraView === 'HOOD'
               ? { transform: `scale(${firstPersonScale})`, transformOrigin: 'bottom center' }
               : undefined}>
@@ -1460,12 +1465,14 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                   singleSpeed={singleSpeed}
                   rpmCaption={lang === Language.CN ? '转速 x1000' : 'RPM x1000'}
                   speedCaption="KM/H"
-                  showSteeringWheels={cameraView !== 'HOOD'}
+                  showSteeringWheels={!touch&&cameraView !== 'HOOD'}
               />
           </div>
       </div>
 
       {/* ===== 设置抽屉（语言 + 按键指南 已迁移至此） ===== */}
+      {touch&&<MobileControls input={inputState} update={setInputState} car={currentCarId} disabled={showSettings||showGuide||portrait} settings={()=>setShowSettings(true)} camera={()=>{const views:CameraView[]=['HOOD','FOLLOW_NEAR','FOLLOW_FAR','TOP','REVERSE'];onCameraViewChange(views[(views.indexOf(cameraView)+1)%views.length]);}} map={()=>setGlobalOverviewOpen(!globalOverviewOpen)} reset={resetLevel}/>}
+      {touch&&portrait&&!showSettings&&<div className="rotate-device" role="status"><strong>请横屏驾驶</strong><p>转动手机，展开方向盘和踏板。</p><button onClick={()=>setShowSettings(true)}>打开设置</button></div>}
       {showSettings && <SettingsPage settings={settings} update={updateSettings} car={currentCarId} level={level} openWorld={!!levelData?.openWorld} onCar={onChangeCar} onMap={onChangeMap} onTravel={onTravel} close={()=>setShowSettings(false)} reset={resetLevel} exit={exitGame} lang={lang} setLang={setLang} capture={captureBinding} bind={setCaptureBinding} guide={()=>{setShowSettings(false);setShowGuide(true);}}/>}
       {showGuide && <DrivingGuide settings={settings} done={()=>setShowGuide(false)}/>}
 

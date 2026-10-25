@@ -1,0 +1,29 @@
+appId: cn.btbon.parkingmaster
+productName: Parking Master Pro
+artifactName: Parking-Master-Pro-${version}-${os}-${arch}.${ext}
+directories:
+  output: release
+files:
+  - dist/**/*
+  - desktop/**/*
+  - package.json
+asar: true
+mac:
+  icon: build/icon.icns
+  category: public.app-category.simulation-games
+  target:
+    - dmg
+  identity: null
+  minimumSystemVersion: '12.0'
+win:
+  icon: build/icon.png
+  target:
+    - target: nsis
+      arch: [x64]
+  signAndEditExecutable: false
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  deleteAppDataOnUninstall: false
+publish: null

@@ -408,6 +408,7 @@ export interface KeyBindings {
   gearUp: string;
   gearDown: string;
   handbrake: string;
+  parkingBrake: string;
   camera: string;
   lights: string;
   engine: string;
@@ -417,6 +418,7 @@ export interface KeyBindings {
 }
 
 export interface UserSettings {
+  renderQuality?: import("./utils/renderQuality").RenderQuality;
   soundEnabled: boolean;
   /** 雷达/碰撞检测声音（接近嘟嘟 + 撞击嘟嘟） */
   radarSoundEnabled: boolean;
@@ -510,6 +512,7 @@ export interface InputState {
   steeringWheelAngle: number; // Degrees
   gear: number; // -1 = R, 0 = N, 1-5 = Forward
   handbrake: boolean;
+  parkingBrake?: boolean;
   lights: boolean;
   headlightMode?: 0 | 1 | 2; // off / dipped / main beam
   engineStarted: boolean; 

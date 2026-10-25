@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">停车大师 Pro</string>
+    <string name="title_activity_main">停车大师 Pro</string>
+    <string name="package_name">cn.btbon.parkingmaster</string>
+    <string name="custom_url_scheme">cn.btbon.parkingmaster</string>
+</resources>

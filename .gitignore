@@ -22,3 +22,18 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Native packaging outputs and signing identities
+release/
+*.jks
+*.keystore
+*.p12
+*.mobileprovision
+android/local.properties
+*.xcarchive
+*.ipa
+
+# Intermediate icon renditions
+build/icon.iconset/
+# iOS compilation artifacts
+*.app.zip

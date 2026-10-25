@@ -30,7 +30,7 @@ interface SideMirrorFrameProps {
 
 export const SideMirrorFrame: React.FC<SideMirrorFrameProps> = ({ id, pack, adjustment, slot, label }) => (
   <div
-    className="absolute z-30 w-[28vw] min-w-[280px] max-w-[440px] aspect-[2.65/1] rounded-[16px] overflow-hidden pointer-events-none"
+    className="side-mirror-frame absolute z-30 w-[28vw] min-w-[280px] max-w-[440px] aspect-[2.65/1] rounded-[16px] overflow-hidden pointer-events-none"
     style={{
       // —— 几何：与渲染层 viewport 严格一致，禁止随样式包改变 ——
       bottom: Math.max(8, 18 - adjustment.screenY),
@@ -67,7 +67,7 @@ interface CentreMirrorFrameProps {
 
 export const CentreMirrorFrame: React.FC<CentreMirrorFrameProps> = ({ pack, adjustment, label, signals }) => (
   <div
-    className="absolute left-1/2 -translate-x-1/2 z-30 w-[26.5vw] min-w-[272px] max-w-[430px] pointer-events-none"
+    className="centre-mirror-frame absolute left-1/2 -translate-x-1/2 z-30 w-[26.5vw] min-w-[272px] max-w-[430px] pointer-events-none"
     style={{
       // —— 几何：与渲染层 viewport 严格一致 ——
       top: Math.max(8, 76 + adjustment.screenY),

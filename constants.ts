@@ -133,6 +133,7 @@ export const DEFAULT_KEY_BINDINGS = {
   gearUp: 'd',
   gearDown: 'a',
   handbrake: ' ',
+  parkingBrake: 'p',
   camera: 'f',
   lights: 'l',
   engine: 'b',
