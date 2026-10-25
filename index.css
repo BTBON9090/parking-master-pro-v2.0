@@ -530,3 +530,4 @@ input[type="range"].cockpit-range::-moz-range-thumb {
 html,body,#root{overscroll-behavior:none}body{-webkit-touch-callout:none}button,input,a{-webkit-tap-highlight-color:transparent}
 
 .settings-layout>nav{overflow-y:auto}.guide-keys button{padding:14px;border:1px solid #52606a;border-radius:8px;background:#26343d;color:#fff}.guide-keys button.pressed{border-color:#ffbf28;background:#6a501b}
+@media(max-height:550px){.settings-layout{padding:10px 0!important}.settings-page>header .settings-kicker{display:none}.settings-page h1{margin:0!important}.settings-resume{padding:9px 16px}.settings-intro{font-size:13px;line-height:1.6;margin-bottom:12px}.settings-heading span{display:none}.settings-heading h2{margin:0 0 8px}.settings-page footer button{padding:8px 14px}.touch-hud [aria-label="关闭所有声音"],.touch-hud [aria-label="开启所有声音"]{display:none}}
