@@ -1,0 +1,43 @@
+{
+  "version": "0.22.0",
+  "date": "2026-10-25",
+  "githubRelease": "https://github.com/BTBON9090/parking-master-pro-v2.0/releases/tag/v0.22.0",
+  "notes": "Mac / Windows 安装包尚未代码签名；iOS 提供工程，暂无 IPA。",
+  "assets": [
+    {
+      "platform": "mac-arm64",
+      "name": "Parking-Master-Pro-0.22.0-mac-arm64.dmg",
+      "size": 150173313,
+      "sha256": "da73c4662673894829c4bd13db8feb05e6664279366deea6f2f3c01a1944d7d8",
+      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.22.0/Parking-Master-Pro-0.22.0-mac-arm64.dmg"
+    },
+    {
+      "platform": "mac-x64",
+      "name": "Parking-Master-Pro-0.22.0-mac-x64.dmg",
+      "size": 154435085,
+      "sha256": "83cd71589cdc2825ada125c609d891fd81d048aae8a88d00752fedb7869936a8",
+      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.22.0/Parking-Master-Pro-0.22.0-mac-x64.dmg"
+    },
+    {
+      "platform": "windows-x64",
+      "name": "Parking-Master-Pro-0.22.0-win-x64.exe",
+      "size": 140467047,
+      "sha256": "0a14247c801edb3f8bf7b31ab681111841ffbaa32fe92c09cdd326d1ef35e30b",
+      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.22.0/Parking-Master-Pro-0.22.0-win-x64.exe"
+    },
+    {
+      "platform": "android",
+      "name": "Parking-Master-Pro-0.22.0-android.apk",
+      "size": 20086506,
+      "sha256": "9b00d554df25d87df460b3ffa22662326d2a1562b667e929b3ead7832afed72d",
+      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.22.0/Parking-Master-Pro-0.22.0-android.apk"
+    },
+    {
+      "platform": "ios-source",
+      "name": "Parking-Master-Pro-0.22.0-iOS-Project.zip",
+      "size": 16779326,
+      "sha256": "d53690a9c3e5407a1b3661a4faf75db1e39406583b35f03c46d45e167d3f2e8c",
+      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.22.0/Parking-Master-Pro-0.22.0-iOS-Project.zip"
+    }
+  ]
+}
