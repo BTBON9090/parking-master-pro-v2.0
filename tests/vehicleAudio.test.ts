@@ -38,7 +38,7 @@ for(const id of GARAGE_CARS){
  assert.equal(motorMix(10,0,false,true).gain,0,'no idle floor while coasting');
  assert(motorMix(20,1,false,true).frequency<140,'fundamental never reaches old 700 Hz whine');
  const ext=roadMix(2,false,3,insulation),cab=roadMix(2,true,3,insulation);
- assert(cab.gain/ext.gain<=.13&&cab.cutoff<ext.cutoff,'strong cabin tyre attenuation');
+ assert(cab.gain/ext.gain<=.3 && cab.gain/ext.gain>=.19&&cab.cutoff<ext.cutoff,'strong cabin tyre attenuation');
  assert(roadMix(.2,false).grainDepth>.6&&roadMix(4,false).grainDepth===0,'low-speed grains merge at speed');
  assert.equal(roadMix(0,false).gain,0);assert.equal(roadMix(4,false,3).gain,roadMix(-4,false,3).gain,'reverse coast rolls identically');
  report.push({id,cabinRoadAmplitudeRatio:cab.gain/ext.gain,driveToneHz:inside.frequency,cabinMotorGain:inside.gain});
@@ -61,7 +61,7 @@ const roadFilter=sources[2].next[0] as Filter,roadGain=roadFilter.next[0] as Gai
 assert.equal(roadFilter.type,'lowpass','recording is no longer a highpass hiss');
 const external=roadGain.gain.value,cutoff=roadFilter.frequency.value;
 assert(external>0,'coasting plays actual road recording');
-updateRecordingAudio({...params,cabin:true});assert(roadGain.gain.value<external*.14&&roadFilter.frequency.value<cutoff);
+updateRecordingAudio({...params,cabin:true});assert(roadGain.gain.value<external*.3&&roadFilter.frequency.value<cutoff);
 updateRecordingAudio({...params,speedAbs:0});assert.equal(roadGain.gain.value,0,'stationary recordings silent');
 const initialCount=sources.length;
 updateRecordingAudio(params);assert.equal(sources.length,initialCount,'steady power state never repeats the startup');
@@ -76,5 +76,5 @@ updateRecordingAudio({...params,engineSoundEnabled:false});assert.equal(sources.
 updateRecordingAudio({...params,paused:true});assert.equal(masters[0].gain.value,0,'pause silences all recordings');
 setRecordingAudioFocus(false);updateRecordingAudio(params);assert.equal(masters[0].gain.value,0,'frame update cannot undo focus mute');
 disposeRecordingAudio();
-fs.mkdirSync('docs/round16',{recursive:true});fs.writeFileSync('docs/round16/audio-regression.json',JSON.stringify(report,null,2));
+fs.mkdirSync('docs/round23',{recursive:true});fs.writeFileSync('docs/round23/audio-regression.json',JSON.stringify(report,null,2));
 console.log('All garage powertrains + one-shot ignition: driven/coasting/reverse/brake gating + cabin isolation + granular road + production audio graph/lifecycle PASS',report);

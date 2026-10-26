@@ -14,5 +14,35 @@ export function qualityProfile(quality:RenderQuality='auto',deviceDpr=1,mobile=f
  shadowSize:quality==='low'?1024:quality==='ultra'?4096:2048};
 }
 export function nextResolution(current:number,averageMs:number,min:number,max:number){
- return averageMs>20.5?Math.max(min,current-.1):averageMs<16?Math.min(max,current+.05):current;
+ return averageMs>20.5?Math.max(min,current-.1):averageMs<17.5?Math.min(max,current+.05):current;
+}
+
+/** Ignore loading/resume gaps; sustained frame pacing, not scene-build time,
+ * controls auto resolution. Two slow windows are required before reducing it. */
+export class ResolutionSampler {
+ private previous = 0;
+ private warmUntil = 0;
+ private samples: number[] = [];
+ private elapsed = 0;
+ private slowWindows = 0;
+ reset(now: number) {
+  this.previous = now; this.warmUntil = now + 3000;
+  this.samples = []; this.elapsed = 0; this.slowWindows = 0;
+ }
+ sample(now: number, active: boolean): number | null {
+  const dt = now - this.previous; this.previous = now;
+  if (!active || dt > 250 || dt <= 0) { this.reset(now); return null; }
+  if (now < this.warmUntil) return null;
+  this.samples.push(dt); this.elapsed += dt;
+  if (this.elapsed < 1800) return null;
+  const sorted = this.samples.sort((a,b) => a-b);
+  const median = sorted[Math.floor(sorted.length / 2)];
+  this.samples = []; this.elapsed = 0;
+  if (median > 20.5) { if (++this.slowWindows < 2) return null; }
+  else this.slowWindows = 0;
+  return median;
+ }
+}
+export function retainedResolution(previous: {quality: RenderQuality; dpr: number} | null, quality: RenderQuality, profile: ReturnType<typeof qualityProfile>) {
+ return previous?.quality === quality ? Math.max(profile.floor, Math.min(profile.ceiling, previous.dpr)) : profile.initial;
 }

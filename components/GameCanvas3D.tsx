@@ -1,4 +1,5 @@
-import {qualityProfile,nextResolution} from '../utils/renderQuality';
+import {createMirrorMaterial} from '../utils/mirrorMask';
+import {qualityProfile,nextResolution,ResolutionSampler,retainedResolution,type RenderQuality} from '../utils/renderQuality';
 import {isTouchDevice} from '../utils/device';
 import { disposeResources } from '../three/disposeResources';
 import { sensedObstacle, parkingPulse } from '../utils/proximity';
@@ -140,6 +141,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
   onInspectionChange,
 }) => {
   const mountRef = useRef<HTMLDivElement>(null);
+  const retainedQuality = useRef<{quality:RenderQuality;dpr:number}|null>(null);
   const [wrecked,setWrecked]=useState(false);
   const [overturned,setOverturned]=useState(false);
   const [damagePercent,setDamagePercent]=useState(0);
@@ -413,7 +415,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     let quality=settingsRef.current.renderQuality??'auto';
     let profile=qualityProfile(quality,window.devicePixelRatio,isTouchDevice());
-    let dynamicDpr = profile.initial;
+    let dynamicDpr = retainedResolution(retainedQuality.current,quality,profile);
     renderer.setPixelRatio(dynamicDpr);
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
@@ -470,9 +472,11 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     const mirrorQuadGeo = new THREE.PlaneGeometry(2, 2);
     const uv = mirrorQuadGeo.getAttribute('uv');
     for (let i = 0; i < uv.count; i++) uv.setX(i, 1 - uv.getX(i));
-    const mirrorQuadMat = new THREE.MeshBasicMaterial({ map: mirrorTarget.texture, depthTest: false, depthWrite: false, toneMapped: false });
+    const mirrorMask = createMirrorMaterial(mirrorTarget.texture);
+    const mirrorQuadMat = mirrorMask.material;
     mirrorDisplay.add(new THREE.Mesh(mirrorQuadGeo, mirrorQuadMat));
-    const renderMirrorImage = (camera: THREE.Camera) => {
+    const renderMirrorImage = (camera: THREE.Camera, glass: {width:number;height:number;radius:number}) => {
+      mirrorMask.setRect(glass.width,glass.height,glass.radius);
       const viewport = renderer.getViewport(new THREE.Vector4());
       const scissor = renderer.getScissor(new THREE.Vector4());
       const scissorTest = renderer.getScissorTest();
@@ -485,7 +489,10 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       renderer.setScissor(scissor);
       renderer.setScissorTest(scissorTest);
       renderer.clearDepth();
+      const autoClear = renderer.autoClear;
+      renderer.autoClear = false;
       renderer.render(mirrorDisplay, mirrorDisplayCamera);
+      renderer.autoClear = autoClear;
     };
 
 
@@ -812,6 +819,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       const ccCur = CAR_MODELS[currentCarId];
       const staticLevelData = { ...levelData, obstacles: obstaclesRef.current };
       built = await buildScene(staticLevelData, ccCur, currentCarId);
+      resolutionSampler.reset(performance.now());
       if (disposed) {disposeResources([built.scene,...(built.streamingChunks?.values()??[])]);return;}
       // buildScene computes actual parked-model hulls on the level objects;
       // copy them onto the live JSON-cloned obstacle refs used by collision.
@@ -1802,8 +1810,8 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         }
       });
     };
-    let resolutionWindowStartedAt = performance.now();
-    let resolutionFrameCount = 0;
+    const resolutionSampler = new ResolutionSampler();
+    resolutionSampler.reset(performance.now());
     let simulationCpuMs=0,renderCpuMs=0;
 
     const render = () => {
@@ -1818,17 +1826,15 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         dynamicDpr=profile.initial;renderer.setPixelRatio(dynamicDpr);renderer.setSize(window.innerWidth,window.innerHeight,false);
         mirrorTarget.setSize(profile.mirrorWidth,Math.round(profile.mirrorWidth*.375));
         sun.shadow.mapSize.set(profile.shadowSize,profile.shadowSize);sun.shadow.map?.dispose();sun.shadow.map=null;renderer.shadowMap.needsUpdate=true;
-        resolutionWindowStartedAt=performance.now();resolutionFrameCount=0;
+        resolutionSampler.reset(performance.now());
       }
-      resolutionFrameCount++;
-      const resolutionNow=performance.now();const resolutionElapsed=resolutionNow-resolutionWindowStartedAt;
-      if(resolutionElapsed>=1800){
-        if(quality==='auto'&&!isPausedRef.current){
-          const next=nextResolution(dynamicDpr,resolutionElapsed/Math.max(1,resolutionFrameCount),profile.floor,profile.ceiling);
-          if(Math.abs(next-dynamicDpr)>=.025){dynamicDpr=next;renderer.setPixelRatio(next);renderer.setSize(window.innerWidth,window.innerHeight,false);}
-        }
-        resolutionWindowStartedAt=resolutionNow;resolutionFrameCount=0;
+      const framePacing = resolutionSampler.sample(performance.now(), quality==='auto' && !isPausedRef.current && !document.hidden);
+      if (framePacing !== null) {
+        const next=nextResolution(dynamicDpr,framePacing,profile.floor,profile.ceiling);
+        if(Math.abs(next-dynamicDpr)>=.025){dynamicDpr=next;renderer.setPixelRatio(next);renderer.setSize(window.innerWidth,window.innerHeight,false);}
       }
+      retainedQuality.current={quality,dpr:dynamicDpr};
+      renderer.domElement.dataset.renderDpr=dynamicDpr.toFixed(2);
 
       // Only the occupied floor is submitted; decks at the same XY must not
       // cover the view from an external inspection camera on a lower level.
@@ -2702,7 +2708,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
             const vol = (coasting ? 0.004 : 0.023 + Math.pow(engineLoad, 0.72) * 0.105) * sCur.volume;
             if(isElectric) {
               const motor=motorMix(speedAbs,engineLoad,firstPersonView,drivingMotor,insulation);
-              lowMix.gain.value=.92;midMix.gain.value=.065;pulseMix.gain.value=.015;
+              lowMix.gain.value=firstPersonView?.65:.92;midMix.gain.value=firstPersonView?.23:.065;pulseMix.gain.value=firstPersonView?.12:.015;
               noiseGain.gain.setTargetAtTime(0,now,.04);
               osc1.type='sine';osc2.type='sine';osc3.type='sine';
               osc1.frequency.setTargetAtTime(motor.frequency,now,.10);
@@ -3404,32 +3410,6 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           mirrorCamera.quaternion.setFromRotationMatrix(mirrorLocalLookMatrix);
           mirrorCamera.updateWorldMatrix(false, false);
         };
-        // WebGL viewport/scissor rectangles have square corners. Clear only
-        // the small pixels outside a rounded inner silhouette so the mirror
-        // image cannot bleed through the CSS frame's rounded corners.
-        const maskRoundedCorners = (x: number, y: number, width: number, height: number, radius: number) => {
-          const oldColor = renderer.getClearColor(new THREE.Color()).clone();
-          const oldAlpha = renderer.getClearAlpha();
-          renderer.setClearColor(0x111216, 1);
-          const strips = 8;
-          for (let i = 0; i < strips; i++) {
-            const rowH = Math.ceil(radius / strips);
-            const localY = i * rowH;
-            const dy = radius - Math.min(radius, localY + rowH);
-            const inset = Math.max(0, Math.ceil(radius - Math.sqrt(Math.max(0, radius * radius - dy * dy))));
-            if (inset <= 0) continue;
-            renderer.setScissor(x, y + localY, inset, rowH);
-            renderer.clear(true, false, false);
-            renderer.setScissor(x + width - inset, y + localY, inset, rowH);
-            renderer.clear(true, false, false);
-            renderer.setScissor(x, y + height - localY - rowH, inset, rowH);
-            renderer.clear(true, false, false);
-            renderer.setScissor(x + width - inset, y + height - localY - rowH, inset, rowH);
-            renderer.clear(true, false, false);
-          }
-          renderer.setClearColor(oldColor, oldAlpha);
-        };
-
         const renderMirror = (mirrorCamera: THREE.PerspectiveCamera, id: 'left' | 'right', side: number) => {
           const tuning = mirrorSettings.mirrorAdjustments[id];
           const distance = tuning.targetDistance + mirrorCalibration.distance;
@@ -3467,9 +3447,8 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           renderer.setScissorTest(true);
           const wasPlayerVisible = playerParts.group.visible;
           playerParts.group.visible = !destroyed && tuning.showBody;
-          renderMirrorImage(mirrorCamera);
+          renderMirrorImage(mirrorCamera, glass);
           playerParts.group.visible = wasPlayerVisible;
-          maskRoundedCorners(glass.x, glass.y, glass.width, glass.height, glass.radius);
         };
 
         const interiorWasVisible = driverInterior?.group.visible ?? false;
@@ -3514,9 +3493,8 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         renderer.setScissorTest(true);
         const wasPlayerVisible = playerParts.group.visible;
         playerParts.group.visible = !destroyed && centreTuning.showBody;
-        renderMirrorImage(centreMirrorCamera);
+        renderMirrorImage(centreMirrorCamera, centreGlass);
         playerParts.group.visible = wasPlayerVisible;
-        maskRoundedCorners(centreGlass.x, centreGlass.y, centreGlass.width, centreGlass.height, centreGlass.radius);
         }
         if (driverInterior) driverInterior.group.visible = interiorWasVisible;
         if (firstPersonView) {
@@ -3692,9 +3670,10 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
 
   return <>
     <div ref={mountRef} className="block w-full h-full touch-none" />
-    {(damagePercent>0 || overturned) && <div role="status" className="pointer-events-none absolute top-24 left-1/2 -translate-x-1/2 z-50 rounded-xl px-5 py-3 text-center" style={{background:'#19262bea',color:'#f4d7a4',border:'1px solid #ac7653'}}>
-      <strong>{overturned?'车辆失稳 / 翻覆':wrecked?'严重损坏 · 车辆解体':`${damageTier==='moderate'?'中度碰撞 · 局部变形':'轻微碰撞 · 部件脱落'} · 车损 ${damagePercent}%`}</strong>
-      {(wrecked || overturned) && <><p className="text-sm my-2">场景持续模拟 · 按 R 返回事故前安全位置<br/>左键拖动环视，滚轮缩放</p></>}
+    {(damagePercent>0 || overturned) && <div role="status" className={`damage-status ${isTouchDevice()?'damage-status-touch':''}`}>
+      <span className="damage-status-dot"/>
+      <span>{overturned?'车辆翻覆':wrecked?'车辆损毁':`车损 ${damagePercent}%`}</span>
+      {(wrecked || overturned) && <small>{isTouchDevice()?'点顶部重置图标':'R 重置'}</small>}
     </div>}
   </>;
 });

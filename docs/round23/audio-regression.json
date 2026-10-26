@@ -1,0 +1,38 @@
+[
+  {
+    "id": "SUV",
+    "cabinRoadAmplitudeRatio": 0.198,
+    "driveToneHz": 85.5,
+    "cabinMotorGain": 0.010395774141448051
+  },
+  {
+    "id": "SEAL08",
+    "cabinRoadAmplitudeRatio": 0.24200000000000002,
+    "driveToneHz": 85.5,
+    "cabinMotorGain": 0.010680589871350739
+  },
+  {
+    "id": "TAI7",
+    "cabinRoadAmplitudeRatio": 0.28600000000000003,
+    "driveToneHz": 85.5,
+    "cabinMotorGain": 0.010965405601253425
+  },
+  {
+    "id": "LI_I9",
+    "cabinRoadAmplitudeRatio": 0.198,
+    "driveToneHz": 85.5,
+    "cabinMotorGain": 0.010395774141448051
+  },
+  {
+    "id": "N90",
+    "cabinRoadAmplitudeRatio": 0.22000000000000003,
+    "driveToneHz": 85.5,
+    "cabinMotorGain": 0.010538182006399395
+  },
+  {
+    "id": "TRUCK",
+    "cabinRoadAmplitudeRatio": 0.28600000000000003,
+    "driveToneHz": 85.5,
+    "cabinMotorGain": 0.010965405601253425
+  }
+]

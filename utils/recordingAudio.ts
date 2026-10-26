@@ -215,8 +215,8 @@ export function updateRecordingAudio(params: RecordingAudioParams): void {
   const engineActive = audible && params.engineOn && !params.electric && params.engineSoundEnabled!==false;
   const cabinScale=params.cabin?(params.insulation??.12):1;
   const road=roadMix(params.speedAbs,!!params.cabin,params.distanceM,params.insulation);
-  const idleGain = engineActive ? (params.cabin?.10:.22) * (0.45 + rpmNorm * 0.55) : 0;
-  const loadGain = engineActive ? (params.cabin?.16:.32) * clamp(params.throttle, 0, 1) * (0.35 + rpmNorm * 0.65) : 0;
+  const idleGain = engineActive ? (params.cabin?.14:.22) * (0.45 + rpmNorm * 0.55) : 0;
+  const loadGain = engineActive ? (params.cabin?.23:.32) * clamp(params.throttle, 0, 1) * (0.35 + rpmNorm * 0.65) : 0;
   const roadGain = audible ? road.gain : 0;
   const gravelGain = audible && params.surface === 'gravel' ? road.gain*.9 : 0;
   const skidGain = audible ? (params.cabin?.08:.24) * clamp(params.skid, 0, 1) : 0;

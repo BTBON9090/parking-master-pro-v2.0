@@ -1,3 +1,4 @@
+import {pedalFeedback} from '../utils/mobileInput';
 import {MobileControls} from './MobileControls';
 import {useTouchControls} from '../utils/device';
 import {SettingsPage} from './SettingsPage';
@@ -1450,7 +1451,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
 
       {/* ===== 底部座舱总成：第一人称只显示仪表，实体方向盘承担转向 ===== */}
       <div className="main-instruments absolute bottom-5 left-1/2 -translate-x-1/2 pointer-events-none z-40">
-          <div style={cameraView === 'HOOD'
+          <div className="instrument-scale" style={cameraView === 'HOOD'
               ? { transform: `scale(${firstPersonScale})`, transformOrigin: 'bottom center' }
               : undefined}>
               <CockpitCluster
@@ -1468,6 +1469,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                   showSteeringWheels={!touch&&cameraView !== 'HOOD'}
               />
           </div>
+          {touch && <div className="mobile-pedal-meter" data-kind={pedalFeedback(inputState.throttle,inputState.brake).kind} style={{opacity:pedalFeedback(inputState.throttle,inputState.brake).force>0?1:0}} role="meter" aria-label={inputState.brake>0?'刹车力度':'油门力度'} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(pedalFeedback(inputState.throttle,inputState.brake).force*100)}><i style={{height:`${pedalFeedback(inputState.throttle,inputState.brake).force*100}%`}}/></div>}
       </div>
 
       {/* ===== 设置抽屉（语言 + 按键指南 已迁移至此） ===== */}

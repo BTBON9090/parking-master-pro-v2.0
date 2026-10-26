@@ -15,11 +15,11 @@ export function DrivingGuide({done,settings}:{done:()=>void;settings:UserSetting
   {title:'看向路边，也能回正',desc:'按住左键拖动观察。车外可以环视，车内转头范围有限；双击左键回正。F 切换视角。',keys:[keys.camera]},
   {title:'准备出发',desc:'B 启动或关闭动力；L 在关闭、近光和远光之间切换。M 或 Esc 暂停，随时换车、调节声音与画面。',keys:[keys.engine,keys.lights,keys.settings]},
  ];if(isTouchDevice()){
- lessons[0].desc='右侧按住油门起步，松开滑行；按住刹车减速，上滑增加力度。可以同时操作方向盘与踏板。';
+ lessons[0].desc='右侧按住油门起步，松开滑行；踏板上滑越多，力度越大，右侧红条为油门、绿条为刹车。可以同时操作方向盘与踏板。';
  lessons[1].desc='右侧 R / N / D 选择倒挡、空挡和前进挡，− / ＋控制手动挡。按住手刹临时制动，驻车 P 点按开关。';
- lessons[2].desc='左侧横向滑动方向控制条。中间用于精细修正，两端可大幅转向。松手后行驶中自动回正。';
- lessons[3].desc='拖动没有按钮的区域观察四周；车内转头范围有限，双击可回正。顶部“视角”切换机位。';
- lessons[4].desc='底部可启停动力、切换灯光。顶部打开设置、地图或事故重置。设置中可换车、换图和降低渲染清晰度。';
+ lessons[2].desc='仪表盘左侧整片区域左右滑动转向；小幅滑动精细修正，大幅滑动快速转向。松手后行驶中自动回正。';
+ lessons[3].desc='拖动转向区域以外的空白处观察四周；车内转头范围有限，双击可回正。顶部“视角”切换机位。';
+ lessons[4].desc='右上角可启停动力、切换灯光与驻车。顶部打开设置、地图或事故重置。设置中可换车、换图和降低渲染清晰度。';
  }const lesson=lessons[step];
  useEffect(()=>{setSeen([]);const key=(e:KeyboardEvent)=>{if(e.key==='Tab'||e.key==='Enter')return;e.preventDefault();e.stopImmediatePropagation();const k=e.key.toLowerCase();setSeen(old=>old.includes(k)?old:[...old,k]);if(e.altKey&&k==='c')setAngle(0);};window.addEventListener('keydown',key,true);return()=>window.removeEventListener('keydown',key,true);},[step]);
  const close=()=>{localStorage.setItem(GUIDE_VERSION,'done');done();};

@@ -531,3 +531,43 @@ html,body,#root{overscroll-behavior:none}body{-webkit-touch-callout:none}button,
 
 .settings-layout>nav{overflow-y:auto}.guide-keys button{padding:14px;border:1px solid #52606a;border-radius:8px;background:#26343d;color:#fff}.guide-keys button.pressed{border-color:#ffbf28;background:#6a501b}
 @media(max-height:550px){.settings-layout{padding:10px 0!important}.settings-page>header .settings-kicker{display:none}.settings-page h1{margin:0!important}.settings-resume{padding:9px 16px}.settings-intro{font-size:13px;line-height:1.6;margin-bottom:12px}.settings-heading span{display:none}.settings-heading h2{margin:0 0 8px}.settings-page footer button{padding:8px 14px}.touch-hud [aria-label="关闭所有声音"],.touch-hud [aria-label="开启所有声音"]{display:none}}
+
+/* Compact touch cockpit: independent pointer zones, no browser range input. */
+.mobile-controls button {touch-action:none;-webkit-touch-callout:none}
+.mobile-topbar,.mobile-aux {top:max(4px,env(safe-area-inset-top));bottom:auto;gap:0;z-index:3}
+.mobile-topbar {left:max(8px,env(safe-area-inset-left))}
+.mobile-aux {left:auto;right:max(8px,env(safe-area-inset-right));transform:none}
+.mobile-topbar button,.mobile-aux button {position:relative;display:grid;place-items:center;width:44px;height:44px;min-width:44px;min-height:44px;padding:10px;border:0;background:transparent;color:#e5edf0;border-radius:10px}
+.mobile-topbar button::before,.mobile-aux button::before {content:'';position:absolute;inset:4px;background:#14232bda;border:1px solid #ffffff40;border-radius:10px;z-index:-1}
+.mobile-topbar button:active::before,.mobile-aux button:active::before,.mobile-aux button[aria-pressed=true]::before {background:#ecc66c}
+.mobile-topbar button:active,.mobile-aux button:active,.mobile-aux button[aria-pressed=true] {color:#17232c;background:transparent}
+.mobile-controls button svg {width:19px;height:19px;pointer-events:none}
+.mobile-aux button small {position:absolute;right:5px;bottom:4px;font-size:8px}
+.mobile-steer-zone {position:absolute;left:0;top:0;bottom:0;width:calc(50% - 112px);min-width:145px;pointer-events:auto;touch-action:none;user-select:none;-webkit-user-select:none;z-index:1;outline-offset:-4px}
+.mobile-steer {bottom:max(25px,env(safe-area-inset-bottom));left:max(24px,env(safe-area-inset-left));width:100px;pointer-events:none}
+.mobile-wheel {width:72px;height:72px;border-width:7px;opacity:.8}
+.mobile-wheel i {top:23px;height:8px}
+.mobile-wheel b {top:26px;left:25px;height:28px;width:8px}
+.mobile-steer small {font-size:9px;color:#d0dce0;text-shadow:0 1px 4px #000}
+.mobile-drive {right:max(12px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));width:174px;z-index:2}
+.mobile-gears {justify-content:flex-end;gap:4px;margin-bottom:6px}
+.mobile-gears button {min-width:30px;min-height:34px;height:34px;max-width:38px;border-radius:9px;font-size:12px}
+.mobile-pedals {gap:10px}
+.mobile-pedals button {width:82px;height:82px;border-radius:16px;font-size:13px}
+.mobile-pedals small {font-size:9px;margin-top:5px}
+.mobile-pedals .mobile-gas {background:#c8ac58c9}
+.mobile-pedals .mobile-brake {background:#8c4844c9}
+.touch-hud .main-instruments {--cluster-scale:.55;bottom:max(6px,env(safe-area-inset-bottom))}
+.touch-hud .main-instruments>.instrument-scale {transform:scale(var(--cluster-scale))!important;transform-origin:bottom center!important}
+.touch-hud .main-instruments>.mobile-pedal-meter {transform:none!important}
+.mobile-pedal-meter {position:absolute;bottom:1px;left:calc(50% + 211px * var(--cluster-scale) + 6px);width:7px;height:calc(150px * var(--cluster-scale));border-radius:3px;background:#101b22de;box-shadow:0 0 0 1px #ffffff40;overflow:hidden;transition:opacity .12s;pointer-events:none}
+.mobile-pedal-meter i {position:absolute;bottom:0;left:0;right:0;background:#ff574c}
+.mobile-pedal-meter[data-kind=brake] i {background:#34d58a}
+.damage-status {position:absolute;top:14px;right:24px;z-index:42;display:flex;align-items:center;gap:7px;padding:6px 10px;border-radius:7px;background:#18242bdd;color:#f0c59a;font-size:12px;line-height:16px;pointer-events:none;max-width:230px}
+.damage-status-dot {width:5px;height:5px;border-radius:50%;background:#e5a25e;flex-shrink:0}
+.damage-status small {font-size:10px;color:#d5dbde;padding-left:5px;border-left:1px solid #ffffff30;white-space:nowrap}
+.damage-status:not(.damage-status-touch) {top:86px;right:24px}
+.damage-status-touch {top:112px;right:max(12px,env(safe-area-inset-right));padding:4px 7px;gap:5px;font-size:10px;line-height:14px;max-width:185px}
+.damage-status-touch small {font-size:9px}
+@media(max-height:550px) {.touch-hud .main-instruments {--cluster-scale:.43}.touch-hud .main-instruments>.instrument-scale {transform:scale(var(--cluster-scale))!important}}
+@media(max-width:680px) {.mobile-topbar button,.mobile-aux button {width:40px;min-width:40px}.touch-hud .centre-mirror-frame {width:130px!important;max-width:130px!important}.mobile-drive {width:154px}.mobile-pedals button {width:72px;height:74px}.mobile-steer-zone {width:calc(50% - 96px)}.mobile-steer {left:16px}.mobile-gears {gap:3px}.mobile-gears button {min-width:28px}.touch-hud .main-instruments {--cluster-scale:.4}}

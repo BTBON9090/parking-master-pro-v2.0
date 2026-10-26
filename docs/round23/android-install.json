@@ -1,0 +1,12 @@
+{
+  "version": "0.22.1",
+  "versionCode": 2201,
+  "file": "Parking-Master-Pro-0.22.1-android.apk",
+  "bytes": 20088162,
+  "sha256": "31af3dca933db02f94f30d6b770a446a10cb96b4bab566e93221730305dcd207",
+  "signatureVerified": true,
+  "adbInstall": "Success",
+  "deviceModel": "2410DPN6CC",
+  "dataCleared": false,
+  "drivingValidation": "Pending user real-device validation"
+}
