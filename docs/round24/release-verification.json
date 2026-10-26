@@ -65,5 +65,13 @@
     "windows": "CI packaging passed; extracted bundled JS matches; no Windows device test",
     "android": "Persistent signature verified; wireless replacement installation 0.22.2/2202 confirmed",
     "ios": "Source archive and unsigned CI Xcode build passed; no installable IPA"
+  },
+  "portfolio": {
+    "commit": "4602fe29b94630148c4808a40cbbfcd5cc9920be",
+    "published": true,
+    "verifiedAt": "2026-10-26T17:21:37.654Z",
+    "appbox": "https://btbon.cn/appbox",
+    "introduction": "https://btbon.cn/parking-master/index.html",
+    "verified": "Browser: game card visible; clicked through to introduction; all five platform links point to 0.22.2 COS artifacts"
   }
 }
