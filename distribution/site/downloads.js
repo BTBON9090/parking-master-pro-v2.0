@@ -1,11 +1,13 @@
 (async()=>{
  const status=document.getElementById('status');
  try{
-  const response=await fetch('./latest.json',{cache:'no-store',signal:AbortSignal.timeout(10000)});
+  const origin='https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com';
+  let response;
+  try { response=await fetch(origin+'/parking-master/latest.json',{cache:'no-store',signal:AbortSignal.timeout(8000)}); if(!response.ok)throw Error(); }
+  catch { response=await fetch('./latest.json',{cache:'no-store',signal:AbortSignal.timeout(8000)}); }
   if(!response.ok)throw Error();const release=await response.json();
   if(!/^\d+\.\d+\.\d+$/.test(release.version))throw Error();
   document.getElementById('version').textContent='v'+release.version+' · '+release.date;
-  const origin='https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com';
   for(const link of document.querySelectorAll('[data-platform]')){
    const asset=release.assets.find(a=>a.platform===link.dataset.platform);if(!asset)continue;
    const url=new URL(asset.url);if(url.origin!==origin||!url.pathname.startsWith('/parking-master/releases/'))continue;

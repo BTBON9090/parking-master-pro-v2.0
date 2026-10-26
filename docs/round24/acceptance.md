@@ -30,3 +30,13 @@
 - 局部闪烁已修复两处明确的深度/阴影采样问题，但尚未在用户指出的每个真机路段完成视频复验。
 - 转向、胎力与低速踏板为游戏标定，未声称是厂商测得的轮胎参数。静止自动回正、任意速度接收反向挡是游戏辅助，不应作为真实汽车操作指南。
 - 参考：[PhysX 车辆建模](https://nvidia-omniverse.github.io/PhysX/physx/5.1.0/docs/Vehicles.html)；[Tesla 换挡说明](https://www.tesla.com/ownersmanual/model3/en_us/GUID-E9B387D7-AFEF-4AAF-8685-4FE71E09287D.html)（实车限制依车型，不与本游戏辅助混同）。
+
+## 0.22.2 全平台发布验收
+
+- Mac Apple 芯片、Mac Intel、Windows x64、Android APK 和 iOS 工程共五份产物已公开发布至 GitHub Release，并上传到 COS 的独立 0.22.2 目录；每份文件的大小与 SHA-256 均在两端核对一致，记录见 release-verification.json。
+- Windows 打包和 iOS 无签名编译由 GitHub Actions 40364398094 完成。解开五份产物后，确认游戏 JavaScript 与本地 dist/assets/index-CqoOoxhm.js 一致。
+- 两个 Mac DMG 均通过 hdiutil 验证；Apple 芯片版实际启动、进入地图、挂 D 挡按 W 后达到 6 km/h，见 mac-driving.png。Intel Mac 和 Windows 尚无相应设备实测。
+- iOS 当前提供含游戏资源的 Xcode 工程，未提供可安装 IPA；需要后续 Apple 开发者签名。Mac / Windows 安装包尚未代码签名。
+- 线上 COS 下载页面实际显示 v0.22.2，五个按钮分别指向已验证产物，见 download-hub.png。下载页优先读取 COS 最新清单，本地清单用于网络失败时回退。
+- 作品集入口此前只有本地提交，遵循用户当时“暂时只提交代码和上传 COS”的限制，未发布到网站。本次用户要求推送后，游戏入口提交 ab290dd 与下载更新提交 4602fe2 已推送 Profile-2026 main；未包含该项目其他未提交修改。
+- 仅导出作品集已提交代码进行独立生产构建，webpack 构建通过；预览中已检查 AppBox 卡片、介绍页及 0.22.2 下载列表。线上作品集是否完成自动部署单独核验，不以 Git 推送成功代替上线确认。

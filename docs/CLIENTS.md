@@ -1,4 +1,4 @@
-# 独立客户端 · 0.22.0
+# 独立客户端 · 0.22.2
 
 同一份 Three.js 游戏由 Electron（Mac / Windows）与 Capacitor（Android / iOS）承载。资源随安装包分发，驾驶无需联网；作者链接和检查更新需要联网。
 
@@ -23,4 +23,4 @@ Space 按住临时手刹，松开释放。P 切换驻车手刹，驻车期间松
 
 安装包放在 GitHub Release 和作品集 COS `parking-master/releases/<version>/`，不放入 Git 历史。`distribution/site/` 是静态介绍与下载页，可复用在作品集 public/parking-master 下。上传成功后生成 latest.json，包含版本、平台、大小与 SHA-256，再发布清单以避免半成品链接。COS 凭证和 Android 签名密钥均不进入仓库或客户端。
 
-本轮依赖检查修复了高危开发依赖；运行时依赖审计无漏洞。仍有 Tailwind CSS / Capacitor CLI 间接开发依赖的 6 项中等级告警，涉及构建时选择器解析与 uuid，需后续兼容升级；未强行跨大版本替换。
+0.22.0 发布时依赖检查修复了高危开发依赖；当时运行时依赖审计无漏洞。仍有 Tailwind CSS / Capacitor CLI 间接开发依赖的 6 项中等级告警，涉及构建时选择器解析与 uuid，需后续兼容升级；未强行跨大版本替换。
