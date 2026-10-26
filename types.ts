@@ -429,6 +429,7 @@ export interface UserSettings {
   volume: number; // 0.0 to 1.0
   cabinVolume?: number;
   exteriorVolume?: number;
+  steeringReleaseAssist: boolean; // Hands-off return, including stationary parking assist
   logitechKnobMode: boolean; // Optional media-dial steering + right-hand key layout
   wheelGhost: boolean; // 车轮透视：车身 30% 半透明，便于观察车轮与转向几何
   autoTurnSignal: boolean;

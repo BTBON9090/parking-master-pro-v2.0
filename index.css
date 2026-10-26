@@ -571,3 +571,7 @@ html,body,#root{overscroll-behavior:none}body{-webkit-touch-callout:none}button,
 .damage-status-touch small {font-size:9px}
 @media(max-height:550px) {.touch-hud .main-instruments {--cluster-scale:.43}.touch-hud .main-instruments>.instrument-scale {transform:scale(var(--cluster-scale))!important}}
 @media(max-width:680px) {.mobile-topbar button,.mobile-aux button {width:40px;min-width:40px}.touch-hud .centre-mirror-frame {width:130px!important;max-width:130px!important}.mobile-drive {width:154px}.mobile-pedals button {width:72px;height:74px}.mobile-steer-zone {width:calc(50% - 96px)}.mobile-steer {left:16px}.mobile-gears {gap:3px}.mobile-gears button {min-width:28px}.touch-hud .main-instruments {--cluster-scale:.4}}
+
+/* Side mirrors: larger touch target; centre mirror retains its existing size. */
+.touch-hud .side-mirror-frame {width:158px!important;max-width:158px!important}
+@media(max-height:550px){.touch-hud .side-mirror-frame {width:132px!important;max-width:132px!important}}

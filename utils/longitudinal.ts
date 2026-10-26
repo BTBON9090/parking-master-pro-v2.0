@@ -33,6 +33,7 @@ export interface LongitudinalInputs {
   brake: number;
   handbrake: boolean;
   absEnabled?: boolean;
+  reverseAssist?: boolean;
 }
 
 export interface LongitudinalState {
@@ -152,6 +153,16 @@ export function lugCouplingFactor(speed: number, gear: number): number {
   return floor + (1 - floor) * coupling;
 }
 
+/** Progressive parking pedal: small openings retain useful breakaway torque,
+ * then smoothly taper drive as speed rises. Resistance supplies equilibrium;
+ * this never clamps road speed and cannot brake a downhill coast. */
+export function pedalDriveEnvelope(throttle:number,speedMps:number){
+ const t=clamp(throttle,0,1);
+ const parkingStrength=1-smoothstep(.30,.65,t);
+ const referenceSpeed=.55+80*t*t; // 15%: 8.5 km/h knee; 30%: 27.9 km/h
+ return 1-parkingStrength*smoothstep(referenceSpeed*.65,referenceSpeed*1.18,Math.abs(speedMps));
+}
+
 export function stepLongitudinal(
   inputState: LongitudinalState,
   inputs: LongitudinalInputs,
@@ -247,9 +258,14 @@ export function stepLongitudinal(
       state.stallTimer = 0;
     }
 
+    const reversing = !!inputs.reverseAssist && inputs.gear !== 0 && inputs.engineStarted && state.speed * Math.sign(inputs.gear) < -0.015;
+    // Game shift assistance: accepting R/D never flips velocity or applies the
+    // opposite gear's rev limiter to the old motion. Throttle requests a smooth
+    // stop first; no throttle leaves the vehicle coasting with ordinary drag.
+    // This is not a claim that real gearboxes accept arbitrary-speed reversals.
     // —— 驱动力 ——
     engineForce = 0;
-    if (inputs.gear !== 0 && inputs.engineStarted) {
+    if (inputs.gear !== 0 && inputs.engineStarted && !reversing) {
       const gearAbs = Math.abs(inputs.gear);
       const top = gearTopSpeed(ctx.pt, inputs.gear);
       const gearMin = ctx.pt.gearMins[gearAbs - 1] || 0;
@@ -268,7 +284,7 @@ export function stepLongitudinal(
       const cap = tractionCapWithTransfer(ctx.cc, state.prevLongAccelMs2) * ctx.weatherGrip;
       a = Math.min(a, cap);
       const vMsTraction = Math.max(1.2, Math.abs(state.speed) * 4.1667);
-      const powerAccel = (ctx.cc.dynamics.powerKw * 1000) / Math.max(1, ctx.cc.weight) / vMsTraction;
+      const powerAccel = (ctx.cc.dynamics.powerKw * 1000 * state.throttle) / Math.max(1, ctx.cc.weight) / vMsTraction;
       a = Math.min(a, powerAccel / FRAME_ACCEL_TO_MS2);
       state.ignitionBlend = Math.min(1, state.ignitionBlend + h / 30);
       if (Math.abs(state.speed) < 0.9 && state.throttle < 0.04) state.launchBlend = 0;
@@ -279,6 +295,7 @@ export function stepLongitudinal(
       if (launching) state.launchBlend = Math.min(1, state.launchBlend + h / 26);
       a *= (0.4 + 0.6 * (launching ? state.launchBlend : 1)) * state.ignitionBlend;
       a *= 1 - smoothstep(0.96, 1.01, Math.abs(state.speed) / top);
+      a *= pedalDriveEnvelope(state.throttle,Math.max(0,state.speed*Math.sign(inputs.gear))*4.1666666667);
       engineForce = (inputs.gear === -1 ? -1 : 1) * a;
     } else {
       state.overRevBlend = 0;
@@ -286,7 +303,7 @@ export function stepLongitudinal(
     }
 
     // —— 制动踏板行程与制动力 ——
-    const brakeTarget = inputs.brake;
+    const brakeTarget = Math.max(inputs.brake,reversing && state.throttle>.01 ? .3+state.throttle*.4 : 0);
     const pedalRate = brakeTarget > state.brakePedal ? 0.30 : 0.55;
     state.brakePedal = approachExponential(state.brakePedal, brakeTarget, pedalRate, h);
     if (Math.abs(brakeTarget - state.brakePedal) < 0.01) state.brakePedal = brakeTarget;
@@ -301,7 +318,7 @@ export function stepLongitudinal(
     }
 
     // —— 发动机制动 ——
-    if (inputs.gear !== 0 && inputs.engineStarted) {
+    if (inputs.gear !== 0 && inputs.engineStarted && !reversing) {
       const gearAbs = Math.abs(inputs.gear);
       const top = gearTopSpeed(ctx.pt, inputs.gear);
       const ratio = Math.abs(state.speed) / Math.max(0.1, top);
@@ -334,7 +351,7 @@ export function stepLongitudinal(
     // the player was holding S. Releasing the brake restores the gravity term
     // and lets the car roll, as expected.
     const staticHold = brakeForce > Math.abs(gravityAlongSlope)
-      && Math.abs(state.speed) < 0.12
+      && Math.abs(state.speed) < 0.004
       && (inputs.handbrake || state.brakePedal > 0.05);
     if (staticHold) state.speed = 0;
     else state.speed += gravityAlongSlope * h;

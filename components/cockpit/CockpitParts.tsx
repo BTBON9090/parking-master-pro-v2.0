@@ -12,12 +12,24 @@
  */
 
 import React from 'react';
+import {dragMirror} from '../../utils/mirrorInteraction';
 import { MirrorAdjustment, MirrorId } from '../../types';
 import { CockpitStylePack } from './stylePacks';
 
 // ============================================================
 // 后视镜框（视觉外壳；镜面图像由 WebGL 渲染在 canvas 上）
 // ============================================================
+
+function useMirrorDrag(id:MirrorId,adjustment:MirrorAdjustment,onAdjust?:(a:MirrorAdjustment)=>void){
+ const held=React.useRef<{id:number;x:number;y:number;start:MirrorAdjustment}|null>(null);
+ return {
+  onPointerDown:(e:React.PointerEvent<HTMLDivElement>)=>{if(e.button!==0||held.current)return;e.preventDefault();e.stopPropagation();held.current={id:e.pointerId,x:e.clientX,y:e.clientY,start:{...adjustment}};e.currentTarget.setPointerCapture(e.pointerId);},
+  onPointerMove:(e:React.PointerEvent<HTMLDivElement>)=>{const c=held.current;if(!c||c.id!==e.pointerId)return;e.stopPropagation();onAdjust?.(dragMirror(id,c.start,e.clientX-c.x,e.clientY-c.y));},
+  onPointerUp:(e:React.PointerEvent<HTMLDivElement>)=>{if(held.current?.id===e.pointerId){held.current=null;e.stopPropagation();if(e.currentTarget.hasPointerCapture(e.pointerId))e.currentTarget.releasePointerCapture(e.pointerId);}},
+  onPointerCancel:(e:React.PointerEvent<HTMLDivElement>)=>{if(held.current?.id===e.pointerId)held.current=null;},
+  onLostPointerCapture:(e:React.PointerEvent<HTMLDivElement>)=>{if(held.current?.id===e.pointerId)held.current=null;},
+ };
+}
 
 interface SideMirrorFrameProps {
   id: Exclude<MirrorId, 'centre'>;
@@ -26,12 +38,17 @@ interface SideMirrorFrameProps {
   /** 左槽位 / 右槽位（受 mirrorSwapSides 影响，由调用方算好）。 */
   slot: 'left' | 'right';
   label: string;
+  onAdjust?: (a:MirrorAdjustment)=>void;
 }
 
-export const SideMirrorFrame: React.FC<SideMirrorFrameProps> = ({ id, pack, adjustment, slot, label }) => (
+export const SideMirrorFrame: React.FC<SideMirrorFrameProps> = ({ id, pack, adjustment, slot, label, onAdjust }) => {
+ const drag=useMirrorDrag(id,adjustment,onAdjust);
+ return (
   <div
-    className="side-mirror-frame absolute z-30 w-[28vw] min-w-[280px] max-w-[440px] aspect-[2.65/1] rounded-[16px] overflow-hidden pointer-events-none"
+    {...drag} aria-label={label+"，拖动调整镜面"} title="拖动调整镜面角度"
+    className="side-mirror-frame absolute z-[46] w-[30vw] min-w-[300px] max-w-[475px] aspect-[2.65/1] rounded-[16px] overflow-hidden pointer-events-auto"
     style={{
+      touchAction:'none',
       // —— 几何：与渲染层 viewport 严格一致，禁止随样式包改变 ——
       bottom: Math.max(8, 18 - adjustment.screenY),
       left: slot === 'left' ? 24 + adjustment.screenX : undefined,
@@ -48,27 +65,27 @@ export const SideMirrorFrame: React.FC<SideMirrorFrameProps> = ({ id, pack, adju
       style={{ background: `${pack.mirrors.cornerAccent}66` }}
     />
     {/* 标签芯片 */}
-    <span
-      className="absolute top-1.5 left-2.5 mono text-[8px] font-bold tracking-[0.22em] px-1.5 py-0.5 rounded-md"
-      style={pack.mirrors.label}
-    >
-      {label}
-    </span>
   </div>
 );
+};
 
 interface CentreMirrorFrameProps {
   pack: CockpitStylePack;
   adjustment: MirrorAdjustment;
   label: string;
+  onAdjust?: (a:MirrorAdjustment)=>void;
   /** 贴在镜框正下方、与镜同宽的组件（转向指示条）。 */
   signals?: React.ReactNode;
 }
 
-export const CentreMirrorFrame: React.FC<CentreMirrorFrameProps> = ({ pack, adjustment, label, signals }) => (
+export const CentreMirrorFrame: React.FC<CentreMirrorFrameProps> = ({ pack, adjustment, label, signals, onAdjust }) => {
+ const drag=useMirrorDrag('centre',adjustment,onAdjust);
+ return (
   <div
-    className="centre-mirror-frame absolute left-1/2 -translate-x-1/2 z-30 w-[26.5vw] min-w-[272px] max-w-[430px] pointer-events-none"
+    {...drag} aria-label={label+"，拖动调整镜面"} title="拖动调整镜面角度"
+    className="centre-mirror-frame absolute left-1/2 -translate-x-1/2 z-[46] w-[26.5vw] min-w-[272px] max-w-[430px] pointer-events-auto"
     style={{
+      touchAction:'none',
       // —— 几何：与渲染层 viewport 严格一致 ——
       top: Math.max(8, 76 + adjustment.screenY),
       marginLeft: adjustment.screenX,
@@ -80,12 +97,6 @@ export const CentreMirrorFrame: React.FC<CentreMirrorFrameProps> = ({ pack, adju
         className="absolute top-0 left-4 right-4 h-px pointer-events-none"
         style={{ background: `${pack.mirrors.cornerAccent}66` }}
       />
-      <span
-        className="absolute top-1 left-2 mono text-[8px] font-bold tracking-[0.2em] px-1.5 py-0.5 rounded-md"
-        style={pack.mirrors.label}
-      >
-        {label}
-      </span>
     </div>
     {/* 转向指示条：紧贴镜框底边缘，与镜同宽 */}
     {signals && (
@@ -102,6 +113,7 @@ export const CentreMirrorFrame: React.FC<CentreMirrorFrameProps> = ({ pack, adju
     )}
   </div>
 );
+};
 
 // ============================================================
 // 方向盘（左右各一，随输入角度旋转）

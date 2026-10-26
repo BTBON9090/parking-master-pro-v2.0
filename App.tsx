@@ -68,6 +68,7 @@ function App() {
     volume: 0.8,
     cabinVolume: 0.7, exteriorVolume: 0.85,
     rideHeightMm: 0,
+    steeringReleaseAssist: true,
     logitechKnobMode: false,
     wheelGhost: false,
     autoTurnSignal: true,
@@ -290,7 +291,7 @@ function App() {
              }
           }
 
-          if (!settings.logitechKnobMode && !isInteracting) {
+          if (settings.steeringReleaseAssist !== false && !isInteracting) {
              if (inputRef.current.steeringWheelAngle !== 0) {
                  updateInput(prev => {
                      if (prev.steeringWheelAngle !== 0) {
@@ -302,6 +303,7 @@ function App() {
                              Math.abs(carSpeedRef.current),
                              Math.max(0, settings.steeringCurve.autoCenteringSpeed ?? 1),
                              33,
+                             true,
                          );
                          if (newAngle === prev.steeringWheelAngle) return prev;
                          return { ...prev, steeringWheelAngle: newAngle };
@@ -313,7 +315,7 @@ function App() {
       }, 33);
 
       return () => clearInterval(interval);
-  }, [updateInput, isPaused, settings.logitechKnobMode, settings.steeringCurve.autoCenteringSpeed, currentCar]);
+  }, [updateInput, isPaused, settings.steeringReleaseAssist, settings.steeringCurve.autoCenteringSpeed, currentCar]);
 
   useEffect(() => {
       const wheelMax = effectiveSteeringWheelMaxDeg(CAR_MODELS[currentCar], Math.abs(carSpeedRef.current));

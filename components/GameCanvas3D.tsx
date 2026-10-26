@@ -1,3 +1,5 @@
+import {stableSunTarget} from '../utils/stableShadow';
+import {createLateralState,stepLateral,advanceLateralPose} from '../utils/lateralDynamics';
 import {createMirrorMaterial} from '../utils/mirrorMask';
 import {qualityProfile,nextResolution,ResolutionSampler,retainedResolution,type RenderQuality} from '../utils/renderQuality';
 import {isTouchDevice} from '../utils/device';
@@ -45,7 +47,7 @@ import { stepLongitudinal } from '../utils/longitudinal';
 import { approachExponential, elapsedFramesFromMs, simulationDeltaMs } from '../utils/timeStep';
 import { resolveHoodCameraLocalPose } from '../utils/hoodCamera';
 import { getMirrorGlassLayout } from '../utils/mirrorLayout';
-import { driverWheelRotationZ, driftSlipStep, rearSteerAngleForSpeed, speedSteeringFactor } from '../utils/steering';
+import { driverWheelRotationZ, rearSteerAngleForSpeed } from '../utils/steering';
 import { stepHeadLook } from '../utils/headLook';
 import { ORBIT_POLAR_MAX, ORBIT_POLAR_MIN, stepOrbitDrag, followRelativeCoordinate, speedVisualStrength, resolveInspectionView } from '../utils/cameraLook';
 import { SpeedEffect } from '../three/speedEffect';
@@ -466,6 +468,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     const rightMirrorCamera = new THREE.PerspectiveCamera(40, 2.65, 0.08, 620);
     const centreMirrorCamera = new THREE.PerspectiveCamera(34, 4, 0.08, 620);
     const mirrorTarget = new THREE.WebGLRenderTarget(profile.mirrorWidth, Math.round(profile.mirrorWidth*.375), { depthBuffer: true });
+    const sideMirrorTarget=new THREE.WebGLRenderTarget(Math.round(profile.mirrorWidth*1.25),Math.round(profile.mirrorWidth*1.25/2.65),{depthBuffer:true});
     const mirrorDisplay = new THREE.Scene();
     const mirrorDisplayCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 2);
     mirrorDisplayCamera.position.z = 1;
@@ -480,7 +483,9 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       const viewport = renderer.getViewport(new THREE.Vector4());
       const scissor = renderer.getScissor(new THREE.Vector4());
       const scissorTest = renderer.getScissorTest();
-      renderer.setRenderTarget(mirrorTarget);
+      const target=camera===centreMirrorCamera?mirrorTarget:sideMirrorTarget;
+      mirrorQuadMat.map=target.texture;
+      renderer.setRenderTarget(target);
       renderer.setScissorTest(false);
       renderer.clear();
       renderer.render(scene, camera);
@@ -629,6 +634,8 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     setOverturned(false);
     let destroyed=false,damage=0,lastDamageAt=-1000;
     let impactReadout={closing:0,yaw:0,speedAfter:0,obstacle:'—'};
+    const lateralState=createLateralState();
+    let directionChangeActive=false;
     const impactMotion={x:0,y:0,yaw:0,time:0};
     setWrecked(false);setDamagePercent(0);setDamageTier('none');
     let driverMotion=createDriverMotion();
@@ -1825,6 +1832,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         quality=requestedQuality;profile=qualityProfile(quality,window.devicePixelRatio,isTouchDevice());
         dynamicDpr=profile.initial;renderer.setPixelRatio(dynamicDpr);renderer.setSize(window.innerWidth,window.innerHeight,false);
         mirrorTarget.setSize(profile.mirrorWidth,Math.round(profile.mirrorWidth*.375));
+        sideMirrorTarget.setSize(Math.round(profile.mirrorWidth*1.25),Math.round(profile.mirrorWidth*1.25/2.65));
         sun.shadow.mapSize.set(profile.shadowSize,profile.shadowSize);sun.shadow.map?.dispose();sun.shadow.map=null;renderer.shadowMap.needsUpdate=true;
         resolutionSampler.reset(performance.now());
       }
@@ -1902,7 +1910,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       const setFirstPersonBody = (firstPerson: boolean) => {
         if (playerParts.nativeCockpit) {
           playerPaintMaterialStates.forEach(record => { record.material.visible = showVehicleBody; });
-          playerBodyMeshes.forEach(node => { node.visible = showVehicleBody; });
+          playerBodyMeshes.forEach(node => { node.visible = showVehicleBody && !(firstPerson && /InteriorRearViewMirror|RoofLidar/i.test(node.name)); });
           playerBodyRigRoots.forEach(root => { root.visible = showVehicleBody; });
           setGlassMode(firstPerson);
           return;
@@ -2002,7 +2010,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         if(destroyed || rollover){car.speed=0;throttleState.current=0;}
         if(lastSuspensionReset!==suspensionResetRef.current){
           damageModel?.reset();looseDebris.splice(0).forEach(d=>d.dispose());setDamageTier('none');
-          impactMotion.time=0;damage=0;setDamagePercent(0);impactReadout={closing:0,yaw:0,speedAfter:0,obstacle:'—'};
+          impactMotion.time=0;directionChangeActive=false;Object.assign(lateralState,createLateralState());damage=0;setDamagePercent(0);impactReadout={closing:0,yaw:0,speedAfter:0,obstacle:'—'};
           if(wreck){wreck.dispose();wreck=null;}destroyed=false;setWrecked(false);
           rollover?.dispose();rollover=null;setOverturned(false);chassisState=createChassisState();
           recoveryPose={x:car.x,y:car.y,rotation:car.rotation,roadHeight:car.roadHeight};recoveryCandidate={...recoveryPose};accidentRecoveryPose={...recoveryPose};lastRecoveryAt=simulationClockMs;
@@ -2015,6 +2023,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
 
         // —— 换挡选择：离合衔接进度由固定步进纵向模型推进 ——
         if (currentInputReal.gear !== selectedGear) {
+          directionChangeActive=currentInputReal.gear!==0&&car.speed*Math.sign(currentInputReal.gear)<-.12;
           selectedGear = currentInputReal.gear;
           shiftProgress = 0;
         }
@@ -2088,6 +2097,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
             brake: currentInputReal.brake,
             handbrake: currentInputReal.handbrake,
             absEnabled: settingsRef.current.absEnabled !== false,
+            reverseAssist:directionChangeActive,
           },
           {
             carId: cc.id,
@@ -2102,6 +2112,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           },
         );
         car.speed = airborneActive ? frameStartSpeed : longResult.speed;
+        if(car.speed*Math.sign(currentInputReal.gear)>=-.015)directionChangeActive=false;
         throttleState.current = longResult.throttle;
         brakePedal = longResult.brakePedal;
         shiftProgress = longResult.shiftProgress;
@@ -2143,23 +2154,8 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         // speed builds. Tyre slip produces a mild, stable understeer gradient;
         // drivetrain layout changes how throttle affects it. At parking speed
         // the factor tends to 1, preserving exact Ackermann manoeuvring.
-        const roadWheelSteerAngle = car.steeringAngle;
-        const roadWheelTan = Math.tan(roadWheelSteerAngle);
-        const nominalRadius = Math.abs(roadWheelTan) < 0.001 ? Infinity : rigWheelbase / roadWheelTan;
         const speedMs = Math.abs(car.speed) * SPEED_UNIT_KMH / 3.6;
-        const nominalRadiusM = Number.isFinite(nominalRadius) ? Math.max(0.8, Math.abs(nominalRadius) / 10) : Infinity;
-        const lateralG = Number.isFinite(nominalRadiusM) ? (speedMs * speedMs) / (nominalRadiusM * 9.80665) : 0;
-        const driveUndersteer = cc.dynamics.driveLayout === 'FWD'
-          ? 1 + throttleState.current * 0.38
-          : cc.dynamics.driveLayout === 'AWD'
-            ? 1 + throttleState.current * 0.12
-            : 1 - throttleState.current * 0.06;
-        const understeerLoss = normalizedSpeed < 0.2
-          ? 1
-          : 1 / (1 + cc.dynamics.understeerGradient * vehicleTune.understeerScale * lateralG * driveUndersteer);
-        const maxCurvature = 9.80665 * cc.dynamics.grip * weatherGrip / Math.max(0.1, speedMs * speedMs) / 10;
-        const motionSteerAngle = Math.atan(THREE.MathUtils.clamp(roadWheelTan * understeerLoss / rigWheelbase, -maxCurvature, maxCurvature) * rigWheelbase);
-        const requestedRearSteer = rearSteerAngleForSpeed(cc.dynamics.rearSteerMaxDeg, car.speed, motionSteerAngle, carMaxSteer);
+        const requestedRearSteer = rearSteerAngleForSpeed(cc.dynamics.rearSteerMaxDeg, car.speed, car.steeringAngle, carMaxSteer);
         const rearSteerAngle = limitRearAxleSteer(car.steeringAngle, requestedRearSteer, rigWheelbase, halfTrack,
           (cc.dynamics.rearSteerMaxDeg ?? 0) * Math.PI / 180);
         // All four knuckles point at one common ICR. Rear steering therefore
@@ -2191,18 +2187,16 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         }
 
 
-        // —— 可控短时漂移：高速急转或手刹转向时，车身指向先于行驶方向，
-        // 侧滑量有上限并会随松手/松刹衰减；不会把车吸在路面上或无限自转。——
-        const previousDriftSlip=car.driftSlip;
-        car.driftSlip = airborneActive ? previousDriftSlip : driftSlipStep(
-          car.driftSlip,
-          car.speed,
-          car.steeringAngle,
-          currentInputReal.handbrake,
-          carMaxSteer,
-          frameScale,
-        );
-        if (!Number.isFinite(car.driftSlip)) car.driftSlip = 0;
+        const lateral=stepLateral(lateralState,{speed:car.speed*SPEED_UNIT_KMH/3.6,
+          steer:car.steeringAngle,rearSteer:rearSteerAngle,wheelbase:rigWheelbase/10,rearOffset:rearAxleOffset/10,
+          frontBias:cc.dynamics.frontWeightBias,grip:cc.dynamics.grip*weatherGrip,layout:cc.dynamics.driveLayout,
+          throttle:throttleState.current,handbrake:currentInputReal.handbrake,frontLocked:longResult.frontLocked,
+          dt:frameDelta/1000,understeer:cc.dynamics.understeerGradient*vehicleTune.understeerScale});
+        if(!airborneActive){
+          car.speed=Math.sign(car.speed)*Math.max(0,Math.abs(car.speed)-lateral.scrubAccel*(frameDelta/1000)/(SPEED_UNIT_KMH/3.6));
+          car.driftSlip=-lateral.beta;
+        }
+        const motionSteerAngle=Math.atan(lateral.yawRate*rigWheelbase/Math.max(.01,speedMs*10));
 
         if (Math.abs(frameTravelSpeed) > 0.0001) {
           const speedToMps=SPEED_UNIT_KMH/3.6;
@@ -2212,23 +2206,18 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
             !airborneActive && (car.roadHeight ?? 0)<3 ? ldCur.curbSegments ?? [] : [],
             (p,d)=> {
               if(airborneActive)return {x:p.x+Math.cos(airborneHeading)*d,y:p.y+Math.sin(airborneHeading)*d,rotation:p.rotation};
-              // Slip changes the body's heading relative to its trajectory.
-              // It must NOT add free yaw/sideways motion to the tyre arc.
-              const next=advanceGripLimitedCenter(p.x,p.y,p.rotation-previousDriftSlip,d,
-                rigWheelbase,motionSteerAngle,rearAxleOffset,rearSteerAngle,speedMs,cc.dynamics.grip*weatherGrip*longResult.lateralGripScale);
-              next.rotation+=previousDriftSlip;
-              return next;
+              const turn=lateral.yawRate*dt*(Math.abs(d)/Math.max(.001,Math.abs((frameStartSpeed+car.speed)/2)*speedToMps*10*dt));
+              return advanceLateralPose(p.x,p.y,p.rotation,d,lateral.beta,turn);
             });
-          tyreLateralG=airborneActive?0:THREE.MathUtils.clamp((pose.rotation-car.rotation)/dt
-            *frameTravelSpeed*speedToMps/9.80665,-cc.dynamics.grip*weatherGrip,cc.dynamics.grip*weatherGrip);
+          tyreLateralG=airborneActive?0:lateral.lateralG;
           car.speed=pose.speedMps/speedToMps;
           frameTravelSpeed=pose.distance/Math.max(1e-6,TRAVEL_PER_SPEED_FRAME*frameScale);
-          const bodyHeading=pose.rotation+car.driftSlip-previousDriftSlip;
+          const bodyHeading=pose.rotation;
           car.yawRate = (bodyHeading - car.rotation) / frameScale;
           car.x = pose.x;
           car.y = pose.y;
           car.rotation = bodyHeading;
-          car.slipAngle = roadWheelSteerAngle - motionSteerAngle + car.driftSlip;
+          car.slipAngle = lateral.frontSlip;
         } else {
           tyreLateralG=0;
           car.speed = 0;
@@ -2242,7 +2231,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           car.rotation=previousPose.rotation+yawStep;
           car.yawRate=impactMotion.yaw/60;
           const targetSpeed=car.speed*SPEED_UNIT_KMH/3.6*10;
-          const recover=1-Math.exp(-dt*1.3),drag=Math.exp(-dt*(currentInputReal.brake*5+.18));
+          const recover=impactMotion.time>2.1?0:1-Math.exp(-dt*.75),drag=Math.exp(-dt*(currentInputReal.brake*5+.18));
           impactMotion.x=(impactMotion.x+(Math.cos(car.rotation)*targetSpeed-impactMotion.x)*recover)*drag;
           impactMotion.y=(impactMotion.y+(Math.sin(car.rotation)*targetSpeed-impactMotion.y)*recover)*drag;
           car.x=previousPose.x+impactMotion.x*dt;car.y=previousPose.y+impactMotion.y*dt;
@@ -2482,9 +2471,9 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
             if(![...solidHitsAt(x,y,car.rotation)].some(id=>!previousHits.has(id))){car.x=x;car.y=y;break;}
           }
           impactMotion.x=response.velocity.x*10;impactMotion.y=response.velocity.y*10;
-          impactMotion.yaw=response.yawRate;if(response.closing>.15)impactMotion.time=2.5;
+          impactMotion.yaw=response.yawRate;if(response.closing>.025)impactMotion.time=2.5;
           car.speed=(response.velocity.x*Math.cos(car.rotation)+response.velocity.y*Math.sin(car.rotation))/(SPEED_UNIT_KMH/3.6);
-          car.driftSlip=0;
+          car.driftSlip=0;Object.assign(lateralState,createLateralState());
           if(response.closing>2 && simulationClockMs-lastDamageAt>650 && !destroyed && !rollover){
             accidentRecoveryPose={...recoveryPose};
             damage=Math.min(1,damage+response.damage);lastDamageAt=simulationClockMs;setDamagePercent(Math.round(damage*100));
@@ -3313,8 +3302,9 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         }
 
         // 11. 太阳光跟随
-        sun.position.set(car.x - 150, renderSlope.height + 220, car.y - 100);
-        sun.target.position.set(car.x, renderSlope.height, car.y);
+        const lightTarget=stableSunTarget(new THREE.Vector3(car.x,renderSlope.height,car.y),SHADOW_SIZE,sun.shadow.mapSize.width);
+        sun.target.position.copy(lightTarget);
+        sun.position.copy(lightTarget).add(new THREE.Vector3(-150,220,-100));
         sun.target.updateMatrixWorld();
 
         // 12. 天气粒子更新
@@ -3631,7 +3621,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       skidMarkMat.dispose();
       disposeMaterials();
       vehicleEnvironment?.dispose();
-      mirrorTarget.dispose(); mirrorQuadGeo.dispose(); mirrorQuadMat.dispose();
+      mirrorTarget.dispose(); sideMirrorTarget.dispose(); mirrorQuadGeo.dispose(); mirrorQuadMat.dispose();
       speedEffect.dispose();
       renderer.dispose();
       renderer.forceContextLoss();

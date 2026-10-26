@@ -12,7 +12,7 @@ const angle=fingers.snapshot().steeringWheelAngle;
 assert(angle!>0);
 assert(fingers.begin('gas',11,700,300));
 let previous=0;
-for(let y=300;y>=200;y-=10){
+for(let y=300;y>=230;y-=10){
  fingers.move('gas',11,700,y,540);
  const input=fingers.snapshot();assert(input.throttle>previous);previous=input.throttle;
  assert.equal(input.gasPressed,false);assert.equal(input.steeringWheelAngle,angle);

@@ -1024,6 +1024,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                           id={id}
                           pack={cockpitPack}
                           adjustment={settings.mirrorAdjustments[id]}
+                          onAdjust={a=>updateSettings({mirrorAdjustments:{...settings.mirrorAdjustments,[id]:a}})}
                           slot={isLeftSlot ? 'left' : 'right'}
                           label={label}
                       />
@@ -1032,6 +1033,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
               <CentreMirrorFrame
                   pack={cockpitPack}
                   adjustment={settings.mirrorAdjustments.centre}
+                  onAdjust={a=>updateSettings({mirrorAdjustments:{...settings.mirrorAdjustments,centre:a}})}
                   label={lang === Language.CN ? '车内后视镜' : 'CENTRE MIRROR'}
               />
           </>

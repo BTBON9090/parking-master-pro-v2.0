@@ -54,6 +54,16 @@ export function buildNativeAuthoredVehicle(source: THREE.Group, cfg: CarConfig):
   source.updateMatrixWorld(true);
   source.traverse(node => {
     if (!(node instanceof THREE.Mesh)) return;
+    // The exported black-trim batch contains the physical inside mirror.
+    // Its untextured back blocks the windscreen despite the functional HUD
+    // mirror above it. Remove only this small isolated upper-centre island.
+    if(node.name.startsWith('Interior_CarRoot_') && (Array.isArray(node.material)?node.material:[node.material]).some(m=>m.name==='BlackTrim')){
+      const geometry=node.geometry.clone(),p=geometry.getAttribute('position'),idx=geometry.index,keep:number[]=[];
+      const inside=(j:number)=>{const v=new THREE.Vector3().fromBufferAttribute(p,j).applyMatrix4(node.matrixWorld);
+        return Math.abs(v.x)<1.3 && v.y>cfg.height*.68 && v.z>3 && v.z<cfg.length*.30;};
+      for(let t=0;t<(idx?.count??p.count);t+=3){const face=[0,1,2].map(k=>idx?idx.getX(t+k):t+k);if(!face.every(inside))keep.push(...face);}
+      geometry.setIndex(keep);geometry.computeBoundingBox();geometry.computeBoundingSphere();node.geometry=geometry;
+    }
     const leather = (Array.isArray(node.material)?node.material:[node.material]).some(m=>m.name==='InteriorLeather');
     if(leather){
       node.geometry=node.geometry.clone();
@@ -170,6 +180,10 @@ export function buildNativeAuthoredVehicle(source: THREE.Group, cfg: CarConfig):
       };
       node.material=Array.isArray(node.material)?node.material.map(recolor):recolor(node.material);
     });
+    const centreMark=new THREE.Mesh(new THREE.SphereGeometry(.014,10,6),new THREE.MeshBasicMaterial({color:'#ffe65b'}));
+    centreMark.name='steering-centre-reference';
+    // Authored column uses local +Y; local -Z is the rim's 12 o'clock.
+    centreMark.position.set(0,.022,-.185);spin.add(centreMark);
     authoredSteering.userData.partRole = 'steering-wheel-pivot';
     parts.extras!.steeringWheels.push({
       object: spin,

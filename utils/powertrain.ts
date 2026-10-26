@@ -385,13 +385,12 @@ export function gearRejectionReason(
   if (Number.isInteger(gear) && gear > 1 && spec.gearTops.length === 1) return 'single-speed';
   if (!Number.isInteger(gear) || gear < -1 || gear > spec.gearTops.length) return 'invalid-gear';
   if (gear === 0) return null;
-  if (gear === -1 && signedSpeed > 0.12) return 'reverse-while-moving';
-  // Rolling backwards at low speed may be caught by R; forward motion may not.
-  if (signedSpeed * Math.sign(gear) < -0.08) return 'direction-reversal';
+  // Selection is a request. The longitudinal controller decelerates opposite
+  // rolling motion before engaging drive in the requested direction.
   return null;
 }
 
-/** Reject direction reversal while moving and downshifts that would over-rev. */
+/** Validate the gear itself; rolling reversal is handled by controlled braking. */
 export function canSelectGear(spec: PowertrainSpec, signedSpeed: number, gear: number): boolean {
   return gearRejectionReason(spec, signedSpeed, gear) === null;
 }

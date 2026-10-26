@@ -1,4 +1,5 @@
 const clamp = (v: number, min = 0, max = 1) => Math.max(min, Math.min(max, v));
+export const PEDAL_TRAVEL_PX = 70;
 export type HeldControl = 'steer' | 'gas' | 'brake' | 'handbrake';
 type Contact = { id: number; x: number; y: number; value: number; start: number };
 /** Each control owns its pointer; releasing another finger never cancels it. */
@@ -12,7 +13,7 @@ export class MobileInputController {
   move(control: HeldControl, id: number, x: number, y: number, lock: number, travel = 130) {
     const c = this.contacts.get(control);
     if (!c || c.id !== id) return false;
-    if (control === 'gas' || control === 'brake') c.value = clamp(.12 + (c.y - y) / 100 * .88);
+    if (control === 'gas' || control === 'brake') c.value = clamp(.12 + (c.y - y) / PEDAL_TRAVEL_PX * .88);
     if (control === 'steer') {
       const origin = Math.sign(c.start) * Math.pow(Math.abs(c.start) / lock, 1 / 1.7);
       const v = clamp(origin + (x - c.x) / travel, -1, 1);

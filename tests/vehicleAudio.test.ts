@@ -18,7 +18,7 @@ for(const id of GARAGE_CARS){
   ['power off',1,false,.3,0,false,false],['braking',1,true,.3,1,false,false],
  ] as const){
   let s=createLongitudinalState(-.8),force=0;
-  for(let i=0;i<120;i++) {const r=stepLongitudinal(s,{gear,engineStarted,throttle,gasPressed:throttle>0,shiftPressed:false,brake,handbrake},ctx);s=r;force=r.engineForce;}
+  for(let i=0;i<120;i++) {const r=stepLongitudinal(s,{gear,engineStarted,throttle,gasPressed:false,shiftPressed:false,brake,handbrake},{...ctx,slopeAlongCar:name.includes('powered')?0:ctx.slopeAlongCar});s=r;force=r.engineForce;}
   const active=hasMotorDrive(engineStarted,gear,throttle,force,brake,handbrake);
   assert.equal(active,driving,`${id} ${name}`);
   for(const cabin of [false,true])assert.equal(motorMix(Math.abs(s.speed),s.throttle,cabin,active,insulation).gain>0,driving,`${id} ${name} audible`);

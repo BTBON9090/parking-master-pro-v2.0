@@ -174,6 +174,7 @@ export function autoCenterWheelAngle(
   speedAbs: number,
   autoCenteringSpeed: number,
   tickMs = 16,
+  stationaryAssist = false,
 ): number {
   if (!Number.isFinite(angleDeg) || angleDeg === 0) return 0;
   if (Math.abs(angleDeg) <= CENTER_SNAP_DEG) return 0;
@@ -181,10 +182,10 @@ export function autoCenterWheelAngle(
   const speed = Number.isFinite(speedAbs) ? Math.max(0, speedAbs) : 0;
   // 0.02 speed unit = 0.3 km/h. The wheel is never pulled while the car is
   // stationary, but any genuine rolling speed gets a visible return.
-  if (speed < 0.02) return angleDeg;
+  if (speed < 0.02 && !stationaryAssist) return angleDeg;
   const speedT = Math.max(0, Math.min(1, (speed - 0.02) / 1.48));
   const eased = speedT * speedT * (3 - 2 * speedT);
-  const rateDegPerSec = 96 * autoCenteringSpeed * (0.5 + 0.5 * eased);
+  const rateDegPerSec = Math.min(1.8,autoCenteringSpeed) * (speed < .02 ? 44 : 52 + 66 * eased);
   const dtSeconds = Math.max(0, tickMs) / 1000;
   // Slightly firmer away from centre, gentler in the last few degrees; the
   // motion remains monotonic and never reverses.

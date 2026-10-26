@@ -54,13 +54,27 @@ export function addOpenWorldScene(scene:THREE.Scene,level:LevelData,track:(g:THR
    // Double solid yellow centre and white edge lines continue through every curve and crest.
    for(const [offset,width,key] of [[-r.width/2+2,1.2,'white'],[r.width/2-2,1.2,'white'],[-1.25,1.1,'yellow'],[1.25,1.1,'yellow']] as const){
     const out=paint[key],base=out.p.length/3;
-    for(const q of [prev,p])for(const side of [-1,1]){const off=offset+width/2*side,x=q.x+q.nx*off,y=q.y+q.ny*off;out.p.push(x,worldHeight(x,y)+.105,y);}
+    for(const q of [prev,p])for(const side of [-1,1]){
+     const off=offset+width/2*side,x=q.x+q.nx*off,y=q.y+q.ny*off;
+     // Follow the rendered road's cross-section, not a second analytic surface:
+     // on a cambered crest those two interpolations can put paint below asphalt.
+     const cell=Math.max(0,Math.min(cols-1,Math.floor((off/r.width+.5)*cols)));
+     const lo=(cell/cols-.5)*r.width,hi=((cell+1)/cols-.5)*r.width;
+     const h0=worldHeight(q.x+q.nx*lo,q.y+q.ny*lo),h1=worldHeight(q.x+q.nx*hi,q.y+q.ny*hi);
+     out.p.push(x,h0+(h1-h0)*(off-lo)/(hi-lo)+.105,y);
+    }
     out.i.push(base,base+2,base+1,base+1,base+2,base+3);
    }
   }
  }
- for(const data of [asphalt,gravel])mesh(data.p,data.i,new THREE.MeshStandardMaterial({vertexColors:true,roughness:.95,side:THREE.DoubleSide}),data.c).name=data===asphalt?'MountainAsphalt':'CreekGravel';
- for(const [key,data] of Object.entries(paint))mesh(data.p,data.i,new THREE.MeshBasicMaterial({color:key==='white'?'#e3e4d8':'#e9c35c',side:THREE.DoubleSide})).name=`MountainPaint-${key}`;
+ for(const data of [asphalt,gravel]){
+  const road=mesh(data.p,data.i,new THREE.MeshStandardMaterial({vertexColors:true,roughness:.95,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}),data.c);
+  road.name=data===asphalt?'MountainAsphalt':'CreekGravel';road.renderOrder=2;
+ }
+ for(const [key,data] of Object.entries(paint)){
+  const decal=mesh(data.p,data.i,new THREE.MeshBasicMaterial({color:key==='white'?'#e3e4d8':'#e9c35c',side:THREE.DoubleSide,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4}));
+  decal.name=`MountainPaint-${key}`;decal.renderOrder=6;
+ }
  for(const p of WORLD_PUDDLES){
   const waterY=worldHeight(p.x,p.y)+.45,ps:number[]=[],ids:number[]=[];
   // Fine clipped water mesh keeps the uphill bank dry; no translucent plane through the road.

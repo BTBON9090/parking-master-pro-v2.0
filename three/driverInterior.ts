@@ -159,7 +159,7 @@ export function buildDriverInterior(cc: CarConfig, profile: CockpitProfile = coc
     spoke.rotation.z = angle;
   }
   // Small amber marker at 12 o'clock makes rotation readable.
-  const marker = addBox(0.18, 0.34, 0.22, 0, 1.20, 0.05, amber, steeringWheel);
+  const marker = addBox(0.18, 0.34, 0.22, 0, 1.20, -0.15, new THREE.MeshBasicMaterial({color:'#ffe65b'}), steeringWheel);
   marker.rotation.z = 0;
   group.add(steeringWheel);
 

@@ -98,7 +98,7 @@ for (const car of Object.values(CAR_MODELS)) {
     assert(pt.gearTops[0]*15>=40&&pt.gearTops[0]*15<=46,`ZUNJIE first training redline ${pt.gearTops[0]*15}`);
     assert(pt.gearTops[1]*15>=70&&pt.gearTops[1]*15<=80,`ZUNJIE second training redline ${pt.gearTops[1]*15}`);
   }
-  assert(!canSelectGear(pt,1,-1)); assert(!canSelectGear(pt,-1,1));
+  assert(canSelectGear(pt,1,-1)); assert(canSelectGear(pt,-1,1));
   assert(canSelectGear(pt,0,-1));assert(canSelectGear(pt,0,1));
   assert(canSelectGear(pt,pt.gearTops[0]*1.1,1), `${car.id}: high-speed downshift stays selectable with warning`);
   assert(canSelectGear(pt,-0.2,-1,), `${car.id}: reverse can be selected while rolling backwards`);

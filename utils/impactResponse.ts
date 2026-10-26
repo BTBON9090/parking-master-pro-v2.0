@@ -21,7 +21,16 @@ export function solveVehicleImpact(v:V2,n:V2,arm:V2,lengthM:number,widthM:number
  const tangent={x:-n.y,y:n.x},tv=dot(out,tangent);
  const friction=Math.min(Math.abs(tv),impulse*.09)*Math.sign(tv);
  out.x-=tangent.x*friction;out.y-=tangent.y*friction;
- return {velocity:out,yawRate:Math.max(-2.2,Math.min(2.2,oldYaw+cross*impulse/inertiaPerMass)),closing,
+ // Resolve the second side-face contact too: a single bumper-corner impulse
+ // can spin the nose away while leaving the COM moving into a long guardrail.
+ let yawRate=Math.max(-2.2,Math.min(2.2,oldYaw+cross*impulse/inertiaPerMass));
+ const vn=dot(out,n),outward=closing*(frontal?.10:.25);
+ if(closing>0 && vn<outward){out.x+=n.x*(outward-vn);out.y+=n.y*(outward-vn);}
+ const before=dot(v,v)+inertiaPerMass*oldYaw*oldYaw;
+ const after=dot(out,out)+inertiaPerMass*yawRate*yawRate;
+ const loss=after>before&&after>0?Math.sqrt(before/after):1;
+ out.x*=loss;out.y*=loss;yawRate*=loss;
+ return {velocity:out,yawRate,closing,
   damage:closing<2?0:Math.min(1,Math.pow(closing/17,2)),catastrophic:classifyImpact(closing)==='severe',tier:classifyImpact(closing)};
 }
 /** Support point on the actual convex shell, averaged along the impact face.

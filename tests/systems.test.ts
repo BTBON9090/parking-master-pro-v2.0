@@ -1076,14 +1076,14 @@ console.log(`Steering arcs: right y=${positiveArc.y.toFixed(2)}, left y=${negati
 
 // ---------------------------------------------------------------- gear refusal
 const sedanSpec = getPowertrain(CarType.SEDAN);
-assert.equal(gearRejectionReason(sedanSpec, 1, -1), 'reverse-while-moving');
-assert.equal(gearRejectionReason(sedanSpec, -1, 1), 'direction-reversal');
+assert.equal(gearRejectionReason(sedanSpec, 1, -1), null);
+assert.equal(gearRejectionReason(sedanSpec, -1, 1), null);
 assert.equal(gearRejectionReason(sedanSpec, 999, 1), null, 'high-speed downshift is allowed with warning, not blocked');
 assert.equal(gearRejectionReason(sedanSpec, 0, 6), 'invalid-gear');
 assert.equal(gearRejectionReason(sedanSpec, 0, 1), null);
-assert.equal(canSelectGear(sedanSpec, 1, -1), false);
+assert.equal(canSelectGear(sedanSpec, 1, -1), true);
 assert.equal(canSelectGear(sedanSpec, 0, -1), true);
-console.log('Gear guard: reverse/direction reasons remain; high downshift emits warning without clamping speed.');
+console.log('Gear guard: rolling direction requests accepted; high downshift emits warning without clamping speed.');
 
 // ------------------------------------------------------- longitudinal scenarios
 const baseContext = (carId: CarType, overrides: Partial<LongitudinalContext> = {}): LongitudinalContext => {

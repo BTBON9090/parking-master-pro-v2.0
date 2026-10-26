@@ -1,0 +1,348 @@
+{
+  "pedals": [
+    {
+      "id": "SUV",
+      "throttle": 0.08,
+      "kmh": 3.8512832931943493
+    },
+    {
+      "id": "SUV",
+      "throttle": 0.15,
+      "kmh": 8.940170475235838
+    },
+    {
+      "id": "SUV",
+      "throttle": 0.3,
+      "kmh": 30.08573296977158
+    },
+    {
+      "id": "SEAL08",
+      "throttle": 0.08,
+      "kmh": 3.915348757227779
+    },
+    {
+      "id": "SEAL08",
+      "throttle": 0.15,
+      "kmh": 9.036954601138204
+    },
+    {
+      "id": "SEAL08",
+      "throttle": 0.3,
+      "kmh": 30.35374732047581
+    },
+    {
+      "id": "TAI7",
+      "throttle": 0.08,
+      "kmh": 3.9832112515051614
+    },
+    {
+      "id": "TAI7",
+      "throttle": 0.15,
+      "kmh": 9.139199176690548
+    },
+    {
+      "id": "TAI7",
+      "throttle": 0.3,
+      "kmh": 30.58862468725579
+    },
+    {
+      "id": "LI_I9",
+      "throttle": 0.08,
+      "kmh": 3.945770149766025
+    },
+    {
+      "id": "LI_I9",
+      "throttle": 0.15,
+      "kmh": 9.083654491210508
+    },
+    {
+      "id": "LI_I9",
+      "throttle": 0.3,
+      "kmh": 30.492533896313606
+    },
+    {
+      "id": "N90",
+      "throttle": 0.08,
+      "kmh": 3.881206577215644
+    },
+    {
+      "id": "N90",
+      "throttle": 0.15,
+      "kmh": 8.984972768016428
+    },
+    {
+      "id": "N90",
+      "throttle": 0.3,
+      "kmh": 30.202467023382983
+    },
+    {
+      "id": "TRUCK",
+      "throttle": 0.08,
+      "kmh": 3.97125363363289
+    },
+    {
+      "id": "TRUCK",
+      "throttle": 0.15,
+      "kmh": 9.149506278414957
+    },
+    {
+      "id": "TRUCK",
+      "throttle": 0.3,
+      "kmh": 30.216747083787975
+    }
+  ],
+  "handling": [
+    {
+      "hz": 30,
+      "steer": 0.01,
+      "handbrake": false,
+      "maxSlip": 0.01622501429096326,
+      "maxYaw": 0.06684124765398758,
+      "maxG": 0.16274808516932263,
+      "finalSpeed": 24.949205183106557,
+      "scrub": 0.05079481689344366
+    },
+    {
+      "hz": 30,
+      "steer": 0.35,
+      "handbrake": false,
+      "maxSlip": 0.6369906744376747,
+      "maxYaw": 0.8699115335413333,
+      "maxG": 1.001698709865095,
+      "finalSpeed": 18.102604172759055,
+      "scrub": 6.8973958272409375
+    },
+    {
+      "hz": 30,
+      "steer": 0.14,
+      "handbrake": true,
+      "maxSlip": 0.8550527371260165,
+      "maxYaw": 2.5,
+      "maxG": 1.0347551334256404,
+      "finalSpeed": 18.1775976149869,
+      "scrub": 6.822402385013091
+    },
+    {
+      "hz": 60,
+      "steer": 0.01,
+      "handbrake": false,
+      "maxSlip": 0.01622492104512518,
+      "maxYaw": 0.06684607966787963,
+      "maxG": 0.162747330842211,
+      "finalSpeed": 24.94913898416667,
+      "scrub": 0.050861015833290966
+    },
+    {
+      "hz": 60,
+      "steer": 0.35,
+      "handbrake": false,
+      "maxSlip": 0.6376926099683591,
+      "maxYaw": 0.8708341543037896,
+      "maxG": 1.0018187252208333,
+      "finalSpeed": 18.090769664255866,
+      "scrub": 6.909230335744134
+    },
+    {
+      "hz": 60,
+      "steer": 0.14,
+      "handbrake": true,
+      "maxSlip": 0.8550527371260165,
+      "maxYaw": 2.5,
+      "maxG": 1.0347561791507578,
+      "finalSpeed": 18.168178679703004,
+      "scrub": 6.8318213202970135
+    },
+    {
+      "hz": 120,
+      "steer": 0.01,
+      "handbrake": false,
+      "maxSlip": 0.016224897660582945,
+      "maxYaw": 0.06684295368992042,
+      "maxG": 0.1627472543101424,
+      "finalSpeed": 24.94911223847823,
+      "scrub": 0.05088776152175461
+    },
+    {
+      "hz": 120,
+      "steer": 0.35,
+      "handbrake": false,
+      "maxSlip": 0.6378452160152487,
+      "maxYaw": 0.8712249673735598,
+      "maxG": 1.0018775312526975,
+      "finalSpeed": 18.084443555531188,
+      "scrub": 6.915556444468816
+    },
+    {
+      "hz": 120,
+      "steer": 0.14,
+      "handbrake": true,
+      "maxSlip": 0.8550527371260165,
+      "maxYaw": 2.5,
+      "maxG": 1.0347566944077542,
+      "finalSpeed": 18.162542717589634,
+      "scrub": 6.8374572824103454
+    }
+  ],
+  "assets": [
+    {
+      "id": "SUV",
+      "markerAboveHub": 1.758893698067526,
+      "blockedTriangles": 0
+    },
+    {
+      "id": "SEAL08",
+      "markerAboveHub": 1.7898856893589592,
+      "blockedTriangles": 0
+    },
+    {
+      "id": "TAI7",
+      "markerAboveHub": 1.758893698067526,
+      "blockedTriangles": 0
+    },
+    {
+      "id": "LI_I9",
+      "markerAboveHub": 1.758893698067526,
+      "blockedTriangles": 0
+    },
+    {
+      "id": "N90",
+      "markerAboveHub": 1.758893698067526,
+      "blockedTriangles": 0
+    },
+    {
+      "id": "TRUCK",
+      "markerAboveHub": 1.758893698067526,
+      "blockedTriangles": 0
+    }
+  ],
+  "reversal": [
+    {
+      "id": "SUV",
+      "direction": -1,
+      "maxStep": 0.017004403417069547,
+      "finalKmh": 28.373158485447494
+    },
+    {
+      "id": "SUV",
+      "direction": 1,
+      "maxStep": 0.017004403417069547,
+      "finalKmh": -28.288486525562888
+    },
+    {
+      "id": "SEAL08",
+      "direction": -1,
+      "maxStep": 0.01668548001655723,
+      "finalKmh": 29.241228617970407
+    },
+    {
+      "id": "SEAL08",
+      "direction": 1,
+      "maxStep": 0.01668548001655723,
+      "finalKmh": -29.165247739576834
+    },
+    {
+      "id": "TAI7",
+      "direction": -1,
+      "maxStep": 0.016856517918285352,
+      "finalKmh": 29.9791860266277
+    },
+    {
+      "id": "TAI7",
+      "direction": 1,
+      "maxStep": 0.016856517918285352,
+      "finalKmh": -29.897689592255436
+    },
+    {
+      "id": "LI_I9",
+      "direction": -1,
+      "maxStep": 0.016835274013230483,
+      "finalKmh": 29.622493318946578
+    },
+    {
+      "id": "LI_I9",
+      "direction": 1,
+      "maxStep": 0.016835274013230483,
+      "finalKmh": -29.539640336362243
+    },
+    {
+      "id": "N90",
+      "direction": -1,
+      "maxStep": 0.016847920662208304,
+      "finalKmh": 28.80172610124583
+    },
+    {
+      "id": "N90",
+      "direction": 1,
+      "maxStep": 0.016847920662208304,
+      "finalKmh": -28.71624990229087
+    },
+    {
+      "id": "TRUCK",
+      "direction": -1,
+      "maxStep": 0.013505589131615592,
+      "finalKmh": 29.612062650091865
+    },
+    {
+      "id": "TRUCK",
+      "direction": 1,
+      "maxStep": 0.013505589131615592,
+      "finalKmh": -29.382886661954338
+    }
+  ],
+  "impacts": [
+    {
+      "closing": 0.2,
+      "arm": -2,
+      "outward": 0.04999999999999999,
+      "yaw": -0.08353246753246754
+    },
+    {
+      "closing": 0.2,
+      "arm": 0,
+      "outward": 0.068,
+      "yaw": 0
+    },
+    {
+      "closing": 0.2,
+      "arm": 2,
+      "outward": 0.04999999999999999,
+      "yaw": 0.08353246753246754
+    },
+    {
+      "closing": 2,
+      "arm": -2,
+      "outward": 0.5,
+      "yaw": -0.8353246753246755
+    },
+    {
+      "closing": 2,
+      "arm": 0,
+      "outward": 0.6800000000000002,
+      "yaw": 0
+    },
+    {
+      "closing": 2,
+      "arm": 2,
+      "outward": 0.5,
+      "yaw": 0.8353246753246755
+    },
+    {
+      "closing": 6,
+      "arm": -2,
+      "outward": 1.5000000000000004,
+      "yaw": -2.2
+    },
+    {
+      "closing": 6,
+      "arm": 0,
+      "outward": 2.040000000000001,
+      "yaw": 0
+    },
+    {
+      "closing": 6,
+      "arm": 2,
+      "outward": 1.5000000000000004,
+      "yaw": 2.2
+    }
+  ]
+}
