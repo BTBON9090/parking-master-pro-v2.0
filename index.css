@@ -575,3 +575,5 @@ html,body,#root{overscroll-behavior:none}body{-webkit-touch-callout:none}button,
 /* Side mirrors: larger touch target; centre mirror retains its existing size. */
 .touch-hud .side-mirror-frame {width:158px!important;max-width:158px!important}
 @media(max-height:550px){.touch-hud .side-mirror-frame {width:132px!important;max-width:132px!important}}
+/* A minimized route map occupies exactly one button, including touch layouts. */
+.hud-map.hud-map-minimized {width:44px!important;height:44px!important;max-height:44px}

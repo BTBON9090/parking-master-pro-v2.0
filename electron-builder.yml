@@ -20,7 +20,8 @@ win:
   target:
     - target: nsis
       arch: [x64]
-  signAndEditExecutable: false
+  # Stamp the app icon/version into the PE resources even without a certificate.
+  signAndEditExecutable: true
 nsis:
   oneClick: false
   perMachine: false

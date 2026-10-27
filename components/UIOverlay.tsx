@@ -14,7 +14,7 @@ import { resolveCockpitPack } from './cockpit/stylePacks';
 import { publishMirrorGlassLayout } from '../utils/mirrorLayout';
 import { firstPersonClusterScale } from '../utils/hudLayout';
 import { SideMirrorFrame, CentreMirrorFrame, CockpitCluster } from './cockpit/CockpitParts';
-import { Settings, X, Zap, Pause, Power, Volume2, Gauge, ChevronUp, ChevronDown, RotateCcw, Keyboard, Sliders, Map, Scan, LocateFixed, Camera, MoveUpRight, MoveUpLeft, MoveDownRight, MoveDownLeft, CarFront, Eye, Maximize2, Languages, AlertTriangle } from 'lucide-react';
+import { Settings, X, Zap, Pause, Power, Volume2, Gauge, ChevronUp, ChevronDown, RotateCcw, Keyboard, Sliders, Map, Scan, LocateFixed, Camera, MoveUpRight, MoveUpLeft, MoveDownRight, MoveDownLeft, CarFront, Eye, Maximize2, Minimize2, Languages, AlertTriangle } from 'lucide-react';
 
 interface UIOverlayProps {
   money: number;
@@ -317,7 +317,13 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
 
   const [orbitBall, setOrbitBall] = useState({ azimuth: 0, polar: 0.12 });
   const [cameraMenuOpen, setCameraMenuOpen] = useState(false);
-  const [miniMapExpanded, setMiniMapExpanded] = useState(true);
+  const [miniMapExpanded, setMiniMapExpanded] = useState(() => {
+      try { return localStorage.getItem('parking-master-route-map-expanded') !== 'false'; }
+      catch { return true; }
+  });
+  useEffect(() => {
+      try { localStorage.setItem('parking-master-route-map-expanded', String(miniMapExpanded)); } catch {}
+  }, [miniMapExpanded]);
   const [viewportWidth, setViewportWidth] = useState(() => typeof window === 'undefined' ? 1280 : window.innerWidth);
   const [trainingTipsOpen, setTrainingTipsOpen] = useState(() => typeof window === 'undefined' ? true : window.innerWidth >= 1450);
   const [miniMapAreaSize, setMiniMapAreaSize] = useState({ width: 300, height: 190 });
@@ -438,9 +444,15 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
           window.removeEventListener('scroll', schedule, true);
           window.visualViewport?.removeEventListener('resize', schedule);
           window.visualViewport?.removeEventListener('scroll', schedule);
-          publishMirrorGlassLayout(null);
       };
-  }, [settings.rearviewMirrors, settings.mirrorAdjustments, settings.mirrorSwapSides]);
+  // Angle/zoom changes affect only the mirror camera, never its DOM viewport.
+  // Keep the last measured rect during observer replacement; falling back to
+  // desktop rects for a frame caused full-width flashes on touch devices.
+  }, [settings.rearviewMirrors, settings.mirrorSwapSides, settings.cockpitPackId,
+      settings.mirrorAdjustments.left.screenX, settings.mirrorAdjustments.left.screenY,
+      settings.mirrorAdjustments.right.screenX, settings.mirrorAdjustments.right.screenY,
+      settings.mirrorAdjustments.centre.screenX, settings.mirrorAdjustments.centre.screenY]);
+  useEffect(() => () => publishMirrorGlassLayout(null), []);
 
   useEffect(() => {
       const handler = () => setShowSettings(prev => {
@@ -1263,8 +1275,14 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
               </button>
 
               {/* 路线地图保持独立，仍可折叠。 */}
-              <div className="hud-map absolute right-4 top-[118px] z-30 transition-[width,height] duration-200"
-                   style={{ width: miniMapExpanded ? 300 : 132, height: miniMapExpanded ? 236 : 40 }}>
+              <div className={`hud-map absolute right-4 top-[118px] z-30 ${miniMapExpanded ? '' : 'hud-map-minimized'}`}
+                   style={{ width: miniMapExpanded ? 300 : 44, height: miniMapExpanded ? 236 : 44 }}>
+                  {!miniMapExpanded ? <button type="button" aria-label={lang === Language.CN ? '展开路线地图' : 'Expand route map'}
+                      title={lang === Language.CN ? '展开路线地图' : 'Expand route map'} aria-expanded={false}
+                      onClick={() => setMiniMapExpanded(true)} className="w-11 h-11 rounded-xl pointer-events-auto flex items-center justify-center"
+                      style={{background:'rgba(10,18,23,.85)',border:'1px solid rgba(255,255,255,.2)',color:'var(--amber)'}}>
+                      <Map size={21}/>
+                  </button> : <>
                   <div className="relative z-20 h-10 px-2 flex items-center justify-between pointer-events-auto rounded-xl overflow-hidden"
                        style={{
                            background: 'rgba(6,8,11,0.78)',
@@ -1282,10 +1300,11 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                               </span>
                           )}
                       </div>
-                      <button type="button" onClick={() => setMiniMapExpanded(expanded => !expanded)} aria-label={miniMapExpanded ? (lang === Language.CN ? '收起地图' : 'Collapse map') : (lang === Language.CN ? '展开地图' : 'Expand map')}
-                              className="w-7 h-7 rounded-md flex items-center justify-center transition-colors"
+                      <button type="button" onClick={() => setMiniMapExpanded(false)} aria-label={lang === Language.CN ? '最小化路线地图' : 'Minimize route map'} aria-expanded={true}
+                              title={lang === Language.CN ? '收起为地图按钮' : 'Collapse to map button'}
+                              className="w-9 h-9 rounded-md flex items-center justify-center transition-colors"
                               style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--text-dim)' }}>
-                          {miniMapExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                          <Minimize2 size={16} />
                       </button>
                   </div>
                   <div ref={miniMapAreaRef} className="absolute left-0 right-0 top-[46px] bottom-0 overflow-hidden rounded-xl transition-opacity duration-200"
@@ -1312,6 +1331,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                           </svg>
                       </div>
                   </div>
+                  </>}
               </div>
 
               {/* 720×450 = 小俯瞰 240×150 的三倍尺寸。 */}

@@ -1,5 +1,6 @@
 import {stableSunTarget} from '../utils/stableShadow';
 import {createLateralState,stepLateral,advanceLateralPose} from '../utils/lateralDynamics';
+import {stepImpactRecovery} from '../utils/impactRecovery';
 import {createMirrorMaterial} from '../utils/mirrorMask';
 import {qualityProfile,nextResolution,ResolutionSampler,retainedResolution,type RenderQuality} from '../utils/renderQuality';
 import {isTouchDevice} from '../utils/device';
@@ -2227,16 +2228,12 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         }
         if(impactMotion.time>0 && !destroyed && !rollover){
           const dt=frameDelta/1000;
-          const yawStep=impactMotion.yaw*dt;
-          car.rotation=previousPose.rotation+yawStep;
-          car.yawRate=impactMotion.yaw/60;
-          const targetSpeed=car.speed*SPEED_UNIT_KMH/3.6*10;
-          const recover=impactMotion.time>2.1?0:1-Math.exp(-dt*.75),drag=Math.exp(-dt*(currentInputReal.brake*5+.18));
-          impactMotion.x=(impactMotion.x+(Math.cos(car.rotation)*targetSpeed-impactMotion.x)*recover)*drag;
-          impactMotion.y=(impactMotion.y+(Math.sin(car.rotation)*targetSpeed-impactMotion.y)*recover)*drag;
-          car.x=previousPose.x+impactMotion.x*dt;car.y=previousPose.y+impactMotion.y*dt;
-          car.speed=(impactMotion.x*Math.cos(car.rotation)+impactMotion.y*Math.sin(car.rotation))/(SPEED_UNIT_KMH/3.6*10);
-          impactMotion.yaw*=Math.exp(-dt*1.8);impactMotion.time=Math.max(0,impactMotion.time-dt);
+          const recovered=stepImpactRecovery(impactMotion,{heading:previousPose.rotation,
+            speed:car.speed*SPEED_UNIT_KMH/3.6,beta:lateral.beta,steeringYaw:lateral.yawRate,
+            grip:cc.dynamics.grip*weatherGrip,dt});
+          car.rotation=recovered.heading;car.yawRate=recovered.yawRate/60;
+          car.x=previousPose.x+recovered.velocity.x*10*dt;car.y=previousPose.y+recovered.velocity.y*10*dt;
+          car.speed=recovered.speed/(SPEED_UNIT_KMH/3.6);
         }
         if(destroyed || rollover){car.x=previousPose.x;car.y=previousPose.y;car.rotation=previousPose.rotation;car.speed=0;}
         // Body pitch responds to accepted motion, including obstacle losses.
@@ -2470,8 +2467,8 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
             const x=previousPose.x+contactNormal.x*separation,y=previousPose.y+contactNormal.y*separation;
             if(![...solidHitsAt(x,y,car.rotation)].some(id=>!previousHits.has(id))){car.x=x;car.y=y;break;}
           }
-          impactMotion.x=response.velocity.x*10;impactMotion.y=response.velocity.y*10;
-          impactMotion.yaw=response.yawRate;if(response.closing>.025)impactMotion.time=2.5;
+          impactMotion.x=response.velocity.x;impactMotion.y=response.velocity.y;
+          impactMotion.yaw=response.yawRate;if(response.closing>.025)impactMotion.time=1;
           car.speed=(response.velocity.x*Math.cos(car.rotation)+response.velocity.y*Math.sin(car.rotation))/(SPEED_UNIT_KMH/3.6);
           car.driftSlip=0;Object.assign(lateralState,createLateralState());
           if(response.closing>2 && simulationClockMs-lastDamageAt>650 && !destroyed && !rollover){

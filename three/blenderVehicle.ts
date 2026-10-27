@@ -180,7 +180,9 @@ export function buildNativeAuthoredVehicle(source: THREE.Group, cfg: CarConfig):
       };
       node.material=Array.isArray(node.material)?node.material.map(recolor):recolor(node.material);
     });
-    const centreMark=new THREE.Mesh(new THREE.SphereGeometry(.014,10,6),new THREE.MeshBasicMaterial({color:'#ffe65b'}));
+    // A narrow matte leather stripe, not a self-lit dot. Local -Z points
+    // radially up the wheel; its long side runs across the rim at 12 o'clock.
+    const centreMark=new THREE.Mesh(new THREE.BoxGeometry(.006,.006,.029),new THREE.MeshStandardMaterial({color:'#bbaa76',roughness:1,metalness:0}));
     centreMark.name='steering-centre-reference';
     // Authored column uses local +Y; local -Z is the rim's 12 o'clock.
     centreMark.position.set(0,.022,-.185);spin.add(centreMark);

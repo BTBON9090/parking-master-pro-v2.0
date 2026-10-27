@@ -22,12 +22,16 @@ import { CockpitStylePack } from './stylePacks';
 
 function useMirrorDrag(id:MirrorId,adjustment:MirrorAdjustment,onAdjust?:(a:MirrorAdjustment)=>void){
  const held=React.useRef<{id:number;x:number;y:number;start:MirrorAdjustment}|null>(null);
+ const pending=React.useRef<MirrorAdjustment|null>(null),frame=React.useRef(0);
+ const commit=React.useRef(onAdjust);commit.current=onAdjust;
+ const flush=()=>{if(frame.current)cancelAnimationFrame(frame.current);frame.current=0;if(pending.current){commit.current?.(pending.current);pending.current=null;}};
+ React.useEffect(()=>()=>{if(frame.current)cancelAnimationFrame(frame.current);},[]);
  return {
   onPointerDown:(e:React.PointerEvent<HTMLDivElement>)=>{if(e.button!==0||held.current)return;e.preventDefault();e.stopPropagation();held.current={id:e.pointerId,x:e.clientX,y:e.clientY,start:{...adjustment}};e.currentTarget.setPointerCapture(e.pointerId);},
-  onPointerMove:(e:React.PointerEvent<HTMLDivElement>)=>{const c=held.current;if(!c||c.id!==e.pointerId)return;e.stopPropagation();onAdjust?.(dragMirror(id,c.start,e.clientX-c.x,e.clientY-c.y));},
-  onPointerUp:(e:React.PointerEvent<HTMLDivElement>)=>{if(held.current?.id===e.pointerId){held.current=null;e.stopPropagation();if(e.currentTarget.hasPointerCapture(e.pointerId))e.currentTarget.releasePointerCapture(e.pointerId);}},
-  onPointerCancel:(e:React.PointerEvent<HTMLDivElement>)=>{if(held.current?.id===e.pointerId)held.current=null;},
-  onLostPointerCapture:(e:React.PointerEvent<HTMLDivElement>)=>{if(held.current?.id===e.pointerId)held.current=null;},
+  onPointerMove:(e:React.PointerEvent<HTMLDivElement>)=>{const c=held.current;if(!c||c.id!==e.pointerId)return;e.stopPropagation();pending.current=dragMirror(id,c.start,e.clientX-c.x,e.clientY-c.y);if(!frame.current)frame.current=requestAnimationFrame(flush);},
+  onPointerUp:(e:React.PointerEvent<HTMLDivElement>)=>{if(held.current?.id===e.pointerId){flush();held.current=null;e.stopPropagation();if(e.currentTarget.hasPointerCapture(e.pointerId))e.currentTarget.releasePointerCapture(e.pointerId);}},
+  onPointerCancel:(e:React.PointerEvent<HTMLDivElement>)=>{if(held.current?.id===e.pointerId){flush();held.current=null;}},
+  onLostPointerCapture:(e:React.PointerEvent<HTMLDivElement>)=>{if(held.current?.id===e.pointerId){flush();held.current=null;}},
  };
 }
 
@@ -248,10 +252,10 @@ export const SteeringWheel: React.FC<SteeringWheelProps> = ({ pack, angleDeg, si
         className="absolute left-1/2 -translate-x-1/2 rounded-sm z-20"
         style={{
           top: 0,
-          width: size * 0.065,
+          width: size * 0.027,
           height: ringWidth * 1.12,
-          background: w.markerColor,
-          boxShadow: `0 0 8px ${w.markerColor}`,
+          background: '#bbaa76',
+          opacity: .86,
         }}
       />
     </div>

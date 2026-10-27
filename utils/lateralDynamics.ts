@@ -17,8 +17,8 @@ export function stepLateral(s:LateralState,i:LateralInput){
  const a=i.wheelbase*(1-i.frontBias),b=i.wheelbase*i.frontBias;
  const inertia=(i.wheelbase*i.wheelbase+1.8*1.8)/9;
  const steeringRate=Math.abs(i.steer-s.previousSteer)/Math.max(.001,i.dt);s.previousSteer=i.steer;
- const flick=smooth(.12,.30,Math.abs(i.steer))*smooth(.3,1.2,steeringRate)*smooth(10,20,speed);
- s.breakaway=Math.max(flick,s.breakaway*Math.exp(-i.dt*1.2));
+ const flick=smooth(.22,.45,Math.abs(i.steer))*smooth(.7,2.2,steeringRate)*smooth(15,26,speed);
+ s.breakaway=Math.max(flick,s.breakaway*Math.exp(-i.dt*4));
  let lateral=0,scrub=0,frontSlip=0,rearSlip=0;
  if(blend===0){s.beta=parkingBeta;s.yaw=parkingYaw;}
  else for(let n=0;n<steps;n++){
@@ -26,14 +26,21 @@ export function stepLateral(s:LateralState,i:LateralInput){
   frontSlip=i.steer-Math.atan(s.beta+s.yaw*a/bodyV);
   rearSlip=i.rearSteer-Math.atan(s.beta-s.yaw*b/bodyV);
   const frontMu=i.grip*(i.frontLocked?.16:1)*(1-(i.layout==='FWD'?.18:.04)*i.throttle);
-  const rearMu=i.grip*(i.handbrake?.26:1)*(1-(i.layout==='RWD'?.28:.10)*i.throttle)
-    *(1-.24*s.breakaway*smooth(.10,.40,Math.abs(rearSlip)));
+  const rearMu=i.grip*(i.handbrake?.26:1)*(1-(i.layout==='RWD'?.16:.04)*i.throttle)
+    *(1-.08*s.breakaway*smooth(.10,.40,Math.abs(rearSlip)));
   const frontLoad=9.80665*i.frontBias,rearLoad=9.80665*(1-i.frontBias);
   const front=frontLoad*frontMu*Math.tanh(frontSlip*(7.5/(1+i.understeer*.12))/Math.max(.1,frontMu))*direction;
   const rear=rearLoad*rearMu*Math.tanh(rearSlip*8.1/Math.max(.1,rearMu))*direction;
   lateral=front*Math.cos(i.steer)+rear*Math.cos(i.rearSteer);
   const yawAcceleration=(a*front*Math.cos(i.steer)-b*rear*Math.cos(i.rearSteer))/inertia;
-  s.yaw=clamp(s.yaw+(yawAcceleration-.3*s.yaw)*dt,-2.5,2.5);
+  // Road-car stability assistance: saturated front/rear forces alone can
+  // cancel their moments and leave a permanent spin. Once the handbrake is
+  // released, oppose excess yaw while preserving the requested corner arc.
+  const gripYaw=9.80665*i.grip/v;
+  const referenceYaw=clamp(parkingYaw,-gripYaw,gripYaw);
+  const slipRecovery=smooth(.05,.28,Math.abs(Math.atan(s.beta)));
+  const yawRecovery=i.handbrake?0:(1.8+slipRecovery*3.5)*(s.yaw-referenceYaw);
+  s.yaw=clamp(s.yaw+(yawAcceleration-.35*s.yaw-yawRecovery)*dt,-2.5,2.5);
   s.beta=clamp(s.beta+(lateral/bodyV-s.yaw)*dt,-1.15,1.15);
   // A smooth low-speed handover preserves accurate parking arcs.
   const settle=1-Math.exp(-(1-blend)*12*dt);

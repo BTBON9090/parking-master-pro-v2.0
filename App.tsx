@@ -105,7 +105,10 @@ function App() {
       differentialGain: 0.37,
     },
   }));
-  useEffect(()=>saveSettings(settings),[settings]);
+  const settingsToSave=useRef(settings);settingsToSave.current=settings;
+  useEffect(()=>{const timer=setTimeout(()=>saveSettings(settings),250);return()=>clearTimeout(timer);},[settings]);
+  useEffect(()=>{const flush=()=>saveSettings(settingsToSave.current);
+    window.addEventListener('pagehide',flush);return()=>{flush();window.removeEventListener('pagehide',flush);};},[]);
 
   // The in-game weather switch now has an immediate, visible result. Turning
   // it on enters a representative rainy lesson; turning it off restores the
