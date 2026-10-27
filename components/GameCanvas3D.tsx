@@ -53,7 +53,7 @@ import { stepHeadLook } from '../utils/headLook';
 import { ORBIT_POLAR_MAX, ORBIT_POLAR_MIN, stepOrbitDrag, followRelativeCoordinate, speedVisualStrength, resolveInspectionView } from '../utils/cameraLook';
 import { SpeedEffect } from '../three/speedEffect';
 import { suspensionForCar } from '../utils/suspension';
-import { resolveCurbMotion, sampleWheelSupport, nearbyWheelCurbs, type WheelShape } from '../utils/wheelObstacles';
+import { resolveCurbMotion, sampleWheelSupport, nearbyWheelCurbs, curbTripRollover, type WheelShape } from '../utils/wheelObstacles';
 import { disposeRecordingAudio, getRecordingAudioStatus, initRecordingAudio, playRecordingImpact, setRecordingAudioFocus, setRecordingAudioPaused, setRecordingAudioVisibility, updateRecordingAudio } from '../utils/recordingAudio';
 import { buildCollisionGrid, queryCollisionGrid } from '../utils/collisionSpatial';
 import { isGravelSurface, isTrainingTerrain, trainingTerrainGradient, trainingTerrainHeight, TRAINING_TERRAIN } from '../utils/trainingTerrain';
@@ -415,7 +415,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     if (!mount) return;
 
     // ===== Renderer =====
-    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true, powerPreference: 'high-performance' });
     let quality=settingsRef.current.renderQuality??'auto';
     let profile=qualityProfile(quality,window.devicePixelRatio,isTouchDevice());
     let dynamicDpr = retainedResolution(retainedQuality.current,quality,profile);
@@ -2019,8 +2019,10 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         const pt = getPowertrain(cc.id);
         const vehicleTune = settingsRef.current.vehicleTuning?.[cc.id] ?? DEFAULT_VEHICLE_TUNING[cc.id];
         const wCur = weatherRef.current;
-        const terrainResponse = ldCur.openWorld ? worldSurface(car.x, car.y) : {grip:1,rolling:1,gravel:false};
-        const weatherGrip = (wCur === WeatherType.RAINY ? 0.62 : wCur === WeatherType.SNOWY ? 0.38 : 1) * terrainResponse.grip;
+        const terrainResponse = ldCur.challengeTerrain ? {...ldCur.challengeTerrain,gravel:ldCur.challengeTerrain.kind==='mud'||ldCur.challengeTerrain.kind==='quarry'} : ldCur.openWorld ? worldSurface(car.x, car.y) : {grip:1,rolling:1,gravel:false};
+        // Snow maps already include the snowy surface friction. Multiplying
+        // by the snow-weather factor again makes the same snow behave as ice.
+        const weatherGrip = (wCur === WeatherType.RAINY ? 0.62 : wCur === WeatherType.SNOWY && ldCur.challengeTerrain?.kind !== 'snow' ? 0.38 : 1) * terrainResponse.grip;
 
         // —— 换挡选择：离合衔接进度由固定步进纵向模型推进 ——
         if (currentInputReal.gear !== selectedGear) {
@@ -2199,6 +2201,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         }
         const motionSteerAngle=Math.atan(lateral.yawRate*rigWheelbase/Math.max(.01,speedMs*10));
 
+        let curbTripSpeed=0;
         if (Math.abs(frameTravelSpeed) > 0.0001) {
           const speedToMps=SPEED_UNIT_KMH/3.6;
           const dt=frameDelta/1000;
@@ -2211,6 +2214,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
               return advanceLateralPose(p.x,p.y,p.rotation,d,lateral.beta,turn);
             });
           tyreLateralG=airborneActive?0:lateral.lateralG;
+          if(curbTripRollover(frameStartSpeed*speedToMps,lateral.beta,rigHalfTrack/5,cc.dynamics.cgHeightM,pose.sideBlocked))curbTripSpeed=frameStartSpeed*speedToMps;
           car.speed=pose.speedMps/speedToMps;
           frameTravelSpeed=pose.distance/Math.max(1e-6,TRAVEL_PER_SPEED_FRAME*frameScale);
           const bodyHeading=pose.rotation;
@@ -2733,9 +2737,11 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         // stabilitySlip is computed in the Ackermann block above as a
         // geometry-based yaw demand (|ω|·|v| / wheelbase). slipAngle is
         // pinned to 0 by pure kinematics, so it is dropped from the trigger.
-        const isSkiddingNow = speedAbs > 1.0 && (
-          longResult.frontLocked || longResult.rearLocked || stabilitySlip > 0.42
-          || Math.abs(car.driftSlip) > 0.035
+        // The bicycle model's parking beta is geometric, not a tyre skid.
+        // Blend in real tyre slip as the dynamic model takes over.
+        const tyreSkid = lateral.blend > .2 && Math.max(Math.abs(lateral.frontSlip),Math.abs(lateral.rearSlip)) > .16;
+        const isSkiddingNow = speedAbs > .45 && (
+          longResult.frontLocked || longResult.rearLocked || tyreSkid
           || (emergencyBraking && speedAbs > 2.5 && Math.abs(car.steeringAngle) > 0.08)
         );
         if (sCur.soundEnabled && skidNoiseRef.current) {
@@ -2757,7 +2763,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           redlineRpm: pt.redlineRpm,
           throttle: throttleState.current,
           speedAbs, distanceM:audioDistanceM, insulation,
-          surface: (isGravelSurface(car.x, car.y) || (ldCur.openWorld && worldSurface(car.x,car.y).gravel)) ? 'gravel' : 'asphalt',
+          surface: (terrainResponse.gravel || isGravelSurface(car.x, car.y)) ? 'gravel' : 'asphalt',
           skid: isSkiddingNow ? Math.min(1, Math.max(brakeForce * 2.5, Math.abs(car.driftSlip) * 4)) : 0,
           volume: sCur.volume,
         });
@@ -2815,16 +2821,16 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
             bodyPitchDeg:THREE.MathUtils.radToDeg(pose.pitch),bodyRollDeg:THREE.MathUtils.radToDeg(pose.roll),
             wheelTravel:pose.offsets, wheelContacts:pose.contacts.map(c=>c.height),wheelGap:pose.contacts.map(c=>c.gap),
             wheelGrounded:pose.contacts.map(c=>!pose.airborne&&isWheelGroundedByGap(c.gap)),
-            surface:(isGravelSurface(car.x,car.y)||(ldCur.openWorld&&worldSurface(car.x,car.y).gravel))?'gravel':'asphalt'};
+            surface:(terrainResponse.gravel||isGravelSurface(car.x,car.y))?'gravel':'asphalt'};
           if(!destroyed && impactMotion.time<=0 && !pose.unstable && !pose.airborne && Math.abs(pose.pitch)<.45 && Math.abs(pose.roll)<.4 && simulationClockMs-lastRecoveryAt>1000){
             recoveryPose=recoveryCandidate;recoveryCandidate={x:car.x,y:car.y,rotation:car.rotation,roadHeight:car.roadHeight};lastRecoveryAt=simulationClockMs;
           }
-          if(pose.unstable&&!destroyed){
+          if((pose.unstable||curbTripSpeed!==0)&&!destroyed){
             accidentRecoveryPose={...recoveryPose};
             rollover=new VehicleRollover(playerParts.group,{mass:cc.weight,width:cc.width,length:cc.length,height:cc.height,
               cgHeight:cc.dynamics.cgHeightM*10,wheels:rigWheels.map((w,i)=>({position:playerParts.wheelMounts[i].position.clone(),radius:w.radius,width:w.halfWidth*2,steer:w.steer})),
-              velocity:new THREE.Vector3(Math.cos(car.rotation),0,Math.sin(car.rotation)).multiplyScalar(car.speed*SPEED_UNIT_KMH/3.6*10),
-              tipX:pose.loads.tipX,tipZ:pose.loads.tipZ,surface:(x,z)=>sampleTerrainSurface(ldCur,x,z,car.roadHeight).height});
+              velocity:new THREE.Vector3(Math.cos(car.rotation+lateral.beta),0,Math.sin(car.rotation+lateral.beta)).multiplyScalar((curbTripSpeed?curbTripSpeed*.65:car.speed*SPEED_UNIT_KMH/3.6)*10),
+              tipX:curbTripSpeed?Math.sign(lateral.beta)*Math.min(3,Math.abs(curbTripSpeed*Math.sin(lateral.beta))*.35):pose.loads.tipX,tipZ:pose.loads.tipZ,surface:(x,z)=>sampleTerrainSurface(ldCur,x,z,car.roadHeight).height});
             setOverturned(true);impactMotion.time=0;car.speed=0;
           }
         }else{
@@ -3133,7 +3139,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         playerParts.nativeCockpit?.updateInstruments?.(car.speed * 15, simulatedEngineRpm);
         roadHeadlights.forEach(light => {
           light.intensity = lightsOn ? (highBeam?2200:1100) : 0;
-          light.distance=highBeam?800:360;light.angle=highBeam?.32:.60;
+          light.distance=highBeam?800:360;light.angle=highBeam?.48:.78;
           light.target.position.y=highBeam?4:-5;light.target.position.z=highBeam?550:180;
         });
         roadTaillights.forEach(light => {

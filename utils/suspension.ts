@@ -30,6 +30,11 @@ export const GAME_UNITS_PER_METRE = 10;
 export const SPRING_SCALE = 500000; // N/m per spec.spring unit
 
 const SPECS: Record<CarType, SuspensionSpec> = {
+  [CarType.JEEP]:{massKg:2050,bodyResponse:.075,roll:.72,spring:.075,damping:.72,travel:1.5,bumpTravel:2.8,droopTravel:1.7,antiRoll:.43},
+  [CarType.MIDIBUS]:{massKg:4500,bodyResponse:.065,roll:.7,spring:.16,damping:.78,travel:1.1,bumpTravel:2,droopTravel:1.3,antiRoll:.55},
+  [CarType.COACH]:{massKg:10500,bodyResponse:.075,roll:.66,spring:.32,damping:.88,travel:1.0,bumpTravel:1.8,droopTravel:1.3,antiRoll:.65},
+  [CarType.VAN]:{massKg:2650,bodyResponse:.07,roll:.7,spring:.09,damping:.72,travel:1.2,bumpTravel:2.2,droopTravel:1.4,antiRoll:.48},
+  [CarType.LIGHT_TRUCK]:{massKg:6200,bodyResponse:.07,roll:.73,spring:.19,damping:.67,travel:1.3,bumpTravel:2.4,droopTravel:1.5,antiRoll:.5},
   // Distinct simulation calibrations; OEM damping maps and wheel travel are not published.
   [CarType.TAI7]: {massKg:2495,bodyResponse:.085,roll:.66,spring:.095,damping:.84,travel:1.2,bumpTravel:2.3,droopTravel:1.5,antiRoll:.58},
   [CarType.LI_I9]: {massKg:2745,bodyResponse:.08,roll:.58,spring:.105,damping:.88,travel:1.15,bumpTravel:2.05,droopTravel:1.4,antiRoll:.7},

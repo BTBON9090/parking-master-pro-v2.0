@@ -125,6 +125,7 @@ export interface CurbMotionResult extends VehiclePose {
   distance: number;
   absorbedJoules: number;
   blocked: boolean;
+  sideBlocked: boolean;
 }
 
 /** Integrate curb work at <= 1/240 s AND <= 2 cm travel per substep.
@@ -140,10 +141,10 @@ export function resolveCurbMotion(
 ): CurbMotionResult {
   const freeDistance = (speedMps + freeSpeedMps) * .5 * dt * 10;
   const nearby = nearbyWheelCurbs(curbs, pose, Math.max(...wheels.map(w => Math.hypot(w.x,w.z)+w.radius+w.halfWidth),1) + Math.abs(freeDistance));
-  if (!nearby.length || dt <= 0) return { ...advance(pose, freeDistance), speedMps: freeSpeedMps, distance: freeDistance, absorbedJoules: 0, blocked: false };
+  if (!nearby.length || dt <= 0) return { ...advance(pose, freeDistance), speedMps: freeSpeedMps, distance: freeDistance, absorbedJoules: 0, blocked: false,sideBlocked:false };
   const steps = Math.max(1, Math.ceil(dt*240), Math.ceil(Math.abs(freeDistance)/.2));
   const h=dt/steps, acceleration=(freeSpeedMps-speedMps)/dt;
-  let current={...pose}, velocity=speedMps, distance=0, absorbedJoules=0, blocked=false;
+  let current={...pose}, velocity=speedMps, distance=0, absorbedJoules=0, blocked=false,sideBlocked=false;
   let heights=wheels.map(w => wheelCurbSupport(current,w,nearby));
   for (let i=0;i<steps;i++) {
     let predicted=velocity+acceleration*h;
@@ -166,6 +167,7 @@ export function resolveCurbMotion(
       return lateral>rolling*1.5;
     });
     if (sideHit || work>available+1e-10) {
+      sideBlocked ||= sideHit;
       // Stop at the last admissible pose. Tiny spatial steps prevent tunnelling
       // through the 42 cm kerb even when a render frame is slow.
       absorbedJoules+=.5*massKg*velocity**2;
@@ -176,5 +178,15 @@ export function resolveCurbMotion(
     absorbedJoules+=work*massKg;
     current=candidate; heights=next; distance+=travel;
   }
-  return {...current,speedMps:velocity,distance,absorbedJoules,blocked};
+  return {...current,speedMps:velocity,distance,absorbedJoules,blocked,sideBlocked};
+}
+
+/** Energy threshold for a sideways tyre catching a curb. Smooth dry asphalt
+ * may slide before reaching its rollover limit; a tripping obstacle changes
+ * the pivot and can convert lateral momentum into body roll. */
+export function curbTripRollover(speedMps:number,beta:number,trackM:number,cgM:number,sideBlocked:boolean){
+ if(!sideBlocked||Math.abs(speedMps)<12||Math.abs(beta)<.25)return false;
+ const rise=Math.hypot(trackM/2,cgM)-cgM;
+ const lateral=Math.abs(speedMps*Math.sin(beta));
+ return .25*lateral*lateral/2>9.80665*rise;
 }

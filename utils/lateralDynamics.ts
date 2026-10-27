@@ -25,7 +25,10 @@ export function stepLateral(s:LateralState,i:LateralInput){
   const v=Math.max(3,speed),bodyV=direction*v;
   frontSlip=i.steer-Math.atan(s.beta+s.yaw*a/bodyV);
   rearSlip=i.rearSteer-Math.atan(s.beta-s.yaw*b/bodyV);
-  const frontMu=i.grip*(i.frontLocked?.16:1)*(1-(i.layout==='FWD'?.18:.04)*i.throttle);
+  // A brief front-tyre reserve during a rapid steering input improves
+  // turn-in. It decays after the input, leaving the sustained grip limit and
+  // the normal stability-recovery response intact.
+  const frontMu=i.grip*(1+.06*s.breakaway)*(i.frontLocked?.16:1)*(1-(i.layout==='FWD'?.18:.04)*i.throttle);
   const rearMu=i.grip*(i.handbrake?.26:1)*(1-(i.layout==='RWD'?.16:.04)*i.throttle)
     *(1-.08*s.breakaway*smooth(.10,.40,Math.abs(rearSlip)));
   const frontLoad=9.80665*i.frontBias,rearLoad=9.80665*(1-i.frontBias);
@@ -39,7 +42,7 @@ export function stepLateral(s:LateralState,i:LateralInput){
   const gripYaw=9.80665*i.grip/v;
   const referenceYaw=clamp(parkingYaw,-gripYaw,gripYaw);
   const slipRecovery=smooth(.05,.28,Math.abs(Math.atan(s.beta)));
-  const yawRecovery=i.handbrake?0:(1.8+slipRecovery*3.5)*(s.yaw-referenceYaw);
+  const yawRecovery=i.handbrake?0:(2.0+slipRecovery*3.5)*(s.yaw-referenceYaw);
   s.yaw=clamp(s.yaw+(yawAcceleration-.35*s.yaw-yawRecovery)*dt,-2.5,2.5);
   s.beta=clamp(s.beta+(lateral/bodyV-s.yaw)*dt,-1.15,1.15);
   // A smooth low-speed handover preserves accurate parking arcs.

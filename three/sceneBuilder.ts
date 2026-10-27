@@ -17,6 +17,7 @@ import { sampleSlopeProfile } from '../utils/slopeProfile';
 import { buildJunctionPolygon, roundedPolygonPoints } from '../utils/polyline';
 import { TRAINING_TERRAIN, trainingTerrainHeight, isTrainingTerrain } from '../utils/trainingTerrain';
 import { elevatedRoadProfile } from '../utils/elevatedRoad';
+import {CHALLENGE_COLUMNS,CHALLENGE_ROWS,challengeHeight,challengeMeshHeight} from '../utils/challengeMaps';
 
 /** Enable crisp sun shadows on solid car meshes; skip transparent shadow decals. */
 function enableCarShadowCasting(parts: CarMeshParts) {
@@ -117,6 +118,30 @@ function terrainHeightAt(level: LevelData, x: number, y: number) {
   return 0;
 }
 
+/** Draw the route into the ground texture itself. A separate draped ribbon
+ * intersects a triangulated height field at different sample points and
+ * visibly flickers; this also keeps road paint and tyre support coincident. */
+function challengeGroundMaterial(level:LevelData):THREE.MeshLambertMaterial {
+  const canvas=document.createElement('canvas');canvas.width=2048;canvas.height=1536;
+  const ctx=canvas.getContext('2d')!,kind=level.challengeTerrain!.kind;
+  ctx.fillStyle=kind==='snow'?'#cbd9dc':kind==='mud'?'#706a57':kind==='quarry'?'#827a6a':kind==='coast'?'#8a9a81':'#66745b';
+  ctx.fillRect(0,0,canvas.width,canvas.height);ctx.scale(canvas.width/level.mapWidth,canvas.height/level.mapHeight);
+  for(const road of level.curvedRoads??[]){
+    const curve=new THREE.CatmullRomCurve3(road.points.map(p=>new THREE.Vector3(p.x,0,p.y)),!!road.closed,'centripetal',.45);
+    const points=curve.getSpacedPoints(600);
+    const draw=(color:string,width:number,dash:number[]=[])=>{
+      ctx.strokeStyle=color;ctx.lineWidth=width;ctx.lineJoin='round';ctx.lineCap='round';ctx.setLineDash(dash);ctx.beginPath();
+      points.forEach((p,i)=>i?ctx.lineTo(p.x,p.z):ctx.moveTo(p.x,p.z));ctx.stroke();
+    };
+    draw(road.color,road.width);
+    if(kind==='coast')draw('#e9dfbd',1.3,[20,18]);
+    if(kind==='mud'||kind==='quarry')draw('#554d40',2,[10,17,4,11]);
+  }
+  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
+  texture.anisotropy=4;
+  return new THREE.MeshLambertMaterial({map:texture,color:'#ffffff'});
+}
+
 // 路面颜色 → 材质选择
 function roadMat(color: string): THREE.Material {
   const c = color.toLowerCase();
@@ -145,13 +170,31 @@ export async function buildScene(
   const trackGeo = (g: THREE.BufferGeometry) => { geometries.push(g); return g; };
 
   // ===== 地面 — 草地色 =====
-  const groundGeo = trackGeo(new THREE.PlaneGeometry(levelData.mapWidth, levelData.mapHeight));
-  const ground = new THREE.Mesh(groundGeo, levelData.levelId === 1 ? beijingGroundMaterial() : Mats.ground());
+  const groundGeo = trackGeo(new THREE.PlaneGeometry(levelData.mapWidth, levelData.mapHeight,levelData.challengeTerrain?CHALLENGE_COLUMNS:1,levelData.challengeTerrain?CHALLENGE_ROWS:1));
+  if(levelData.challengeTerrain){
+    const pos=groundGeo.getAttribute('position');
+    for(let i=0;i<pos.count;i++){
+      const x=pos.getX(i)+levelData.mapWidth/2,y=levelData.mapHeight/2-pos.getY(i);
+      pos.setZ(i,challengeHeight(levelData,x,y));
+    }
+    pos.needsUpdate=true;groundGeo.computeVertexNormals();
+  }
+  const groundMaterial=levelData.challengeTerrain?challengeGroundMaterial(levelData):levelData.levelId === 1 ? beijingGroundMaterial() : Mats.ground();
+  const ground = new THREE.Mesh(groundGeo,groundMaterial);
   ground.rotation.x = -Math.PI / 2;
   ground.position.set(levelData.mapWidth / 2, 0, levelData.mapHeight / 2);
   ground.receiveShadow = true;
   ground.visible = !levelData.garage;
   scene.add(ground);
+  if(levelData.challengeTerrain){
+    const trees=levelData.obstacles.filter(o=>o.id.startsWith('challenge-tree-'));
+    const trunks=new THREE.InstancedMesh(trackGeo(new THREE.CylinderGeometry(1.4,1.8,17,6)),flatMat('#655945'),trees.length);
+    const foliage=new THREE.InstancedMesh(trackGeo(new THREE.ConeGeometry(10,29,7)),flatMat(levelData.challengeTerrain.kind==='snow'?'#889e91':'#4c694f'),trees.length);
+    const matrix=new THREE.Matrix4();
+    trees.forEach((tree,i)=>{const h=tree.elevation??0;trunks.setMatrixAt(i,matrix.makeTranslation(tree.x,h+8.5,tree.y));foliage.setMatrixAt(i,matrix.makeTranslation(tree.x,h+23,tree.y));});
+    trunks.instanceMatrix.needsUpdate=true;foliage.instanceMatrix.needsUpdate=true;trunks.castShadow=true;foliage.castShadow=true;
+    trunks.computeBoundingSphere();foliage.computeBoundingSphere();scene.add(trunks,foliage);
+  }
 
   // ===== 道路路面 =====
   if (levelData.roadSurfaces) {
@@ -173,6 +216,7 @@ export async function buildScene(
   // High-resolution Catmull-Rom ribbons replace rectangular curve chains.
   levelData.curvedRoads?.forEach(curved => {
     try {
+    if(levelData.challengeTerrain)return; // route already painted onto the height field
     if (curved.points.length < 3) return;
     const elevation = (curved.elevation || 0) + 0.15;
     const closed = curved.closed || false;
@@ -234,7 +278,7 @@ export async function buildScene(
       'centripetal',
       0.45,
     );
-    const segments = Math.max(160, curved.points.length * 28);
+    const segments = Math.max(levelData.challengeTerrain?480:160, curved.points.length * 28);
     const samples = centreCurve.getSpacedPoints(segments);
     const tangents = samples.map((point, index) => {
       const previous = samples[Math.max(0, index - 1)];
@@ -299,7 +343,9 @@ export async function buildScene(
       const right = point.clone().addScaledVector(normal, -rightOffset);
       leftEdge.push(left.clone().setY(elevation + 0.1));
       rightEdge.push(right.clone().setY(elevation + 0.1));
-      positions.push(left.x, elevation, left.z, right.x, elevation, right.z);
+      const terrain=levelData.challengeTerrain;
+      positions.push(left.x, terrain?challengeMeshHeight(levelData,left.x,left.z)+.16:elevation, left.z,
+        right.x, terrain?challengeMeshHeight(levelData,right.x,right.z)+.16:elevation, right.z);
       uvs.push(index / 12, 0, index / 12, 1);
       if (index < samples.length - 1) {
         const base = index * 2;
@@ -336,7 +382,7 @@ export async function buildScene(
       }
     }
 
-    for (let i = 0; i < samples.length; i += 14) {
+    for (let i = 0; !levelData.challengeTerrain && i < samples.length; i += 14) {
       if (pointInMarkingGap(samples[i], markingGaps)) continue;
       const tangent = tangents[i];
       const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
@@ -351,7 +397,7 @@ export async function buildScene(
     }
 
     // 车道线 / 中心线 / 方向箭头
-    addRoadLaneMarkings(
+    if(!levelData.challengeTerrain) addRoadLaneMarkings(
       scene, samples, tangents, i => widthAt(i) / 2,
       curved.lanes ?? Math.max(1, Math.min(6, Math.round(curved.width / 35))),
       curved.direction || (curved.width < 60 ? 'one-way' : 'two-way'),

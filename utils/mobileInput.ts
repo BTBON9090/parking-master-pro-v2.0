@@ -21,6 +21,14 @@ export class MobileInputController {
     }
     return true;
   }
+  /** Absolute steering position; pointer capture keeps the end stops active
+   * even after a finger leaves the bar. */
+  steerAt(id: number, x: number, left: number, width: number, lock: number) {
+    const c = this.contacts.get('steer');
+    if (!c || c.id !== id || width <= 0) return false;
+    c.value = clamp((x - left) / width * 2 - 1, -1, 1) * lock;
+    return true;
+  }
   end(control: HeldControl, id: number) {
     if (this.contacts.get(control)?.id !== id) return false;
     this.contacts.delete(control); return true;

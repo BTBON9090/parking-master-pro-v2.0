@@ -32,6 +32,9 @@ export interface ModelDef {
 
 export const MODEL_REGISTRY: Record<string, ModelDef> = {
  tai7:{file:'cars/fangchengbao-tai7.glb',uniformScale:10},
+ jeep:{file:'cars/trail-jeep.glb',uniformScale:10},
+ midibus:{file:'cars/training-midibus.glb',uniformScale:10},coach:{file:'cars/training-coach.glb',uniformScale:10},
+ van:{file:'cars/training-van.glb',uniformScale:10},lightTruck:{file:'cars/training-light-truck.glb',uniformScale:10},
  liI9:{file:'cars/li-i9.glb',uniformScale:10},
  n90:{file:'cars/xiaomi-n90.glb',uniformScale:10},
   // 车辆 — targetLength/targetWidth 对应 CarConfig
@@ -69,6 +72,7 @@ export const MODEL_REGISTRY: Record<string, ModelDef> = {
 // CarType → 模型注册名映射
 export const CAR_TYPE_TO_MODEL: Record<CarType, string> = {
  [CarType.TAI7]:'tai7', [CarType.LI_I9]:'liI9', [CarType.N90]:'n90',
+ [CarType.JEEP]:'jeep',[CarType.MIDIBUS]:'midibus',[CarType.COACH]:'coach',[CarType.VAN]:'van',[CarType.LIGHT_TRUCK]:'lightTruck',
   [CarType.SEDAN]: 'seal08',
   [CarType.SEAL08]: 'seal08',
   [CarType.SUV]: 'l80',
@@ -178,7 +182,8 @@ export function applyPlayerVehicleFinish(group: THREE.Group, carType: CarType): 
  */
 export function normalizeModel(group: THREE.Group, def: ModelDef) {
   const nativeConcept = def.file === 'cars/concept-car.glb';
-  const authoredCar = ['cars/byd-seal-08.glb','cars/onvo-l80.glb','cars/fangchengbao-tai7.glb','cars/li-i9.glb','cars/xiaomi-n90.glb'].includes(def.file);
+  const authoredCar = ['cars/byd-seal-08.glb','cars/onvo-l80.glb','cars/fangchengbao-tai7.glb','cars/li-i9.glb','cars/xiaomi-n90.glb',
+    'cars/trail-jeep.glb','cars/training-midibus.glb','cars/training-coach.glb','cars/training-van.glb','cars/training-light-truck.glb'].includes(def.file);
   const preciseBounds = nativeConcept || authoredCar;
   if (nativeConcept) neutralizeConceptWheels(group);
   const box = new THREE.Box3().setFromObject(group, preciseBounds);

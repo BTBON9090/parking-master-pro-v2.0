@@ -7,6 +7,7 @@ export enum CarType {
   TAI7 = 'TAI7',
   LI_I9 = 'LI_I9',
   N90 = 'N90',
+  JEEP = 'JEEP', MIDIBUS = 'MIDIBUS', COACH = 'COACH', VAN = 'VAN', LIGHT_TRUCK = 'LIGHT_TRUCK',
   SPORTS = 'SPORTS',
   TRUCK = 'TRUCK',
   /** 小米 SU7 — 纯电运动轿车（Max 四驱数据）。 */
@@ -343,6 +344,8 @@ export interface ElevatedRoad {
 
 export interface LevelData {
   garage?: boolean;
+  /** Original challenge-world height field and surface calibration. */
+  challengeTerrain?: {kind:'mud'|'snow'|'quarry'|'forest'|'coast'; seed:number; grip:number; rolling:number};
   /** Continuous city/mountain world. The route samples also drive contact heights. */
   openWorld?: boolean;
   streetSigns?: Array<{x:number;y:number;rotation:number;label:string;kind:'street'|'speed'|'parking'}>;

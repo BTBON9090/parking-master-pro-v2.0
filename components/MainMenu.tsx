@@ -408,7 +408,7 @@ const MainMenu: React.FC<MainMenuProps> = ({
                   >
                     <img src={assetUrl(level.thumbnail)} alt={level.name+"路线缩略图"} className="w-full h-28 object-contain rounded mb-2"/><span className="font-display italic absolute -bottom-3 right-1 font-black mono select-none"
                           style={{ fontSize: 74, color: isSelected ? 'var(--amber)' : 'rgba(255,255,255,0.06)', lineHeight: 1 }}>
-                      0{level.id}
+                      {String(level.id).padStart(2,'0')}
                     </span>
                     {isLocked && <div className="absolute top-3 right-3"><Lock size={15} style={{ color: 'var(--text-mute)' }} /></div>}
                     <div className="flex items-center gap-2">

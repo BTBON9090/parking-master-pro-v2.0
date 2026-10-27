@@ -95,6 +95,11 @@ export interface PowertrainSpec {
 // —— 各车型扭矩曲线性格（分段线性：rpmRatio → 扭矩倍率）——
 // 家用车：中段饱满，高转衰减；SUV：涡轮平原；跑车：高转爆发；皮卡：低速大扭矩、高转乏力。
 const TORQUE_CURVES: Record<CarType, [number, number][]> = {
+  [CarType.JEEP]:[[0,.75],[.2,.96],[.4,1],[.7,.88],[1,.68]],
+  [CarType.MIDIBUS]:[[0,.8],[.2,1],[.5,.98],[.8,.78],[1,.60]],
+  [CarType.COACH]:[[0,.8],[.2,1],[.5,.98],[.8,.78],[1,.60]],
+  [CarType.VAN]:[[0,.75],[.2,.96],[.4,1],[.7,.88],[1,.68]],
+  [CarType.LIGHT_TRUCK]:[[0,.8],[.2,1],[.5,.98],[.8,.78],[1,.60]],
   [CarType.TAI7]: [[0,1],[.45,1],[.65,.96],[.9,.80],[1,.66]],
   [CarType.LI_I9]: [[0,1],[.45,1],[.65,.96],[.9,.80],[1,.66]],
   [CarType.N90]: [[0,1],[.45,1],[.65,.96],[.9,.80],[1,.66]],
@@ -208,6 +213,8 @@ const simulateZeroTo100 = (
 // Game-training shift suggestions, deliberately distinct from redline speeds.
 // They are not manufacturer shift points or universal real-car figures.
 const SHIFT_UP_KMH: Record<CarType, number[]> = {
+ [CarType.JEEP]:[18,34,53,78,110], [CarType.MIDIBUS]:[14,26,42,62,85],
+ [CarType.COACH]:[12,22,36,54,80], [CarType.VAN]:[16,30,48,72,100], [CarType.LIGHT_TRUCK]:[13,25,40,60,85],
  [CarType.TAI7]:[120], [CarType.LI_I9]:[120], [CarType.N90]:[120],
   [CarType.SEDAN]: [20, 38, 58, 85, 120],
   [CarType.SEAL08]: [120],

@@ -1,4 +1,5 @@
 import {buildTrainingCampus} from './utils/trainingCampus';
+import {buildChallengeMap,CHALLENGE_MAPS} from './utils/challengeMaps';
 import { buildGarageLevel } from './utils/garage';
 import { EXPANSION_CARS, EXPANSION_TUNING, EXPANSION_STEERING } from './utils/expansionVehicles';
 import { WORLD_DESTINATIONS } from './utils/openWorld';
@@ -604,12 +605,13 @@ export const TRANSLATIONS = {
   }
 };
 
-export const GARAGE_CARS: CarType[] = [CarType.SUV, CarType.SEAL08, CarType.TAI7, CarType.LI_I9, CarType.N90, CarType.TRUCK];
+export const GARAGE_CARS: CarType[] = [CarType.SUV, CarType.SEAL08, CarType.TAI7, CarType.LI_I9, CarType.N90, CarType.TRUCK,CarType.JEEP,CarType.MIDIBUS,CarType.COACH,CarType.VAN,CarType.LIGHT_TRUCK];
 
 export const LEVEL_LIST = [
  {id:1,name:'城市与青岚山',desc:'城市街区、盘山公路、林场窄路与溪谷浅水。',locked:false,thumbnail:'/thumbnails/map-1.svg'},
  {id:4,name:'综合驾驶试验场',desc:'合并双驾校、紧凑车库和斜列停车场：坡道、S 弯、窄桥与泊车。',locked:false,thumbnail:'/thumbnails/map-4.svg'},
- {id:6,name:'三层地库',desc:'B1 / B2 / B3、双向坡道与楼层停车挑战。',locked:false,thumbnail:'/thumbnails/map-6.svg'}
+ {id:6,name:'三层地库',desc:'B1 / B2 / B3、双向坡道与楼层停车挑战。',locked:false,thumbnail:'/thumbnails/map-6.svg'},
+ ...CHALLENGE_MAPS
 ];
 
 // --- MAP GENERATION HELPERS ---
@@ -1127,4 +1129,4 @@ export const generateLegacyLevel = (level: number): LevelData => {
   return { levelId: level, mapWidth: mapSizeW, mapHeight: mapSizeH, spots, obstacles, markings, startPos, roadSurfaces, curvedRoads, slopeZones, training };
 };
 
-export const GENERATE_LEVEL=(id:number):LevelData=>[2,3,4,5].includes(id)?buildTrainingCampus(generateLegacyLevel):generateLegacyLevel(id===7?1:id);
+export const GENERATE_LEVEL=(id:number):LevelData=>id>=8&&id<=12?buildChallengeMap(id):[2,3,4,5].includes(id)?buildTrainingCampus(generateLegacyLevel):generateLegacyLevel(id===7?1:id);

@@ -201,10 +201,11 @@ export function buildNativeAuthoredVehicle(source: THREE.Group, cfg: CarConfig):
     const eye = group.worldToLocal(eyeWorld.clone());
     // Runtime seat calibration, in 10 units/metre. The asset eye was almost
     // level with the rim; leave headroom while clearing its upper edge.
-    eye.y += calibration.seat_lift_game_units ?? (suv ? 1.8 : 1.5);
+    const trainingVehicle = [CarType.JEEP,CarType.MIDIBUS,CarType.COACH,CarType.VAN,CarType.LIGHT_TRUCK].includes(cfg.id);
+    eye.y += calibration.seat_lift_game_units ?? (trainingVehicle ? .8 : suv ? 1.8 : 1.5);
     parts.nativeCockpit = {
       eye,
-      pitchDeg: -1,
+      pitchDeg: trainingVehicle ? -5 : -1,
     };
   }
 
@@ -309,5 +310,5 @@ export function buildNativeAuthoredVehicle(source: THREE.Group, cfg: CarConfig):
 }
 
 export function isAuthoredVehicle(carType: CarType): boolean {
-  return carType === CarType.TRUCK || carType === CarType.TAI7 || carType === CarType.LI_I9 || carType === CarType.N90 || carType === CarType.SEDAN || carType === CarType.SEAL08 || carType === CarType.SUV;
+  return [CarType.TRUCK,CarType.TAI7,CarType.LI_I9,CarType.N90,CarType.SEDAN,CarType.SEAL08,CarType.SUV,CarType.JEEP,CarType.MIDIBUS,CarType.COACH,CarType.VAN,CarType.LIGHT_TRUCK].includes(carType);
 }

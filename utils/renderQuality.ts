@@ -9,7 +9,7 @@ export const QUALITY_OPTIONS: {id:RenderQuality;name:string;description:string}[
 export function qualityProfile(quality:RenderQuality='auto',deviceDpr=1,mobile=false){
  const native=Math.max(1,Math.min(deviceDpr,3));
  const ceiling=quality==='low'?.65:quality==='medium'?1:quality==='ultra'?Math.min(native,2):Math.min(native,1.5);
- return {ceiling,floor:quality==='auto'?.6:ceiling,initial:quality==='auto'&&mobile?Math.min(1,ceiling):ceiling,
+ return {ceiling,floor:quality==='auto'?(mobile?.8:.75):ceiling,initial:quality==='auto'&&mobile?Math.min(1,ceiling):ceiling,
  mirrorWidth:quality==='low'?384:quality==='medium'?576:768,
  shadowSize:quality==='low'?1024:quality==='ultra'?4096:2048};
 }

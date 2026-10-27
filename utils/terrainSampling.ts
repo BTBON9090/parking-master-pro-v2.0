@@ -4,6 +4,7 @@ import type { LevelData } from '../types';
 import { sampleElevatedRoad } from './elevatedRoad';
 import { isTrainingTerrain, trainingTerrainGradient, trainingTerrainHeight } from './trainingTerrain';
 import { sampleSlopeProfile } from './slopeProfile';
+import {challengeSample} from './challengeMaps';
 
 export interface SurfaceSample { height: number; gradeX: number; gradeY: number; }
 
@@ -45,6 +46,7 @@ export function curbHeightAt(level: LevelData, x: number, y: number): number {
  * must not lose its support surface.
  */
 export function sampleTerrainSurface(level: LevelData, x: number, y: number, currentHeight = 0, includeCurbs = true): SurfaceSample {
+  if (level.challengeTerrain) return challengeSample(level,x,y);
   if (level.garage) return garageSurface(x,y,currentHeight);
   if (level.openWorld && x >= 8500) return worldSurfaceSample(x, y);
   const elevated = sampleElevatedRoad(level.elevatedRoads, x, y, currentHeight);

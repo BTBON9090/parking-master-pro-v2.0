@@ -14,9 +14,12 @@ export class SpeedEffect {
     fragmentShader: `
       uniform sampler2D colour; uniform sampler2D depth;
       uniform float strength, near, far; varying vec2 vUv;
+      // The game renderer uses logarithmic depth to prevent distant road
+      // surfaces from fighting. Decode that same representation here.
+      float viewDistance(float depthValue){return exp2(depthValue*log2(far+1.))-1.;}
       void main(){
         float z=texture2D(depth,vUv).x;
-        float distance=near*far/(far-z*(far-near));
+        float distance=viewDistance(z);
         float edge=smoothstep(.48,.95,abs(vUv.x*2.-1.));
         float mask=edge*smoothstep(30.,85.,distance)*step(z,.99999);
         vec2 stretch=(vUv-vec2(.5,.52))*.035*strength*mask;
@@ -24,8 +27,8 @@ export class SpeedEffect {
         vec2 bUv=vUv-stretch*.5, cUv=vUv-stretch;
         // Do not smear nearby cabin silhouettes into passing scenery.
         float zb=texture2D(depth,bUv).x, zc=texture2D(depth,cUv).x;
-        float wb=.27*smoothstep(30.,85.,near*far/(far-zb*(far-near)));
-        float wc=.13*smoothstep(30.,85.,near*far/(far-zc*(far-near)));
+        float wb=.27*smoothstep(30.,85.,viewDistance(zb));
+        float wc=.13*smoothstep(30.,85.,viewDistance(zc));
         gl_FragColor=a*(1.-wb-wc)+texture2D(colour,bUv)*wb+texture2D(colour,cUv)*wc;
         #include <tonemapping_fragment>
         #include <colorspace_fragment>
@@ -40,6 +43,9 @@ export class SpeedEffect {
     renderer.getDrawingBufferSize(this.size);
     if(!this.target){
       this.target=new THREE.WebGLRenderTarget(this.size.x,this.size.y,{depthBuffer:true});
+      // The default framebuffer's antialias option does not apply to an
+      // offscreen target. Resolve two samples before the speed effect.
+      this.target.samples=Math.min(2,renderer.capabilities.maxSamples);
       this.target.depthTexture=new THREE.DepthTexture(this.size.x,this.size.y);
     }
     if(this.target.width!==this.size.x || this.target.height!==this.size.y) this.target.setSize(this.size.x,this.size.y);

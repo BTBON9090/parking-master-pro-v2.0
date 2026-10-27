@@ -41,10 +41,13 @@ export function MobileControls(p: {input: InputState; update: React.Dispatch<Rea
     onPointerDown: (e: React.PointerEvent<HTMLElement>) => {
       e.preventDefault(); e.stopPropagation();
       if (p.disabled || !controller.current.begin(control, e.pointerId, e.clientX, e.clientY, p.input.steeringWheelAngle)) return;
-      e.currentTarget.setPointerCapture(e.pointerId); publish();
+      e.currentTarget.setPointerCapture(e.pointerId);
+      if (control === 'steer') {const r=e.currentTarget.getBoundingClientRect();controller.current.steerAt(e.pointerId,e.clientX,r.left,r.width,lock);}
+      publish();
     },
     onPointerMove: (e: React.PointerEvent<HTMLElement>) => {
-      if (controller.current.move(control, e.pointerId, e.clientX, e.clientY, lock, Math.min(150, innerWidth * .18))) publish();
+      const r=e.currentTarget.getBoundingClientRect();
+      if (control === 'steer' ? controller.current.steerAt(e.pointerId,e.clientX,r.left,r.width,lock) : controller.current.move(control, e.pointerId, e.clientX, e.clientY, lock)) publish();
     },
     onPointerUp: (e: React.PointerEvent<HTMLElement>) => {if (controller.current.end(control, e.pointerId)) publish();},
     onPointerCancel: (e: React.PointerEvent<HTMLElement>) => {if (controller.current.end(control, e.pointerId)) publish();},
@@ -58,9 +61,9 @@ export function MobileControls(p: {input: InputState; update: React.Dispatch<Rea
       <button aria-label="重置车辆" title="重置车辆" {...action(p.reset)}><RotateCcw/></button>
     </div>
     {!p.disabled && <>
-      <div className="mobile-steer-zone" role="slider" aria-label="左侧区域左右滑动转向" aria-valuemin={-lock} aria-valuemax={lock} aria-valuenow={Math.round(p.input.steeringWheelAngle)} tabIndex={0} {...hold('steer')}
+      <div className="mobile-steer-zone" role="slider" aria-label="左右绝对位置转向" aria-valuemin={-lock} aria-valuemax={lock} aria-valuenow={Math.round(p.input.steeringWheelAngle)} tabIndex={0} {...hold('steer')}
         onKeyDown={e => {if (['ArrowLeft','ArrowRight','Home'].includes(e.key)) {e.preventDefault(); p.update(v => ({...v, steeringWheelAngle: e.key === 'Home' ? 0 : Math.max(-lock,Math.min(lock,v.steeringWheelAngle + (e.key === 'ArrowLeft' ? -15 : 15)))}));}}}>
-        <div className="mobile-steer"><div className="mobile-wheel" style={{transform:`rotate(${p.input.steeringWheelAngle}deg)`}}><i/><b/></div><small>左右滑动转向</small></div>
+        <span className="mobile-steer-title">左转 <span>转向</span> 右转</span><span className="mobile-steer-track"><i/><b style={{left:`${Math.max(0,Math.min(100,50+50*p.input.steeringWheelAngle/lock))}%`}}/></span>
       </div>
       <div className="mobile-drive">
         <div className="mobile-gears">{[-1,0,1].map(g => <button key={g} aria-label={g === -1 ? '倒挡' : g === 0 ? '空挡' : '前进挡'} aria-pressed={p.input.gear === g || (g === 1 && p.input.gear > 0)} {...action(() => p.update(v => ({...v, gear:g})))}>{g === -1 ? 'R' : g === 0 ? 'N' : singleSpeed ? 'D' : Math.max(1,p.input.gear)}</button>)}

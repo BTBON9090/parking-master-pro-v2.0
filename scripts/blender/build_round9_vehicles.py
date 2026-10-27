@@ -673,7 +673,7 @@ def cut_side_window(body, stations, spec, side, y0, y1, name, glass, black):
     upper = [(y, max(profile_value(stations,y)[3]+.045,profile_value(stations,y)[4]-.062)) for y in ys]
     corners = lower + list(reversed(upper))
     n = len(corners)
-    verts = [(side*x,y,z) for x in (.18,1.15) for y,z in corners]
+    verts = [(side*x,y,z) for x in (.18,max(1.15,spec['width']/2+.20)) for y,z in corners]
     faces = [tuple(range(n-1,-1,-1)),tuple(range(n,2*n))]
     faces += [(i,(i+1)%n,(i+1)%n+n,i+n) for i in range(n)]
     cutter = mesh_object('Cut'+name,verts,faces,None,smooth=False)

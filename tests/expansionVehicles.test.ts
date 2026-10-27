@@ -4,7 +4,7 @@ import {CarType} from '../types';
 import {simulatedAccelerationSeconds} from '../utils/vehiclePerformance';
 import {createLongitudinalState,stepLongitudinal} from '../utils/longitudinal';
 import {getPowertrain} from '../utils/powertrain';
-assert.deepEqual(GARAGE_CARS,[CarType.SUV,CarType.SEAL08,CarType.TAI7,CarType.LI_I9,CarType.N90,CarType.TRUCK]);
+assert.deepEqual(GARAGE_CARS,[CarType.SUV,CarType.SEAL08,CarType.TAI7,CarType.LI_I9,CarType.N90,CarType.TRUCK,CarType.JEEP,CarType.MIDIBUS,CarType.COACH,CarType.VAN,CarType.LIGHT_TRUCK]);
 for(const id of GARAGE_CARS){assert(DEFAULT_VEHICLE_TUNING[id]);assert(DEFAULT_STEERING_CURVES[id]);}
 for(const id of [CarType.TAI7,CarType.LI_I9,CarType.N90]){
  const cc=CAR_MODELS[id],pt=getPowertrain(id),actual=simulatedAccelerationSeconds(id);

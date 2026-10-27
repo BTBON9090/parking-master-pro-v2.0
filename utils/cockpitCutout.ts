@@ -27,7 +27,7 @@ export interface CockpitProfile {
   calibrateCowlToHood: boolean;
 }
 
-const PROFILES: Record<CarType, CockpitProfile> = {
+const PROFILES: Partial<Record<CarType, CockpitProfile>> = {
   [CarType.SEDAN]: {
     hoodYMin: 0.60, hoodYMax: 0.80, hoodZMin: 0.16, hoodZMax: 0.42,
     hoodMaxAbsX: 0.5, hoodMinNormalY: 0.85,
@@ -116,7 +116,10 @@ const PROFILES: Record<CarType, CockpitProfile> = {
 };
 
 export function cockpitProfileFor(carType: CarType): CockpitProfile {
-  return PROFILES[carType] ?? PROFILES[CarType.SEDAN];
+  // Taller commercial bodies need the flatter, farther-forward cowl profile;
+  // scaling the sedan dash with their height hides the wheel behind it.
+  if ([CarType.JEEP,CarType.MIDIBUS,CarType.COACH,CarType.VAN,CarType.LIGHT_TRUCK].includes(carType)) return PROFILES[CarType.SUV]!;
+  return PROFILES[carType] ?? PROFILES[CarType.SEDAN]!;
 }
 
 export type CockpitTriangleClass = 'hood' | 'frame' | 'discard';
