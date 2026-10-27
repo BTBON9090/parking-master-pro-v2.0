@@ -1,0 +1,27 @@
+{
+  "bundle": "dist/assets/index-CSGFiEUr.js",
+  "sha256": "457b8a7aa76eb72c655c06444c3a646cb28f8a338230f4c8e1dc7876aa744283",
+  "packages": {
+    "android": {
+      "bundleMatches": true,
+      "webIconMatches": true
+    },
+    "ios-source": {
+      "bundleMatches": true,
+      "webIconMatches": true
+    },
+    "mac-arm64": {
+      "bundleMatches": true,
+      "nativeIconMatches": true
+    },
+    "mac-x64": {
+      "bundleMatches": true,
+      "nativeIconMatches": true
+    },
+    "windows-x64": {
+      "bundleMatches": true,
+      "webIconMatches": true,
+      "nativeIconVerified": true
+    }
+  }
+}

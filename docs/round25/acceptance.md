@@ -15,6 +15,16 @@
 - 90 km/h 普通转向峰值侧偏约 3.6–4.1°；急转约 9.3–11.8°；主动手刹仍可产生约 37–46° 侧偏。松开输入三秒后侧偏低于 1.5°，随后收敛，没有持续自旋。
 - 侧碰后的首个仿真步左右转向立即改变车头角度，保持初始向外回弹；恢复冲量不超过抓地力上限，滑行过程不增加动能。
 - 浏览器实测小地图收成单按钮、左右后视镜拖动后边界正常、挂 D 挡按 W 达到 7 km/h、刹停及驻车；控制台无错误。截图 cockpit-map-minimized.png。
+- Mac Apple 芯片独立客户端实际启动、进入地图、收起小地图，挂 D 挡按 W 达到 7 km/h，见 mac-driving.png。
+- GitHub Actions 40429752231 的 Windows 打包和 iOS 无签名编译通过。Mac 两个 DMG 均通过 hdiutil 校验；Android 0.22.3 / 2203 发布签名通过验证。
+- 解包五份产物后，确认 JavaScript 均为 index-CSGFiEUr.js，SHA-256 相同，见 bundle-verification.json。Mac ICNS 与主图标一致；Windows EXE 中实际提取出新 PNG 图标资源，见 windows-native-icon.png。
+- 浏览器强制触控模式检查拖镜与地图收起，截图 touch-mirrors.png。工具实际视口保持 1280×720，未将其作为 844×390 或安卓真机证据。
+
+## 发布
+
+- GitHub Release v0.22.3 已公开，五份产物与 COS 均逐项核对文件大小和 SHA-256，记录见 release-verification.json。
+- 游戏 main 保留唯一分支；作品集仅提交了游戏图标、版本号和下载清单（789dd22），没有夹带作品集其他未提交改动。
+- 正式 https://btbon.cn/parking-master/index.html#download 显示 0.22.3，五个按钮指向对应的新版本 COS 文件。AppBox 入口实际显示 0.22.3 和新图标，见 downloads-live.png、appbox-live.png。
 
 ## 验证边界
 

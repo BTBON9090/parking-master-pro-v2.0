@@ -1,0 +1,77 @@
+{
+  "verifiedAt": "2026-10-27T01:13:42.054Z",
+  "version": "0.22.3",
+  "sourceCommit": "2d3660daeee0ec181e72321417509762558a7521",
+  "ci": "https://github.com/BTBON9090/parking-master-pro-v2.0/actions/runs/40429752231",
+  "githubRelease": "https://github.com/BTBON9090/parking-master-pro-v2.0/releases/tag/v0.22.3",
+  "published": true,
+  "cosManifestMatches": true,
+  "assets": [
+    {
+      "platform": "mac-arm64",
+      "name": "Parking-Master-Pro-0.22.3-mac-arm64.dmg",
+      "size": 154855060,
+      "sha256": "51a2efeecbc37e5bfb77c14c597bbf665bcf8f5dd472575c14305ca8409f9a98",
+      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.22.3/Parking-Master-Pro-0.22.3-mac-arm64.dmg",
+      "githubUrl": "https://github.com/BTBON9090/parking-master-pro-v2.0/releases/download/v0.22.3/Parking-Master-Pro-0.22.3-mac-arm64.dmg",
+      "githubDigestMatches": true,
+      "cosSizeAndDigestMatch": true
+    },
+    {
+      "platform": "mac-x64",
+      "name": "Parking-Master-Pro-0.22.3-mac-x64.dmg",
+      "size": 159055136,
+      "sha256": "6cbb2c2b39933b4fa9c1c9d5bb3bf5140f3214e1a6fe9a968060921d5c1662d3",
+      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.22.3/Parking-Master-Pro-0.22.3-mac-x64.dmg",
+      "githubUrl": "https://github.com/BTBON9090/parking-master-pro-v2.0/releases/download/v0.22.3/Parking-Master-Pro-0.22.3-mac-x64.dmg",
+      "githubDigestMatches": true,
+      "cosSizeAndDigestMatch": true
+    },
+    {
+      "platform": "windows-x64",
+      "name": "Parking-Master-Pro-0.22.3-win-x64.exe",
+      "size": 141259029,
+      "sha256": "9db454638322947090c53f0c0fb45daacaf42deb1b6d294bee0d01c179d597ec",
+      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.22.3/Parking-Master-Pro-0.22.3-win-x64.exe",
+      "githubUrl": "https://github.com/BTBON9090/parking-master-pro-v2.0/releases/download/v0.22.3/Parking-Master-Pro-0.22.3-win-x64.exe",
+      "githubDigestMatches": true,
+      "cosSizeAndDigestMatch": true
+    },
+    {
+      "platform": "android",
+      "name": "Parking-Master-Pro-0.22.3-android.apk",
+      "size": 21088501,
+      "sha256": "e9a11ab72ded39e96181b25d2a2423c303e1c851405f72146ec73ff2ebdb6524",
+      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.22.3/Parking-Master-Pro-0.22.3-android.apk",
+      "githubUrl": "https://github.com/BTBON9090/parking-master-pro-v2.0/releases/download/v0.22.3/Parking-Master-Pro-0.22.3-android.apk",
+      "githubDigestMatches": true,
+      "cosSizeAndDigestMatch": true
+    },
+    {
+      "platform": "ios-source",
+      "name": "Parking-Master-Pro-0.22.3-iOS-Project.zip",
+      "size": 18775271,
+      "sha256": "9570025d5b8a53a84d9b733d8d9aa1557a84051682c63dfb13b594cf32f81242",
+      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.22.3/Parking-Master-Pro-0.22.3-iOS-Project.zip",
+      "githubUrl": "https://github.com/BTBON9090/parking-master-pro-v2.0/releases/download/v0.22.3/Parking-Master-Pro-0.22.3-iOS-Project.zip",
+      "githubDigestMatches": true,
+      "cosSizeAndDigestMatch": true
+    }
+  ],
+  "validation": {
+    "allPackagesBundle": "dist/assets/index-CSGFiEUr.js",
+    "macArm64": "Native launch, D + W reached 7 km/h; map collapse verified",
+    "macIntel": "DMG verified; no Intel hardware test",
+    "windows": "CI passed; extracted JS and native app icon verified; no Windows device",
+    "android": "0.22.3 / 2203 signed APK verified; wireless device unavailable",
+    "ios": "Bundled source and unsigned CI build passed; not an installable IPA"
+  },
+  "portfolio": {
+    "commit": "789dd22",
+    "published": true,
+    "verifiedAt": "2026-10-27T01:17:16.321359+00:00",
+    "appbox": "https://btbon.cn/appbox",
+    "introduction": "https://btbon.cn/parking-master/index.html#download",
+    "verified": "Browser: game card shows 0.22.3 and new icon; all five download links point to verified 0.22.3 COS artifacts"
+  }
+}
