@@ -577,3 +577,4 @@ html,body,#root{overscroll-behavior:none}body{-webkit-touch-callout:none}button,
 @media(max-height:550px){.touch-hud .side-mirror-frame {width:132px!important;max-width:132px!important}}
 /* A minimized route map occupies exactly one button, including touch layouts. */
 .hud-map.hud-map-minimized {width:44px!important;height:44px!important;max-height:44px}
+.release-actions {flex-wrap:wrap;gap:12px}

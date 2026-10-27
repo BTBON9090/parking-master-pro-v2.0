@@ -1,19 +1,26 @@
 (async()=>{
  const status=document.getElementById('status');
+ const cdn='https://cdn.btbon.cn',cos='https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com';
+ async function read(url){
+  const controller=typeof AbortController!=='undefined'?new AbortController():null;let timer;
+  try{return await Promise.race([
+   fetch(url,{cache:'no-store',referrerPolicy:'no-referrer',signal:controller?controller.signal:undefined}).then(r=>{if(!r.ok)throw Error();return r.json();}),
+   new Promise((_,reject)=>{timer=setTimeout(()=>{if(controller)controller.abort();reject(Error('timeout'));},5000);}),
+  ]);}finally{clearTimeout(timer);}
+ }
  try{
-  const origin='https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com';
-  let response;
-  try { response=await fetch(origin+'/parking-master/latest.json',{cache:'no-store',signal:AbortSignal.timeout(8000)}); if(!response.ok)throw Error(); }
-  catch { response=await fetch('./latest.json',{cache:'no-store',signal:AbortSignal.timeout(8000)}); }
-  if(!response.ok)throw Error();const release=await response.json();
-  if(!/^\d+\.\d+\.\d+$/.test(release.version))throw Error();
-  document.getElementById('version').textContent='v'+release.version+' · '+release.date;
-  for(const link of document.querySelectorAll('[data-platform]')){
-   const asset=release.assets.find(a=>a.platform===link.dataset.platform);if(!asset)continue;
-   const url=new URL(asset.url);if(url.origin!==origin||!url.pathname.startsWith('/parking-master/releases/'))continue;
-   link.href=url.href;link.classList.remove('disabled');link.removeAttribute('aria-disabled');link.setAttribute('download',asset.name);link.title=`${Math.round(asset.size/1024/1024)} MB · SHA-256 ${asset.sha256}`;
+  let release;
+  for(const source of [cdn+'/parking-master/latest.json','./latest.json']){
+   try{const r=await read(source);if(!/^\d+\.\d+\.\d+$/.test(r.version)||!Array.isArray(r.assets))throw Error();release=r;break;}catch{}
   }
-  status.textContent='安装包与校验值已就绪。'+(release.notes??'');
-  document.getElementById('checksums').href=release.githubRelease;
- }catch{document.getElementById('version').textContent='版本信息暂不可用';status.textContent='暂时无法读取下载列表，请稍后刷新，或使用下方 GitHub 备用下载。';}
+  if(!release)throw Error();
+  document.getElementById('version').textContent='v'+release.version+' · '+release.date;
+  for(const link of document.querySelectorAll('[data-platform], [data-backup-platform]')){
+   const backup=link.dataset.backupPlatform,asset=release.assets.find(a=>a.platform===(backup||link.dataset.platform));if(!asset)continue;
+   const url=new URL(asset.url);if(![cos,cdn].includes(url.origin)||url.pathname!==`/parking-master/releases/${release.version}/${asset.name}`||!/^[\w.-]+$/.test(asset.name))continue;
+   link.href=(backup?cos:cdn)+url.pathname;link.classList.remove('disabled');link.removeAttribute('aria-disabled');link.removeAttribute('download');link.setAttribute('referrerpolicy','no-referrer');link.title=`${Math.round(asset.size/1024/1024)} MB · SHA-256 ${asset.sha256}`;
+  }
+  status.textContent='可直接下载安装包。'+(release.notes||'');
+  document.getElementById('checksums').href='https://github.com/BTBON9090/parking-master-pro-v2.0/releases/tag/v'+release.version;
+ }catch{status.textContent='在线版本检查暂不可用，下方已发布的安装包链接仍可直接下载。';}
 })();

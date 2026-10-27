@@ -1,4 +1,4 @@
-# 独立客户端 · 0.22.3
+# 独立客户端 · 0.22.4
 
 同一份 Three.js 游戏由 Electron（Mac / Windows）与 Capacitor（Android / iOS）承载。资源随安装包分发，驾驶无需联网；作者链接和检查更新需要联网。
 
@@ -10,6 +10,8 @@
 - Windows：在 Windows 上 `npm run build:client && npm run package:win`。GitHub Actions 的 Build desktop clients and iOS project 可手动运行。NSIS x64 安装程序尚未签名。
 - Android：JDK 21、Android SDK 36；`npm run mobile:sync` 后在 Android Studio 打开 android，或 `python3 scripts/package-android.py`。本机发布密钥保存在用户私有目录 `~/.local/share/parking-master/signing/`，不在源码中。务必自行安全备份该目录，后续更新必须使用同一密钥。构建脚本接受 PARKING_SIGNING_CONFIG 指定 JSON，字段 keystore/alias/password；请勿提交该文件。
 - iOS：`npm run mobile:sync`，用 Xcode 26+ 打开 `ios/App/App.xcodeproj`。选择自己的 Team、签名并按 Apple 发布流程分发。本轮只交付工程，不交付 IPA。工程固定横屏，应用 ID 为 cn.btbon.parkingmaster。
+
+下载的 iOS-Project.zip 已包含同步后的游戏资源，解压后先在根目录运行 `npm ci` 恢复原生插件，再打开 Xcode 工程即可；不必重新执行 mobile:sync。
 
 ## 操作与更新
 
