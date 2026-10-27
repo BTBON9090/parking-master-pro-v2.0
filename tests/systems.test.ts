@@ -1,3 +1,4 @@
+import {FLEET30_IDS} from '../utils/fleet30';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { readFile } from 'node:fs/promises';
@@ -261,7 +262,7 @@ async function auditCarGeometry(carType: CarType): Promise<TriangleAudit> {
     if (Math.abs(trainingTerrainHeight(TRAINING_TERRAIN.centerX, y) - centerHeight) > 0.02) varied = true;
   }
   assert(varied, 'terrain must contain undulations/potholes, not one flat plane');
-  const branch = terrainLevel.roadSurfaces.find(road => road.x === 1300 && road.y === 4315);
+  const branch = terrainLevel.roadSurfaces.find(road => road.x === 16300 && road.y === 19315);
   assert(branch, 'visible gravel branch must connect the training lot to the heightfield');
   assert(terrainLevel.streetSigns?.some(sign => sign.label.includes('非铺装')), 'navigable off-road entry sign must exist');
   assert(terrainLevel.terrainZones?.some(zone => zone.label.includes('非铺装')), 'minimap terrain zone must exist');
@@ -284,7 +285,7 @@ async function auditCarGeometry(carType: CarType): Promise<TriangleAudit> {
   const gap = Math.abs(Math.abs(gate[0].x - gate[1].x) - (gate[0].width + gate[1].width) / 2);
   assert(gap <= 32 && gap >= 28, `terrain gate must be about 3 m wide, got ${gap}`);
   assert(gate.every(block => block.width <= 12), 'terrain gate blocks must be low/1 m stone bollards, not 6 m walls');
-  assert(gate.every(block => Math.abs((block.elevation ?? 0) - trainingTerrainHeight(block.x, block.y)) < 0.15), 'terrain gate collision base must match visible terrain height');
+  assert(gate.every(block => Math.abs((block.elevation ?? 0) - trainingTerrainHeight(block.x-15000, block.y-15000)) < 0.15), 'terrain gate collision base must match visible terrain height');
   assert(gate.every(block => (block.verticalHeight ?? 0) >= block.width), 'static gate vertical extent must match box height');
   assert(!(terrainLevel.curbSegments ?? []).some(curb => curb.x > 1180 && curb.x < 1420 && curb.y > 3930 && curb.y < 4690), 'training branch curb must be open');
   {
@@ -704,13 +705,13 @@ async function auditCarGeometry(carType: CarType): Promise<TriangleAudit> {
   assert.equal(clock.isSteeringActive(1_300, true), true, 'directly held steering wins regardless of the clock');
   clock.reset();
   assert.equal(clock.isSteeringActive(10_000, false), false, 'reset clears stale steering activity');
-  const slow = (() => { let a = 180; for (let i = 0; i < 60; i++) a = autoCenterWheelAngle(a, 0.2, 1, 16); return a; })();
-  const fast = (() => { let a = 180; for (let i = 0; i < 60; i++) a = autoCenterWheelAngle(a, 2, 1, 16); return a; })();
+  const slow = (() => { let a = 180; for (let i = 0; i < 15; i++) a = autoCenterWheelAngle(a, 0.2, 1, 16); return a; })();
+  const fast = (() => { let a = 180; for (let i = 0; i < 15; i++) a = autoCenterWheelAngle(a, 2, 1, 16); return a; })();
   assert(slow < 179 && slow > 5, `low-speed return must be visible, got ${slow}`);
   assert(fast < slow, `road-speed return must be faster than crawl (${fast} vs ${slow})`);
   let crawl = 180; for (let i = 0; i < 2000; i++) crawl = autoCenterWheelAngle(crawl, 0.2, 1, 16);
   assert.equal(crawl, 0, 'low-speed return reaches exact zero');
-  console.log(`Steering clock: throttle/gear-independent 200ms grace; 1s return crawl ${slow.toFixed(1)}°, road ${fast.toFixed(1)}°.`);
+  console.log(`Steering clock: throttle/gear-independent 200ms grace; 0.24s return crawl ${slow.toFixed(1)}°, road ${fast.toFixed(1)}°.`);
 }
 
 }
@@ -880,7 +881,8 @@ async function auditCarGeometry(carType: CarType): Promise<TriangleAudit> {
   // All seven cars: per-car hood/frame profile, eye fraction, dashboard/wheel
   // layout and a wheel rim inside the main viewport. This is a projection and
   // geometry-contract check, not a substitute for a browser screenshot.
-  for (const carType of Object.values(CarType)) {
+  // New fleet uses native Blender interiors, verified separately in round30.
+  for (const carType of Object.values(CarType).filter(id=>!(FLEET30_IDS as readonly CarType[]).includes(id))) {
     const car = CAR_MODELS[carType];
     const profile = cockpitProfileFor(carType);
     const interior = buildDriverInterior(car, profile).group;

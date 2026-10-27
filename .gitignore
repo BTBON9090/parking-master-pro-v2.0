@@ -37,3 +37,7 @@ android/local.properties
 build/icon.iconset/
 # iOS compilation artifacts
 *.app.zip
+
+# Reproducible Blender cache and backup files
+__pycache__/
+*.blend1

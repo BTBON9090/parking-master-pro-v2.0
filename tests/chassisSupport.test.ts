@@ -1,3 +1,4 @@
+import {BASELINE_FLEET} from './baselineFleet';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import * as THREE from 'three';
@@ -13,7 +14,7 @@ import {DRIVING_TEST_POINTS} from '../utils/testPoints';
 import {VehicleRollover} from '../three/vehicleRollover';
 const report=[];
 const level=buildBeijingLevel();
-for(const id of GARAGE_CARS){
+for(const id of BASELINE_FLEET){
  const cfg=CAR_MODELS[id],def=MODEL_REGISTRY[CAR_TYPE_TO_MODEL[id]],spec=suspensionForCar(id);
  const b=fs.readFileSync(new URL(`../public/models/${def.file}`,import.meta.url));
  const g=await new GLTFLoader().parseAsync(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength),'');
@@ -60,7 +61,7 @@ for(const id of GARAGE_CARS){
     axis:{x:Math.sin(heading)*a.x+Math.cos(heading)*a.z,y:a.y,z:-Math.cos(heading)*a.x+Math.sin(heading)*a.z}},point.deckHeight??0);
   const state=createChassisState();let p=stepChassis(state,{...base,support});
   for(let f=0;f<60;f++)p=stepChassis(state,{...base,support});
-  assert(p.contacts.every(c=>Math.abs(c.gap)<.03),`${id} ${pointId}: no unsupported wheel ${p.contacts.map(c=>c.gap)}`);
+  assert(p.contacts.every((c,i)=>c.gap>=-.03&&(c.gap<.03||Math.abs(p.offsets[i]+spec.droopTravel!)<.001)),`${id} ${pointId}: no unsupported wheel ${p.contacts.map(c=>c.gap)}`);
   parts.group.position.set(point.x,p.height,point.y);parts.group.rotation.set(p.pitch,Math.PI/2-heading,p.roll,'YXZ');
   parts.wheelMounts.forEach((m,i)=>{m.position.set(wheels[i].x,wheels[i].y+p.offsets[i],wheels[i].z);m.rotation.set(0,0,0);});parts.group.updateWorldMatrix(true,true);
   if(pointId.startsWith('curb')){
@@ -94,7 +95,7 @@ for(const id of GARAGE_CARS){
   }
  }
  assert(fastestGap<.002,'no descending heave lag / detached wheels');
- if(id===GARAGE_CARS[0]){
+ if(id===BASELINE_FLEET[0]){
   const bank=Math.tan(60*Math.PI/180),state=createChassisState();
   const support:SupportQuery=(i,h,a)=>{const w=wheels[i],dot=a.y-bank*a.x;return bank*h.x+w.radius*(Math.sqrt(1+bank*bank-dot*dot)-1)+w.halfWidth*Math.abs(dot);};
   let p=stepChassis(state,{...base,support});for(let i=0;i<60;i++)p=stepChassis(state,{...base,support});

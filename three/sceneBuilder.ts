@@ -1,3 +1,5 @@
+import {addExamSignals} from './examSignals';
+import {CITY_OFFSET} from '../utils/openWorld';
 import { garageFloorAt } from '../utils/garage';
 import { addGarageArchitecture } from './garageScene';
 import { addOpenWorldScene } from './openWorldScene';
@@ -39,6 +41,7 @@ function enableCarShadowCasting(parts: CarMeshParts) {
 
 export interface BuiltScene {
   scene: THREE.Scene;
+  updateExamSignals?: (timeMs:number)=>void;
   playerCarParts: CarMeshParts;
   trafficCarParts: Map<string, CarMeshParts>;  // key = obstacle.id
   trafficObstacles: Map<string, Obstacle>;     // 原始 obstacle 数据引用
@@ -171,7 +174,8 @@ export async function buildScene(
   const trackGeo = (g: THREE.BufferGeometry) => { geometries.push(g); return g; };
 
   // ===== 地面 — 草地色 =====
-  const groundGeo = trackGeo(new THREE.PlaneGeometry(levelData.mapWidth, levelData.mapHeight,levelData.challengeTerrain?CHALLENGE_COLUMNS:1,levelData.challengeTerrain?CHALLENGE_ROWS:1));
+  const groundWidth=levelData.openWorld?8500:levelData.mapWidth,groundHeight=levelData.openWorld?11600:levelData.mapHeight;
+  const groundGeo = trackGeo(new THREE.PlaneGeometry(groundWidth,groundHeight,levelData.challengeTerrain?CHALLENGE_COLUMNS:levelData.exam||levelData.highway?200:1,levelData.challengeTerrain?CHALLENGE_ROWS:levelData.exam||levelData.highway?136:1));
   if(levelData.challengeTerrain){
     const pos=groundGeo.getAttribute('position');
     for(let i=0;i<pos.count;i++){
@@ -183,7 +187,7 @@ export async function buildScene(
   const groundMaterial=levelData.challengeTerrain?challengeGroundMaterial(levelData):levelData.levelId === 1 ? beijingGroundMaterial() : Mats.ground();
   const ground = new THREE.Mesh(groundGeo,groundMaterial);
   ground.rotation.x = -Math.PI / 2;
-  ground.position.set(levelData.mapWidth / 2, 0, levelData.mapHeight / 2);
+  ground.position.set(groundWidth/2+(levelData.openWorld?CITY_OFFSET:0),0,groundHeight/2+(levelData.openWorld?CITY_OFFSET:0));
   ground.receiveShadow = true;
   ground.visible = !levelData.garage;
   scene.add(ground);
@@ -202,7 +206,7 @@ export async function buildScene(
     levelData.roadSurfaces.forEach((rs: RoadSurface, index) => {
       // Roads are flat layered surfaces instead of intersecting boxes. A tiny,
       // deterministic height offset keeps overlapping junction pieces stable.
-      const geo = trackGeo(new THREE.PlaneGeometry(rs.width, rs.height));
+      const geo = trackGeo(new THREE.PlaneGeometry(rs.width, rs.height,levelData.exam||levelData.highway?Math.max(1,Math.ceil(rs.width/20)):1,levelData.exam||levelData.highway?Math.max(1,Math.ceil(rs.height/20)):1));
       const mesh = new THREE.Mesh(geo, roadMat(rs.color));
       orientGroundPlane(mesh, rs.rotation);
       mesh.position.set(rs.x, (rs.elevation || 0) + 0.12 + (index % 5) * 0.006, rs.y);
@@ -218,7 +222,7 @@ export async function buildScene(
   levelData.curvedRoads?.forEach(curved => {
     try {
     if(levelData.challengeTerrain)return; // route already painted onto the height field
-    if (curved.points.length < 3) return;
+    if (curved.points.length < 2) return;
     const elevation = (curved.elevation || 0) + 0.15;
     const closed = curved.closed || false;
     if (curved.kind === 'roundabout' && curved.center && curved.radius) {
@@ -612,6 +616,20 @@ export async function buildScene(
 
   // ===== 障碍物 =====
   const trafficCarParts = new Map<string, CarMeshParts>();
+  if(levelData.exam||levelData.highway){
+    scene.updateMatrixWorld(true);
+    scene.traverse(obj=>{
+      if(!(obj instanceof THREE.Mesh)||obj instanceof THREE.InstancedMesh)return;
+      const g=obj.geometry,p=g.getAttribute('position');if(!p)return;
+      const inverse=obj.matrixWorld.clone().invert(),v=new THREE.Vector3();
+      // Only ground-facing geometry entirely below the surface-decal threshold.
+      let onGround=true;
+      for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i).applyMatrix4(obj.matrixWorld);if(Math.abs(v.y)>1.5){onGround=false;break;}}
+      if(!onGround)return;
+      for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i).applyMatrix4(obj.matrixWorld);v.y+=terrainHeightAt(levelData,v.x,v.z);v.applyMatrix4(inverse);p.setXYZ(i,v.x,v.y,v.z);}
+      p.needsUpdate=true;g.computeVertexNormals();g.computeBoundingSphere();
+    });
+  }
   const trafficObstacles = new Map<string, Obstacle>();
   const movableMeshes = new Map<string, THREE.Group>();
   let trafficModelIndex = 0;
@@ -938,6 +956,7 @@ export async function buildScene(
   addOpenWorldScene(scene, levelData, trackGeo);
   if (levelData.levelId === 1) {
     addTrainingTerrainMesh(scene, trackGeo);
+    scene.getObjectByName('training-offroad-heightfield')?.position.add(new THREE.Vector3(CITY_OFFSET,0,CITY_OFFSET));
     addElevatedRoadDecks(scene, levelData, trackGeo);
   }
   // ===== 路边植被 / 路灯 / 电线杆 =====
@@ -979,7 +998,8 @@ export async function buildScene(
     if (spawnChunk && !spawnChunk.parent) scene.add(spawnChunk);
   }
 
-  return { scene, playerCarParts, trafficCarParts, trafficObstacles, spotMeshes, movableMeshes, parkedVisuals, geometries, streamingChunks, ceilingGroup, staticCarCount: levelData.obstacles.filter(obs => obs.type === 'car' && !obs.ai).length };
+  const updateExamSignals=levelData.exam?addExamSignals(scene,levelData,trackGeo):undefined;
+  return { scene, updateExamSignals, playerCarParts, trafficCarParts, trafficObstacles, spotMeshes, movableMeshes, parkedVisuals, geometries, streamingChunks, ceilingGroup, staticCarCount: levelData.obstacles.filter(obs => obs.type === 'car' && !obs.ai).length };
 }
 
 async function addParkedCarInstances(
@@ -1300,7 +1320,7 @@ function addRoadLaneMarkings(
       scene.add(mesh);
     }
   };
-  const L = Math.max(1, Math.min(6, lanes));
+  const L = Math.max(1, Math.min(8, lanes));
   // 车道边界(以半宽为单位)
   const bounds: number[] = [];
   for (let k = 1; k < L; k++) bounds.push(-1 + (2 * k) / L);

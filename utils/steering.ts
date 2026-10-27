@@ -184,11 +184,11 @@ export function autoCenterWheelAngle(
   if (speed < 0.02 && !stationaryAssist) return angleDeg;
   const speedT = Math.max(0, Math.min(1, (speed - 0.02) / 1.48));
   const eased = speedT * speedT * (3 - 2 * speedT);
-  const rateDegPerSec = Math.min(4,autoCenteringSpeed) * (speed < .02 ? 70 : 86 + 94 * eased);
+  const rateDegPerSec = Math.min(4,autoCenteringSpeed) * (speed < .02 ? 240 : 300 + 240 * eased);
   const dtSeconds = Math.max(0, tickMs) / 1000;
   // Slightly firmer away from centre, gentler in the last few degrees; the
   // motion remains monotonic and never reverses.
-  const ease = 0.55 + 0.45 * Math.min(1, Math.abs(angleDeg) / 90);
+  const ease = 0.45 + 0.55 * Math.min(1, Math.abs(angleDeg) / 60);
   const step = rateDegPerSec * dtSeconds * ease;
   const magnitude = Math.max(0, Math.abs(angleDeg) - step);
   return magnitude <= CENTER_SNAP_DEG ? 0 : Math.sign(angleDeg) * magnitude;

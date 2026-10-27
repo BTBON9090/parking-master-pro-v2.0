@@ -15,6 +15,7 @@ export function collectVehicleFootprint(group: THREE.Object3D, includeWheels = t
   const points: Point2[] = [];
   group.traverse(node => {
     if (!(node instanceof THREE.Mesh)) return;
+    for(let p:THREE.Object3D|null=node;p&&p!==group;p=p.parent)if(p.userData.partRole==='articulated-trailer')return;
     if (/shadow|ground/i.test(node.name)) return;
     if (!includeWheels) {
       let ancestor: THREE.Object3D | null = node;

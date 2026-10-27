@@ -4,7 +4,7 @@ import os,sys,math
 sys.path.insert(0,os.path.dirname(__file__))
 import build_round9_vehicles as b
 import bpy
-b.OUT_DOCS=os.path.join(b.ROOT,'docs','round29','commercial');os.makedirs(b.OUT_DOCS,exist_ok=True)
+b.OUT_DOCS=os.path.join(b.ROOT,'docs','round30','commercial');os.makedirs(b.OUT_DOCS,exist_ok=True)
 loft=b.loft_body
 b.loft_body=lambda name,stations,mat,step=.085:loft(name,stations,mat,step=.17)
 base_build=b.build_car
@@ -40,7 +40,7 @@ def build(spec):
     root,wheels=base_build(spec)
     # Keep the long bus roof solid and place front seats near the driver's eye.
     for obj in list(root.children_recursive):
-        if obj.name.startswith(('GlassRoof','RoofRail')):bpy.data.objects.remove(obj,do_unlink=True)
+        if obj.name.startswith(('GlassRoof','RoofRail','DoorShut')):bpy.data.objects.remove(obj,do_unlink=True)
         elif obj.name.startswith(('MirrorArm','MirrorPod','MirrorGlass')):bpy.data.objects.remove(obj,do_unlink=True)
         elif obj.name.startswith(('InteriorSeat','InteriorHeadrest','InteriorSeatbelt')):
             obj.location.y+=spec['eye'][1]-.10
@@ -91,7 +91,7 @@ def make(name,file,L,W,H,wb,tire,color,windows=4):
 
 specifications = [
  make('Midibus','training-midibus.glb',6.4,2.18,2.65,3.65,.43,(.69,.69,.58),3),
- make('Coach','training-coach.glb',10.2,2.42,3.15,5.8,.52175,(.31,.43,.49),4),
+ make('Coach','training-coach.glb',12.245,2.55,3.865,6.09,.52175,(.31,.43,.49),4),
  make('CargoVan','training-van.glb',5.6,2.05,2.38,3.25,.37,(.74,.72,.61),2),
  make('LightTruck','training-light-truck.glb',7.2,2.28,2.85,4.1,.46,(.35,.43,.32),3),
 ]

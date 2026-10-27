@@ -26,13 +26,19 @@ export function cornerLoads(wheels:RigWheel[],mass:number,cgM:number,frontBias:n
  const forwardG=Math.sin(pitch)-longG,leftG=-Math.cos(pitch)*Math.sin(roll)+latG;
  const frontShare=frontBias+cgM*forwardG/(wb*normalG),leftShare=.5+cgM*leftG/(track*normalG);
  const total=mass*9.80665*normalG;
- const forces=wheels.map(w=>total*(w.z>0?clamp(frontShare,0,1):1-clamp(frontShare,0,1))*(w.x>0?clamp(leftShare,0,1):1-clamp(leftShare,0,1)));
- const margin=Math.min(frontShare,1-frontShare,leftShare,1-leftShare);
+ const trike=wheels.length===3;
+ const rearLeft=(1-frontShare)/2+(leftShare-.5),rearRight=(1-frontShare)/2-(leftShare-.5);
+ const forces=wheels.map(w=>{
+  if(trike)return total*Math.max(0,w.z>0?frontShare:w.x>0?rearLeft:rearRight);
+  const count=wheels.filter(q=>(q.z>0)===(w.z>0)&&(q.x>0)===(w.x>0)).length;
+  return total*(w.z>0?clamp(frontShare,0,1):1-clamp(frontShare,0,1))*(w.x>0?clamp(leftShare,0,1):1-clamp(leftShare,0,1))/count;
+ });
+ const margin=trike?Math.min(frontShare,1-frontShare,rearLeft,rearRight):Math.min(frontShare,1-frontShare,leftShare,1-leftShare);
  return {forces:forces.map(f=>Math.max(0,f)),frontShare,leftShare,normalG,margin,
-  tipX:leftShare<0?-1:leftShare>1?1:0,tipZ:frontShare<0?-1:frontShare>1?1:0};
+  tipX:(trike?rearLeft<0:leftShare<0)?-1:(trike?rearRight<0:leftShare>1)?1:0,tipZ:frontShare<0?-1:frontShare>1?1:0};
 }
 export function createChassisState(){return {initialized:false,height:0,velocity:0,pitch:0,roll:0,
- loadPitch:spring(),loadRoll:spring(),loadHeave:spring(),roadPitch:spring(),roadRoll:spring(),lastTarget:0,lastGradient:{x:0,z:0},
+ lateralLoad:spring(),loadPitch:spring(),loadRoll:spring(),loadHeave:spring(),roadPitch:spring(),roadRoll:spring(),lastTarget:0,lastGradient:{x:0,z:0},
  airborne:false,flightPitch:0,flightRoll:0,flightPitchRate:0,flightRollRate:0,worldVelocity:0,unstableTime:0,offsets:[0,0,0,0]};}
 export type ChassisState=ReturnType<typeof createChassisState>;
 export interface ChassisInput {wheels:RigWheel[];spec:SuspensionSpec;mass:number;cgM:number;frontBias:number;
@@ -51,8 +57,15 @@ export function stepChassis(s:ChassisState,input:ChassisInput){
   const points=wheels.map((w,i)=>{const p=hubPose(w,0,q);return {x:p.hub.x,z:p.hub.z,h:support(i,p.hub,p.axle)};});
   gradient=fitPlane(points);pitch=-Math.atan(gradient.z);roll=Math.atan2(gradient.x,Math.hypot(1,gradient.z));
  }
- let loads=cornerLoads(wheels,input.mass,input.cgM,input.frontBias,pitch,roll,input.longG,input.latG);
- const compression=loads.forces.map((f,i)=>(f-input.mass*9.80665*(wheels[i].z>0?input.frontBias:1-input.frontBias)/2)/(spec.spring*SPRING_SCALE)*10);
+ // Sprung-mass lateral load builds and overshoots on a violent steer reversal.
+ // A tiny correction produces a tiny response; steady cornering keeps the
+ // usual support polygon threshold. This is a calibrated suspension model.
+ if(!s.initialized)s.lateralLoad.p=input.latG;
+ dampedSpring(s.lateralLoad,input.latG,dt,1.6,.38);
+ const transientG=input.latG+clamp((s.lateralLoad.p-input.latG)*1.4,-.5,.5)*Math.min(1,Math.abs(input.latG)/.65);
+ let loads=cornerLoads(wheels,input.mass,input.cgM,input.frontBias,pitch,roll,input.longG,transientG);
+ const staticLoads=cornerLoads(wheels,input.mass,input.cgM,input.frontBias,0,0,0,0).forces;
+ const compression=loads.forces.map((f,i)=>(f-staticLoads[i])/(spec.spring*SPRING_SCALE)*10);
  const avg=(values:number[],predicate:(w:RigWheel)=>boolean)=>values.reduce((a,v,i)=>a+(predicate(wheels[i])?v:0),0)/wheels.filter(predicate).length;
  const wb=Math.max(...wheels.map(w=>w.z))-Math.min(...wheels.map(w=>w.z));
  const track=Math.max(...wheels.map(w=>w.x))-Math.min(...wheels.map(w=>w.x));
@@ -137,9 +150,9 @@ export function stepChassis(s:ChassisState,input:ChassisInput){
   return {height:h,gap:s.height+p.hub.y-w.radius-h,hub:p.hub,axle:p.axle};});
  // Stability follows the actual sprung-body attitude: load roll shifts the
  // centre of mass beyond the road plane before a wheel can support it.
- loads=cornerLoads(wheels,input.mass,input.cgM,input.frontBias,s.pitch,s.roll,input.longG,input.latG);
+ loads=cornerLoads(wheels,input.mass,input.cgM,input.frontBias,s.pitch,s.roll,input.longG,transientG);
  if(!s.airborne&&loads.margin<-.005)s.unstableTime+=dt;else s.unstableTime=Math.max(0,s.unstableTime-dt*2);
  s.lastTarget=target;s.lastGradient=gradient;
  return {height:s.height,pitch:s.pitch,roll:s.roll,offsets:s.offsets,contacts,loads,
-  unstable:s.unstableTime>.3,airborne:s.airborne,verticalVelocity:s.worldVelocity,roadPitch:pitch,roadRoll:roll,neutralHeight:target};
+  unstable:s.unstableTime>.08,airborne:s.airborne,verticalVelocity:s.worldVelocity,roadPitch:pitch,roadRoll:roll,neutralHeight:target};
 }

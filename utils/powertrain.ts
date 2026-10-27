@@ -95,6 +95,15 @@ export interface PowertrainSpec {
 // —— 各车型扭矩曲线性格（分段线性：rpmRatio → 扭矩倍率）——
 // 家用车：中段饱满，高转衰减；SUV：涡轮平原；跑车：高转爆发；皮卡：低速大扭矩、高转乏力。
 const TORQUE_CURVES: Record<CarType, [number, number][]> = {
+ [CarType.TRIKE]:[[0,.78],[.25,1],[.65,1],[.85,.91],[1,.75]],
+ [CarType.TRACTOR]:[[0,.78],[.25,1],[.65,1],[.85,.91],[1,.75]],
+ [CarType.SEMI]:[[0,.78],[.25,1],[.65,1],[.85,.91],[1,.75]],
+ [CarType.CYBERTRUCK]:[[0,.78],[.25,1],[.65,1],[.85,.91],[1,.75]],
+ [CarType.REVUELTO]:[[0,.78],[.25,1],[.65,1],[.85,.91],[1,.75]],
+ [CarType.VEYRON]:[[0,.78],[.25,1],[.65,1],[.85,.91],[1,.75]],
+ [CarType.V800]:[[0,.78],[.25,1],[.65,1],[.85,.91],[1,.75]],
+ [CarType.MINI]:[[0,.78],[.25,1],[.65,1],[.85,.91],[1,.75]],
+
   [CarType.JEEP]:[[0,.75],[.2,.96],[.4,1],[.7,.88],[1,.68]],
   [CarType.MIDIBUS]:[[0,.8],[.2,1],[.5,.98],[.8,.78],[1,.60]],
   [CarType.COACH]:[[0,.8],[.2,1],[.5,.98],[.8,.78],[1,.60]],
@@ -213,6 +222,15 @@ const simulateZeroTo100 = (
 // Game-training shift suggestions, deliberately distinct from redline speeds.
 // They are not manufacturer shift points or universal real-car figures.
 const SHIFT_UP_KMH: Record<CarType, number[]> = {
+ [CarType.TRIKE]:[10,18,28,40,50],
+ [CarType.TRACTOR]:[4,7,11,17,24,32,40,48],
+ [CarType.SEMI]:[5,9,14,21,31,44,57,72,85,95],
+ [CarType.CYBERTRUCK]:[120],
+ [CarType.REVUELTO]:[45,75,110,150,190,230,280,330],
+ [CarType.VEYRON]:[55,90,130,170,220,280,350],
+ [CarType.V800]:[120],
+ [CarType.MINI]:[25,45,70,100,140,180,220],
+
  [CarType.JEEP]:[18,34,53,78,110], [CarType.MIDIBUS]:[14,26,42,62,85],
  [CarType.COACH]:[12,22,36,54,80], [CarType.VAN]:[16,30,48,72,100], [CarType.LIGHT_TRUCK]:[13,25,40,60,85],
  [CarType.TAI7]:[120], [CarType.LI_I9]:[120], [CarType.N90]:[120],
@@ -276,10 +294,10 @@ const buildPowertrain = (cc: CarConfig): PowertrainSpec => {
     redlineRpm: tx.redlineRpm,
     gearTops,
     gearMins,
-    shiftUpKmh: SHIFT_UP_KMH[cc.id].slice(0, gearTops.length),
-    normalBandMaxKmh: SHIFT_UP_KMH[cc.id].slice(0, gearTops.length),
+    shiftUpKmh: SHIFT_UP_KMH[cc.id].slice(0, gearTops.length).map((v,i)=>Math.min(v,gearTops[i]*15*.88)),
+    normalBandMaxKmh: SHIFT_UP_KMH[cc.id].slice(0, gearTops.length).map((v,i)=>Math.min(v,gearTops[i]*15*.88)),
     normalBandMinKmh: SHIFT_UP_KMH[cc.id].slice(0, gearTops.length).map((_, index) =>
-      index === 0 ? 0 : Math.round(SHIFT_UP_KMH[cc.id][index - 1] * 0.8),
+      index === 0 ? 0 : Math.round(Math.min(SHIFT_UP_KMH[cc.id][index - 1],gearTops[index-1]*15*.88) * 0.8),
     ),
     reverseTop,
     effectiveRatios,
@@ -406,7 +424,7 @@ export function canSelectGear(spec: PowertrainSpec, signedSpeed: number, gear: n
 
 /** Battery-electric models use a single-speed reduction gear and never stall. */
 export function isElectricVehicle(id: CarType): boolean {
-  return id === CarType.TAI7 || id === CarType.LI_I9 || id === CarType.N90 || id === CarType.SEAL08 || id === CarType.SUV
+  return id===CarType.CYBERTRUCK||id===CarType.V800||id === CarType.TAI7 || id === CarType.LI_I9 || id === CarType.N90 || id === CarType.SEAL08 || id === CarType.SUV
     || id === CarType.SU7 || id === CarType.YU7;
 }
 
@@ -414,4 +432,12 @@ export function shiftTorqueBlend(id:CarType, progress:number):number {
   const electric = isElectricVehicle(id);
   const floor = electric ? 1 : id === CarType.SPORTS ? 0.72 : 0.60;
   return 1-(1-floor)*Math.sin(Math.PI*Math.min(1,Math.max(0,progress)))**2;
+}
+
+export function isAutomaticVehicle(id:CarType){return isElectricVehicle(id)||!!CAR_MODELS[id].automatic;}
+export function automaticForwardGear(id:CarType,speed:number,previous:number){
+ const pt=getPowertrain(id),v=Math.abs(speed)*15;let gear=Math.max(1,Math.min(previous,pt.gearTops.length));
+ if(v>pt.shiftUpKmh[gear-1]&&gear<pt.gearTops.length)gear++;
+ if(gear>1&&v<pt.shiftUpKmh[gear-2]*.68)gear--;
+ return gear;
 }

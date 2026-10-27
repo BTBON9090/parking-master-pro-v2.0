@@ -17,11 +17,11 @@ const hits=(x:number,y:number,r:number,e:number)=>{
 let deckChecks=0;
 // Both directions, across ALL usable bridge width, especially over pier edges.
 for(let x=5300;x<=7800;x+=5)for(const y of [4455,4460,4475,4500,4525,4540,4545])for(const r of [0,Math.PI]){
- const e=elevatedRoadProfile(l.elevatedRoads![0],x,4500)?.height??0;
- assert.equal(hits(x,y,r,e).length,0,`bridge ${x},${y}: ${hits(x,y,r,e).map(o=>o.id)}`);deckChecks++;
+ const e=elevatedRoadProfile(l.elevatedRoads![0],x+15000,19500)?.height??0;
+ assert.equal(hits(x+15000,y+15000,r,e).length,0,`bridge ${x},${y}: ${hits(x+15000,y+15000,r,e).map(o=>o.id)}`);deckChecks++;
 }
-for(const x of [6104,6896])assert(hits(x,4448,0,0).some(o=>o.id.includes('pier')),'under-deck pillar must remain solid');
-for(let y=4200;y<4800;y+=10)assert.equal(hits(6500,y,Math.PI/2,0).length,0,'underpass stays clear');
+for(const x of [6104,6896])assert(hits(x+15000,19448,0,0).some(o=>o.id.includes('pier')),'under-deck pillar must remain solid');
+for(let y=4200;y<4800;y+=10)assert.equal(hits(21500,y+15000,Math.PI/2,0).length,0,'underpass stays clear');
 const ring=l.curvedRoads!.find(r=>r.kind==='roundabout')!;
 assert.equal(ring.radius,240);assert.equal(ring.direction,'one-way');assert.equal(ring.lanes,2);
 for(const lane of [-21.6,21.6])for(let a=0;a<Math.PI*2;a+=.01){const r=ring.radius!+lane;assert.equal(hits(ring.center!.x+Math.cos(a)*r,ring.center!.y+Math.sin(a)*r,a-Math.PI/2,0).length,0,'both same-direction lanes clear');}

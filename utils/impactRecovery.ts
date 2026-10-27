@@ -1,9 +1,16 @@
 export interface ImpactMotion {x:number;y:number;yaw:number;time:number}
-interface RecoveryInput {heading:number;speed:number;beta:number;steeringYaw:number;grip:number;dt:number}
+interface RecoveryInput {heading:number;speed:number;beta:number;steeringYaw:number;grip:number;dt:number;brakeDeceleration?:number}
 /** SI world velocity after contact. Tyres recover lateral traction continuously;
  * steering is present from the very first frame, not after a crash timeout. */
 export function stepImpactRecovery(s:ImpactMotion,i:RecoveryInput){
  const dt=Math.max(0,i.dt),yawRate=i.steeringYaw+s.yaw;
+ // Service brakes act on the residual WORLD velocity too. Previously only
+ // the requested longitudinal velocity was braked, then this recovery state
+ // overwrote it every frame, reducing full braking to a tiny tracking error.
+ const magnitude=Math.hypot(s.x,s.y);
+ const braking=Math.max(0,i.brakeDeceleration??0)*dt;
+ const remainingSpeed=Math.max(0,magnitude-braking);
+ if(magnitude>0){s.x*=remainingSpeed/magnitude;s.y*=remainingSpeed/magnitude;}
  const heading=i.heading+yawRate*dt;
  const direction=heading+i.beta;
  const target={x:Math.cos(direction)*i.speed,y:Math.sin(direction)*i.speed};

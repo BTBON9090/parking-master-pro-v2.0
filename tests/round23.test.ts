@@ -12,7 +12,7 @@ const angle=fingers.snapshot().steeringWheelAngle;
 assert(angle!>0);
 assert(fingers.begin('gas',11,700,300));
 let previous=0;
-for(let y=300;y>=230;y-=10){
+for(let y=300;y>=256;y-=4){
  fingers.move('gas',11,700,y,540);
  const input=fingers.snapshot();assert(input.throttle>previous);previous=input.throttle;
  assert.equal(input.gasPressed,false);assert.equal(input.steeringWheelAngle,angle);
@@ -33,7 +33,7 @@ fingers.clear();assert.equal(fingers.snapshot().throttle,0);assert.equal(fingers
 for(const id of GARAGE_CARS){
  const pt=getPowertrain(id),ctx={carId:id,cc:CAR_MODELS[id],pt,vehicleTune:DEFAULT_VEHICLE_TUNING[id],weatherGrip:1,slopeAlongCar:0,tunedShiftFrames:pt.shiftFrames,elapsedFrames:1};
  const run=(throttle:number,brake=0)=>{
-  let state={...createLongitudinalState(.5),throttle,ignitionBlend:1,launchBlend:1};
+  let state={...createLongitudinalState(Math.min(.5,pt.gearTops[0]*.12)),throttle,ignitionBlend:1,launchBlend:1};
   for(let n=0;n<(brake?90:12);n++)state=stepLongitudinal(state,{gear:1,engineStarted:true,throttle,gasPressed:false,shiftPressed:false,brake,handbrake:false},ctx);
   return state as ReturnType<typeof stepLongitudinal>;
  };

@@ -1,3 +1,4 @@
+import {BASELINE_FLEET} from './baselineFleet';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import * as THREE from 'three';
@@ -30,7 +31,7 @@ for(const fps of [15,30,60,120]){
 assert.equal(speedVisualStrength(70),0);
 assert(speedVisualStrength(100)>0 && speedVisualStrength(100)<speedVisualStrength(150));
 assert.equal(speedVisualStrength(300),1);
-for(const id of GARAGE_CARS){
+for(const id of BASELINE_FLEET){
  const cfg=CAR_MODELS[id],def=MODEL_REGISTRY[CAR_TYPE_TO_MODEL[id]];
  const b=fs.readFileSync(new URL(`../public/models/${def.file}`,import.meta.url));
  const gltf=await new GLTFLoader().parseAsync(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength),'');

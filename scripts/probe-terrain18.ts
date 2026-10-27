@@ -13,7 +13,7 @@ const report=[];
 // Prescribed speeds isolate suspension contact from drivetrain / driver input.
 for(const speed of [2,25,35]){
  const state=createChassisState();let y=0,air=0,maxGap=0,minGap=0,maxHeight=0;
- const heading=-.381762,position={x:10720,y:4960,rotation:heading};
+ const heading=-.381762,position={x:27840,y:23620,rotation:heading};
  const start={...position};
  const support=(i:number,h:THREE.Vector3,a:THREE.Vector3)=>sampleWheelSupport(level,position,{x:h.x,z:h.z,radius:3.95,halfWidth:1.3,steer:0,axis:{x:Math.sin(heading)*a.x+Math.cos(heading)*a.z,y:a.y,z:-Math.cos(heading)*a.x+Math.sin(heading)*a.z}},sampleTerrainSurface(level,position.x,position.y).height);
  const base={wheels,spec,mass:2495,cgM:.67,frontBias:.51,longG:0,latG:0,deltaLeft:0,rideHeight:0,dt:1/240,support};

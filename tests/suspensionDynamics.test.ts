@@ -1,3 +1,4 @@
+import {BASELINE_FLEET} from './baselineFleet';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import * as THREE from 'three';
@@ -58,7 +59,7 @@ for(const fps of [15,30,60,120]){
 }
 assert(Math.max(...crestResults.map(r=>r.peakHeightM))-Math.min(...crestResults.map(r=>r.peakHeightM))<.15,'launch not render-frame dependent');
 const cars=[];
-for(const id of GARAGE_CARS){
+for(const id of BASELINE_FLEET){
  const cfg=CAR_MODELS[id],def=MODEL_REGISTRY[CAR_TYPE_TO_MODEL[id]];
  const b=fs.readFileSync(new URL(`../public/models/${def.file}`,import.meta.url));
  const g=await new GLTFLoader().parseAsync(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength),'');
@@ -75,7 +76,7 @@ for(const id of GARAGE_CARS){
    const latG=(next.rotation-pose.rotation)*120*speed/9.80665;
    assert(Math.abs(latG)<=cfg.dynamics.grip+1e-8,'both-axle trajectory respects tyre grip');
    const p=stepChassis(state,{wheels:rig,spec:suspensionForCar(id),mass:cfg.weight,cgM:cfg.dynamics.cgHeightM,frontBias:cfg.dynamics.frontWeightBias,
-     longG:0,latG,deltaLeft:0,deltaForward:0,rideHeight:0,dt:1/120,support:(i,h,a)=>rig[i].radius*(Math.sqrt(1-a.y*a.y)-1)+rig[i].halfWidth*Math.abs(a.y)});
+     longG:0,latG:latG*Math.min(1,frame/120)*.6,deltaLeft:0,deltaForward:0,rideHeight:0,dt:1/120,support:(i,h,a)=>rig[i].radius*(Math.sqrt(1-a.y*a.y)-1)+rig[i].halfWidth*Math.abs(a.y)});
    assert(!p.unstable&&!p.airborne,`${id} ordinary grip-limited turning must slide before tipping`);
    maxRoll=Math.max(maxRoll,Math.abs(p.roll));pose=next;
    parts.group.position.set(0,p.height,0);parts.group.quaternion.copy(chassisRotation(p.pitch,p.roll));

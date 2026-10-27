@@ -41,13 +41,25 @@ export function addBeijingScenery(scene:THREE.Scene,level:LevelData,trackGeo:(g:
    const kind=o.id.split('-')[2]??'warehouse';
    const base=kind==='parking'?66:kind==='factory'?48:kind==='service'?22:30;
    const vary=(index*13)%9;
-   const height=base+vary;
+   const height=o.verticalHeight??(base+vary);
    const roof=kind==='warehouse'?height*0.22:kind==='factory'?height*0.18:0;
    return {o,kind,height,roof,bucket:`${Math.floor(o.x/3000)}:${Math.floor(o.y/4000)}`};
   });
   const buckets=new Map<string,Spec[]>();
   specs.forEach(spec=>{const list=buckets.get(spec.bucket);if(list)list.push(spec);else buckets.set(spec.bucket,[spec]);});
   const bodyMat=new THREE.MeshLambertMaterial({color:'#ffffff'});
+  bodyMat.onBeforeCompile=shader=>{
+   shader.vertexShader='varying vec3 facadeP;varying vec3 facadeN;\n'+shader.vertexShader;
+   shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nfacadeP=(instanceMatrix*vec4(position,1.)).xyz;facadeN=normal;');
+   shader.fragmentShader='varying vec3 facadeP;varying vec3 facadeN;\n'+shader.fragmentShader;
+   shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
+    if(abs(facadeN.y)<.5 && facadeP.y>40.){
+     float u=fract((abs(facadeN.x)>.5?facadeP.z:facadeP.x)/36.);
+     float v=fract(facadeP.y/34.);
+     float glass=step(.14,u)*(1.-step(.86,u))*step(.18,v)*(1.-step(.86,v));
+     diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(.47,.61,.71),glass);
+    }`);
+  };
   const bodyGeo=trackGeo(new THREE.BoxGeometry(1,1,1));
   const shape=new THREE.Shape();shape.moveTo(-.5,0);shape.lineTo(0,1);shape.lineTo(.5,0);shape.closePath();
   const gableGeo=trackGeo(new THREE.ExtrudeGeometry(shape,{depth:1,bevelEnabled:false}));gableGeo.translate(0,0,-.5);

@@ -1,5 +1,5 @@
 import { garageSurface } from './garage';
-import { worldHeight, worldSurfaceSample } from './openWorld';
+import { worldHeight, worldSurfaceSample, inCity, CITY_OFFSET } from './openWorld';
 import type { LevelData } from '../types';
 import { sampleElevatedRoad } from './elevatedRoad';
 import { isTrainingTerrain, trainingTerrainGradient, trainingTerrainHeight } from './trainingTerrain';
@@ -48,12 +48,13 @@ export function curbHeightAt(level: LevelData, x: number, y: number): number {
 export function sampleTerrainSurface(level: LevelData, x: number, y: number, currentHeight = 0, includeCurbs = true): SurfaceSample {
   if (level.challengeTerrain) return challengeSample(level,x,y);
   if (level.garage) return garageSurface(x,y,currentHeight);
-  if (level.openWorld && x >= 8500) return worldSurfaceSample(x, y);
+  if (level.openWorld && !inCity(x,y)) return worldSurfaceSample(x, y);
   const elevated = sampleElevatedRoad(level.elevatedRoads, x, y, currentHeight);
   if (elevated) return elevated;
-  if (level.levelId === 1 && isTrainingTerrain(x, y)) {
-    const grade = trainingTerrainGradient(x, y);
-    return { height: trainingTerrainHeight(x, y), gradeX: grade.gradeX, gradeY: grade.gradeY };
+  const tx=x-(level.openWorld?CITY_OFFSET:0),ty=y-(level.openWorld?CITY_OFFSET:0);
+  if (level.levelId === 1 && isTrainingTerrain(tx, ty)) {
+    const grade = trainingTerrainGradient(tx, ty);
+    return { height: trainingTerrainHeight(tx, ty), gradeX: grade.gradeX, gradeY: grade.gradeY };
   }
   for (const zone of level.slopeZones || []) {
     const dx = x - zone.x;
@@ -70,6 +71,6 @@ export function sampleTerrainSurface(level: LevelData, x: number, y: number, cur
 }
 
 export function sampleWheelSurfaceHeight(level: LevelData, x: number, y: number, currentHeight = 0): number {
-  if(level.openWorld && x>=8500) return worldHeight(x,y);
+  if(level.openWorld && !inCity(x,y)) return worldHeight(x,y);
   return sampleTerrainSurface(level, x, y, currentHeight).height;
 }

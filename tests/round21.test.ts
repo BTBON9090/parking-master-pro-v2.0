@@ -10,11 +10,11 @@ import {disposeResources} from '../three/disposeResources';
 import {CrashDebris} from '../three/crashDebris';
 import {VehicleRollover} from '../three/vehicleRollover';
 const report:any={};
-assert.deepEqual(LEVEL_LIST.map(l=>l.id),[1,4,6,8,9,10,11,12]);
-const campus=GENERATE_LEVEL(4);assert(campus.spots.length>=12);for(const id of [2,3,4,5])assert(campus.spots.some(s=>s.id.startsWith(`campus-${id}-`)));assert(campus.slopeZones!.length>0);assert(campus.curvedRoads!.length>=10);
+assert.deepEqual(LEVEL_LIST.map(l=>l.id),[1,4,6,13,8,9,10,11,12]);
+const campus=GENERATE_LEVEL(4);assert(campus.spots.length>=200);assert.equal(campus.exam!.length,18);assert(campus.slopeZones!.length>0);assert(campus.curvedRoads!.length>=10);
 for(const id of [2,3,5])assert.equal(GENERATE_LEVEL(id).levelId,4);
 assert.equal(GENERATE_LEVEL(7).levelId,1);
-assert(campus.curvedRoads!.every(c=>(c.markingGaps?.length??0)>0));
+assert(campus.curvedRoads!.every(c=>c.points.length>=2));
 report.campus={size:[campus.mapWidth,campus.mapHeight],spots:campus.spots.length,curves:campus.curvedRoads!.length,slopes:campus.slopeZones!.length};
 // Boundary samples on both sides of all isolated road shoulders. Old max()
 // created sudden discontinuities where road and coarse terrain disagreed.

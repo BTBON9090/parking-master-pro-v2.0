@@ -5,17 +5,24 @@ export interface RouteSample { x:number; y:number; h:number; distance:number; nx
 export interface WorldRoute { id:string; label:string; width:number; gravel?:boolean; closed?:boolean; points:number[][]; samples:RouteSample[]; }
 const clamp=(v:number)=>Math.max(0,Math.min(1,v));
 const smooth=(v:number)=>{const t=clamp(v);return t*t*(3-2*t);};
-export const MOUNTAIN_BOUNDS={x0:8600,x1:16600,y0:1300,y1:8100};
+export const CITY_OFFSET=15000;
+export const WORLD_TERRAIN_STEP=120;
+export const MOUNTAIN_BOUNDS={x0:0,x1:46000,y0:0,y1:44000};
+export const inCity=(x:number,y:number)=>x>=CITY_OFFSET&&x<=CITY_OFFSET+8500&&y>=CITY_OFFSET&&y<=CITY_OFFSET+11600;
+const expand=(x:number,y:number)=>({x:23600+(x-8600)*2,y:16300+(y-1300)*2});
 function route(id:string,label:string,width:number,points:number[][],closed=false,gravel=false):WorldRoute {
- const curve=new CatmullRomCurve3(points.map(p=>new Vector3(p[0],p[2],p[1])),closed,'centripetal');
+ if(!id.startsWith('new-'))points=points.map(([x,y,h])=>{const p=expand(x,y);return[p.x,p.y,h*4];});
+ if(id==='gateway')points=[[23185,19500,0],[23650,19500,0],[24200,20000,15],[25000,21600,80],[26000,22300,150],[26800,22300,220]];
+ const curve=new CatmullRomCurve3(points.map(p=>new Vector3(p[0],id==='new-cloud'?0:p[2],p[1])),closed,'centripetal');
  curve.arcLengthDivisions=points.length*600;curve.updateArcLengths();
  const samples:RouteSample[]=[];
- const ps=curve.getSpacedPoints(Math.ceil(curve.getLength()/6));
+ const ps=curve.getSpacedPoints(Math.ceil(curve.getLength()/18));
+ if(id==='new-cloud')ps.forEach((p,i)=>{const t=curve.getUtoTmapping(i/(ps.length-1),0)*(points.length-1),k=Math.min(points.length-2,Math.floor(t));p.y=points[k][2]+(points[k+1][2]-points[k][2])*smooth(t-k);});
  let distance=0;
  ps.forEach((p,i)=>{
   if(i)distance+=p.distanceTo(ps[i-1]);
   const a=ps[closed&&i===0?ps.length-2:Math.max(0,i-1)],b=ps[closed&&i===ps.length-1?1:Math.min(ps.length-1,i+1)],d=Math.hypot(b.x-a.x,b.z-a.z)||1;
-  samples.push({x:p.x,y:p.z,h:id==='gateway'&&p.x<8650?0:Math.max(0,p.y),distance,nx:-(b.z-a.z)/d,ny:(b.x-a.x)/d});
+  samples.push({x:p.x,y:p.z,h:Math.max(0,p.y),distance,nx:-(b.z-a.z)/d,ny:(b.x-a.x)/d});
  });
  return {id,label,width,points,closed,gravel,samples};
 }
@@ -26,9 +33,15 @@ export const WORLD_ROUTES:WorldRoute[]=[
  route('summit','云顶观景线',72,[[13900,2900,470],[14500,2450,520],[15100,2400,580],[15800,3100,560],[15400,3700,480],[14600,3800,430]]),
  route('forestry','林场窄路挑战',46,[[12200,5200,165],[12500,4770,205],[13000,4400,240],[13300,4590,255],[13180,4930,245],[12780,4840,215],[12450,5040,180]],true,true),
  route('creek','溪谷砂石捷径',58,[[11900,4100,170],[11750,4480,158],[11700,4800,150],[12200,5200,165],[12100,5800,190],[12500,5860,200],[12900,5500,210]],false,true),
+
+ route('new-orbit','环城山脉公路',88,[[42000,29000,1900],[33000,35000,2200],[23000,38000,2500],[10000,34000,2100],[3500,26000,2800],[3000,15000,3200],[10000,6000,2700],[21000,2500,3200],[33000,4500,3400],[39000,13500,3000],[42200,20500,2400]],true),
+ route('new-join','北岭联络路',78,[[34200,19500,1880],[34000,17500,2050],[36500,15500,2600],[39000,13500,3000]]),
+ route('new-cloud','千米云顶盘山路',65,[[39000,13500,3000],[42000,12700,3500],[40000,11000,4300],[44000,10000,5000],[40500,8300,5800],[43500,6800,6600],[39800,5700,7400],[44000,4100,8300],[40000,2700,9100],[43700,1700,10000]]),
+ route('new-cliff','外崖碎石险道',42,[[10000,34000,2100],[11000,31000,2400],[8500,30500,2550],[9000,28400,2700],[6500,27600,2800],[3500,26000,2800]],false,true),
+ route('new-summit-pad','云顶停车坪',240,[[43500,1700,10000],[44200,1700,10000]]),
 ];
 export const WORLD_PLACES=[
- {label:'城市 · 东四',x:4300,y:1800,color:'#b3bac2'},
+
  {label:'山路入口',x:9220,y:4550,color:'#a8d5a1'},
  {label:'回头弯',x:12380,y:3520,color:'#f6cb73'},
  {label:'云顶观景台',x:15330,y:2410,color:'#b4dfd5'},
@@ -36,7 +49,7 @@ export const WORLD_PLACES=[
  {label:'林场窄路 · 会车让行',x:13000,y:4400,color:'#eac783'},
  {label:'连续回头弯 · 慢行',x:13270,y:4620,color:'#eac783'},
  {label:'青岚山环线',x:13700,y:6500,color:'#a8d5a1'},
-];
+].map(p=>({...p,...expand(p.x,p.y)})).concat([{label:'城市 · CBD',x:19300,y:16800,color:'#b3bac2'},{label:'云顶 1000 m',x:43700,y:1700,color:'#f1d39c'},{label:'西岭外崖',x:6500,y:31000,color:'#e9b383'}]);
 export const WORLD_DESTINATIONS=[
  {label:'城市起点',x:8190,y:4500,rotation:0},
  {label:'山路入口',x:9160,y:4670,rotation:-.08},
@@ -44,17 +57,18 @@ export const WORLD_DESTINATIONS=[
  {label:'云顶观景线',x:15100,y:2400,rotation:.28},
  {label:'林场窄路挑战',x:12500,y:4770,rotation:0},
  {label:'溪谷砂石路',x:11750,y:4480,rotation:Math.PI/2},
-].map(place=>{
+].map(p=>({...p,...expand(p.x,p.y)})).concat([{label:'千米云顶停车坪',x:43800,y:1700,rotation:0},{label:'西岭外崖险道',x:6500,y:31000,rotation:0}]).map(place=>{
+ if(place.label==='城市起点')return {...place,x:23185,y:19522,rotation:0};
  let best=WORLD_ROUTES[0].samples[0],width=90,distance=Infinity;
  for(const r of WORLD_ROUTES)for(const p of r.samples){const d=Math.hypot(place.x-p.x,place.y-p.y);if(d<distance){best=p;width=r.width;distance=d;}}
  return {...place,x:best.x+best.nx*width/4,y:best.y+best.ny*width/4,rotation:Math.atan2(-best.nx,best.ny)};
 });
 // Puddles are shallow bowls in the actual tyre support surface, not decals on flat tarmac.
-export const WORLD_PUDDLES=[{x:13000,y:4400,rx:15,ry:24,depth:.65},{x:11702,y:4790,rx:17,ry:30,depth:.85},{x:12195,y:5200,rx:22,ry:16,depth:.65}];
-type Segment={a:RouteSample;b:RouteSample;route:WorldRoute};
+export const WORLD_PUDDLES=[{x:13000,y:4400,rx:15,ry:24,depth:.65},{x:11702,y:4790,rx:17,ry:30,depth:.85},{x:12195,y:5200,rx:22,ry:16,depth:.65}].map(p=>({...p,...expand(p.x,p.y)}));
+type Segment={a:RouteSample;b:RouteSample;route:WorldRoute;index:number};
 const CELL=160,buckets=new Map<string,Segment[]>();
 for(const r of WORLD_ROUTES)for(let i=1;i<r.samples.length;i++){
- const a=r.samples[i-1],b=r.samples[i],s={a,b,route:r},pad=r.width/2+100;
+ const a=r.samples[i-1],b=r.samples[i],s={a,b,route:r,index:i-1},pad=r.width/2+100;
  for(let x=Math.floor((Math.min(a.x,b.x)-pad)/CELL);x<=Math.floor((Math.max(a.x,b.x)+pad)/CELL);x++)
  for(let y=Math.floor((Math.min(a.y,b.y)-pad)/CELL);y<=Math.floor((Math.max(a.y,b.y)+pad)/CELL);y++){
   const key=`${x},${y}`;if(!buckets.has(key))buckets.set(key,[]);buckets.get(key)!.push(s);
@@ -80,7 +94,7 @@ for(const [key,segments] of buckets){
 }
 buckets.clear();
 function roadContacts(x:number,y:number){
- const closest:Array<{distance:number;height:number;route:WorldRoute;along:number}>=[];
+ const closest:Array<{distance:number;height:number;route:WorldRoute;along:number;index:number}>=[];
  const bound=(n:SegmentNode)=>Math.max(n.x0-x,0,x-n.x1)**2+Math.max(n.y0-y,0,y-n.y1)**2;
  for(const tree of roadIndex.get(`${Math.floor(x/CELL)},${Math.floor(y/CELL)}`)||[]){
   let best=Infinity,bestSegment:Segment|undefined,bestT=0;
@@ -93,7 +107,7 @@ function roadContacts(x:number,y:number){
    }}else{const l=n.left!,r=n.right!;if(bound(l)<bound(r)){visit(l);visit(r);}else{visit(r);visit(l);}}
   };
   visit(tree);
-  if(bestSegment){const s=bestSegment,t=bestT;closest.push({distance:Math.sqrt(best),height:s.a.h+(s.b.h-s.a.h)*t,route:s.route,along:s.a.distance+(s.b.distance-s.a.distance)*t});}
+  if(bestSegment){const s=bestSegment,t=bestT;closest.push({distance:Math.sqrt(best),height:s.a.h+(s.b.h-s.a.h)*t,route:s.route,index:s.index,along:s.a.distance+(s.b.distance-s.a.distance)*t});}
  }
  return closest.sort((a,b)=>a.distance-b.distance);
 }
@@ -115,10 +129,12 @@ function bedNode(x:number,y:number){
  const key=`${x},${y}`,cached=bedCache.get(key);if(cached!==undefined)return cached;
  const b=MOUNTAIN_BOUNDS,envelope=smooth((x-b.x0)/500)*smooth((b.x1-x)/500)*smooth((y-b.y0)/500)*smooth((b.y1-y)/500);
  const gauss=(cx:number,cy:number,sx:number,sy:number,h:number)=>h*Math.exp(-(((x-cx)/sx)**2+((y-cy)/sy)**2));
- const raw=envelope*(75+gauss(12900,1800,1700,1000,950)+gauss(15300,4600,1000,1400,720)+gauss(11200,5600,1500,1300,220)+gauss(13600,3700,1000,1000,570));
+ const edge=Math.max(Math.max(15000-x,0,x-23500),Math.max(15000-y,0,y-26600));
+ const urbanFade=smooth(edge/1400);
+ const raw=envelope*urbanFade*(500+gauss(43500,1700,4400,4200,11000)+gauss(3500,17000,4000,10000,3600)+gauss(20000,37000,15000,3000,3000)+gauss(20000,3500,14000,3300,3800));
  let nearest=Infinity,h=0;
  for(const s of broadSegments){
-  if(Math.abs(x-s.a.x)>1400||Math.abs(y-s.a.y)>1400)continue;
+  if(Math.abs(x-s.a.x)>3000||Math.abs(y-s.a.y)>3000)continue;
   const dx=s.b.x-s.a.x,dy=s.b.y-s.a.y,t=clamp(((x-s.a.x)*dx+(y-s.a.y)*dy)/(dx*dx+dy*dy||1));
   const d=Math.hypot(x-s.a.x-t*dx,y-s.a.y-t*dy);
   if(d<nearest){nearest=d;h=s.a.h+(s.b.h-s.a.h)*t;}
@@ -127,12 +143,12 @@ function bedNode(x:number,y:number){
  bedCache.set(key,result);return result;
 }
 function terrainBed(x:number,y:number){
- const step=40,x0=Math.floor(x/step)*step,y0=Math.floor(y/step)*step,tx=(x-x0)/step,ty=(y-y0)/step;
+ const step=WORLD_TERRAIN_STEP,x0=Math.floor(x/step)*step,y0=Math.floor(y/step)*step,tx=(x-x0)/step,ty=(y-y0)/step;
  return (bedNode(x0,y0)*(1-tx)+bedNode(x0+step,y0)*tx)*(1-ty)+(bedNode(x0,y0+step)*(1-tx)+bedNode(x0+step,y0+step)*tx)*ty;
 }
 function designHeight(x:number,y:number,contacts=roadContacts(x,y)):number {
  const b=MOUNTAIN_BOUNDS;
- if(x<8180||x>b.x1||y<b.y0||y>b.y1)return 0;
+ if(inCity(x,y)||x<b.x0||x>b.x1||y<b.y0||y>b.y1)return 0;
  const terrain=terrainBed(x,y);
  const road=contacts[0];
  if(!road)return terrain;
@@ -151,28 +167,61 @@ function designHeight(x:number,y:number,contacts=roadContacts(x,y)):number {
 const terrainVertices=new Map<string,number>();
 export function terrainVertexHeight(x:number,y:number):number {
  const key=`${x},${y}`,cached=terrainVertices.get(key);if(cached!==undefined)return cached;
- const r=nearestWorldRoad(x,y),h=designHeight(x,y)-(r&&r.distance<r.route.width/2+100?8*(1-smooth((r.distance-r.route.width/2-40)/60)):0);
+ const r=nearestWorldRoad(x,y),h=designHeight(x,y)-(r&&r.distance<r.route.width/2+220?40*(1-smooth((r.distance-r.route.width/2-80)/140)):0);
  terrainVertices.set(key,h);return h;
 }
 function terrainTriangleHeight(x:number,y:number):number {
  const b=MOUNTAIN_BOUNDS;
- if(x<b.x0||x>b.x1||y<b.y0||y>b.y1)return designHeight(x,y);
- const x0=b.x0+Math.floor((x-b.x0)/40)*40,y0=b.y0+Math.floor((y-b.y0)/40)*40;
- const u=(x-x0)/40,v=(y-y0)/40,h00=terrainVertexHeight(x0,y0),h10=terrainVertexHeight(x0+40,y0),h01=terrainVertexHeight(x0,y0+40),h11=terrainVertexHeight(x0+40,y0+40);
+ if(inCity(x,y)||x<b.x0||x>b.x1||y<b.y0||y>b.y1)return designHeight(x,y);
+ const step=WORLD_TERRAIN_STEP,x0=b.x0+Math.floor((x-b.x0)/step)*step,y0=b.y0+Math.floor((y-b.y0)/step)*step;
+ const u=(x-x0)/step,v=(y-y0)/step,h00=terrainVertexHeight(x0,y0),h10=terrainVertexHeight(x0+step,y0),h01=terrainVertexHeight(x0,y0+step),h11=terrainVertexHeight(x0+step,y0+step);
  return u+v<=1?h00+(h10-h00)*u+(h01-h00)*v:h11+(h01-h11)*(1-u)+(h10-h11)*(1-v);
 }
-export function worldHeight(x:number,y:number):number {
+export function roadVertexHeight(x:number,y:number):number {
+ if(inCity(x,y))return 0;
  const contacts=roadContacts(x,y),r=contacts[0],edge=r?r.distance-r.route.width/2:Infinity;
  if(edge<=0)return designHeight(x,y,contacts);
  const terrain=terrainTriangleHeight(x,y);
  if(edge>=60)return terrain;
  const t=smooth(edge/60);return designHeight(x,y,contacts)*(1-t)+terrain*t;
 }
+const ribbonOffsets=new Map(WORLD_ROUTES.map(r=>[r,Array.from({length:(r.gravel?12:8)+1},(_,j)=>(j/(r.gravel?12:8)-.5)*r.width)]));
+for(const [r,offsets] of ribbonOffsets)for(let n=1;n<=12;n++){offsets.unshift(-r.width/2-n*5);offsets.push(r.width/2+n*5);}
+const ribbonVertices=new Map<WorldRoute,Array<Array<{x:number;y:number;h:number}>>>();
+function ribbonVertex(r:WorldRoute,i:number,j:number){
+ let rows=ribbonVertices.get(r);if(!rows){rows=[];ribbonVertices.set(r,rows);}
+ const row=rows[i]??(rows[i]=[]);if(row[j])return row[j];
+ const off=ribbonOffsets.get(r)![j],p=r.samples[i],x=p.x+p.nx*off,y=p.y+p.ny*off;
+ return row[j]={x,y,h:roadVertexHeight(x,y)};
+}
+function triangleHeight(x:number,y:number,a:{x:number;y:number;h:number},b:typeof a,c:typeof a){
+ const d=(b.y-c.y)*(a.x-c.x)+(c.x-b.x)*(a.y-c.y);if(Math.abs(d)<1e-10)return null;
+ const u=((b.y-c.y)*(x-c.x)+(c.x-b.x)*(y-c.y))/d,v=((c.y-a.y)*(x-c.x)+(a.x-c.x)*(y-c.y))/d;
+ return u>=-1e-7&&v>=-1e-7&&u+v<=1.0000001?u*a.h+v*b.h+(1-u-v)*c.h:null;
+}
+/** Exact same strip triangles as rendering. Analytic road design is used only
+ * to author vertices; tyre contacts interpolate their faces, including crests. */
+export function worldHeight(x:number,y:number):number{
+ if(inCity(x,y))return 0;
+ let best=-Infinity;
+ for(const contact of roadContacts(x,y)){
+  const r=contact.route;if(contact.distance>r.width/2+62)continue;
+  const offsets=ribbonOffsets.get(r)!;
+  // unshift is descending left-to-right; all cells use the road's diagonal.
+  for(let i=Math.max(0,contact.index-1);i<=Math.min(r.samples.length-2,contact.index+1);i++){
+   for(let j=0;j<offsets.length-1;j++){
+    const a=ribbonVertex(r,i,j),b=ribbonVertex(r,i+1,j),c=ribbonVertex(r,i,j+1),d=ribbonVertex(r,i+1,j+1);
+    const h=triangleHeight(x,y,a,b,c)??triangleHeight(x,y,c,b,d);if(h!==null)best=Math.max(best,h);
+   }
+  }
+ }
+ return Math.max(best,terrainTriangleHeight(x,y));
+}
 export function worldTreePlacements(){
  const out:{x:number;y:number;h:number;s:number}[]=[];
- for(let i=0;i<340;i++){
-  const x=8900+((i*2081)%7200),y=1700+((i*1297)%5900),r=nearestWorldRoad(x,y);
-  if(r&&r.distance<r.route.width/2+65)continue;
+ for(let i=0;i<700;i++){
+  const x=1200+((i*2081)%43000),y=900+((i*1297)%41500),r=nearestWorldRoad(x,y);
+  if(inCity(x,y)||(r&&r.distance<r.route.width/2+65))continue;
   out.push({x,y,h:worldHeight(x,y),s:.7+(i%9)*.1});
  }
  return out;
@@ -189,7 +238,7 @@ export function worldSurface(x:number,y:number){
  const r=nearestWorldRoad(x,y);
  const onRoad=r&&r.distance<r.route.width/2;
  const wet=WORLD_PUDDLES.some(p=>((x-p.x)/p.rx)**2+((y-p.y)/p.ry)**2<1);
- const offRoad=x>=8600&&!onRoad;
+ const offRoad=!inCity(x,y)&&!onRoad;
  return {kind:wet?'wet':onRoad&&r.route.gravel?'gravel':offRoad?'grass':'asphalt',gravel:!!(onRoad&&r.route.gravel),wet,grip:wet?.62:onRoad&&r.route.gravel?.77:offRoad?.68:1,rolling:wet?2.1:onRoad&&r.route.gravel?1.7:offRoad?1.9:1};
 }
 const surfaceCache=new Map<string,{height:number;gradeX:number;gradeY:number}>();
@@ -208,14 +257,40 @@ export function mapCurveSamples(r:CurvedRoadSurface){
 }
 
 export function addOpenWorld(level:LevelData):LevelData {
- level.openWorld=true;level.mapWidth=16600;
+ level.openWorld=true;level.mapWidth=46000;level.mapHeight=44000;
  // Open a real throat through the east curb; no invisible divider across the connection.
  level.curbSegments=level.curbSegments?.filter(c=>!(c.x>8050&&c.x<8500&&Math.abs(c.y-4500)<75));
  level.obstacles=level.obstacles.filter(o=>!(o.x>8150&&o.x<8800&&Math.abs(o.y-4500)<o.height/2+90));
  level.markings=level.markings.filter(m=>!(m.x>8150&&m.x<8410&&Math.abs(m.y-4500)<70));
  // Roadworks stay on the city-side shoulder of the connector, with a
  // clear traffic lane. Their visible cones share the collision objects.
- for(let i=0;i<7;i++)level.obstacles.push({id:`gateway-work-${i}`,x:8780+i*14,y:4580,width:4,height:4,rotation:0,elevation:worldHeight(8780+i*14,4580),verticalHeight:6,type:'cone',movable:true,weight:3,color:'#e99038'});
- level.training={title:'自由驾驶 · 城市与青岚山',tips:['东四城市街区连接虚构青岚山，无需完成停车任务即可自由探索','山路实线禁止跨越；弯前减速，注意坡度、砂石与浅水路段','暂停后可原地换车、切换场景，或前往地图上的目的地','青岚山为原创驾驶路线，不是北京真实山区的测绘复刻']};
+
+ // Translate the city once; mountain colliders already use expanded coordinates.
+ const shifted=new WeakSet<object>();
+ const shift=(p:{x:number;y:number})=>{if(shifted.has(p))return;shifted.add(p);p.x+=CITY_OFFSET;p.y+=CITY_OFFSET;};
+ for(const key of ['spots','markings','roadSurfaces','slopeZones','elevatedRoads','streetSigns','curbSegments','intersections','terrainZones'] as const)for(const p of level[key]??[])shift(p);
+ for(const p of level.obstacles)if(!p.id.startsWith('mountain-'))shift(p);
+ shift(level.startPos);
+ for(const r of level.curvedRoads??[]){r.points=r.points.map(p=>({...p}));r.points.forEach(shift);if(r.center)shift(r.center);r.markingGaps?.forEach(shift);}
+ // Replace selected large city blocks with a varied CBD skyline and outer housing.
+ let tower=0;
+ for(const o of level.obstacles.filter(o=>o.id.startsWith('bj-building-'))){
+   const localX=o.x-CITY_OFFSET,localY=o.y-CITY_OFFSET;
+   if(localX<4800&&localY<6400){o.id='bj-building-tower-'+tower;o.verticalHeight=500+(tower*137)%1800;o.color=['#718b96','#8b989e','#617b88'][tower++%3];}
+   else {o.id=o.id.replace(/bj-building-[^-]+/,'bj-building-residential');o.verticalHeight=180+(tower++%5)*40;}
+ }
+ for(const y of [15000+6400,15000+9300])for(let i=0;i<24;i++){
+  const x=15000+1950+i*180;
+  if(level.obstacles.some(o=>Math.abs(o.x-x)<o.width/2+45&&Math.abs(o.y-y)<o.height/2+65))continue;
+  level.roadSurfaces!.push({x,y:y+65,width:160,height:130,rotation:0,color:'#4a4e4d',curbs:false});
+  level.spots.push({id:`city-new-bay-${y}-${i}`,x,y,width:32,height:70,rotation:0,occupied:false});
+ }
+ for(const [x,y,rot] of [[19600,21400,0],[20900,23900,Math.PI/2]]){
+  level.elevatedRoads!.push({id:`city-interchange-${x}`,x,y,width:2400,height:110,rotation:rot,deckHeight:65,rampLength:900});
+  level.obstacles=level.obstacles.filter(o=>{const dx=o.x-x,dy=o.y-y,c=Math.cos(rot),s=Math.sin(rot);return !(Math.abs(dx*c+dy*s)<1250&&Math.abs(-dx*s+dy*c)<100);});
+  level.streetSigns!.push({x:x-1200,y:y-90,rotation:rot,label:'城市快速路 / 居民区',kind:'street'});
+ }
+ for(let i=0;i<14;i++)level.spots.push({id:'summit-park-'+i,x:43550+i*42,y:1738,width:34,height:70,rotation:Math.PI/2,occupied:false,elevation:10000});
+ level.training={title:'城市与环城青岚山 · 云顶 1000 m',tips:['CBD、居民区、立交与环城山脉相连；地图为原创北京风格训练世界','西岭碎石外崖无连续护栏，北岭盘山线通向海拔 1000 米停车坪','地图目的地可直接选择山路入口或云顶；事故后按 R 恢复']};
  return level;
 }

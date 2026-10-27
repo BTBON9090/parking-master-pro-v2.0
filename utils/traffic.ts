@@ -2,7 +2,7 @@ import type { AiConfig } from '../types';
 import { TRAVEL_PER_SPEED_FRAME } from './powertrain';
 
 /** Active NPC traffic is deliberately capped; the level may contain fewer. */
-export const MAX_ACTIVE_TRAFFIC = 8;
+export const MAX_ACTIVE_TRAFFIC = 16;
 export const NPC_TURN_RATE = 1.7;
 export const NPC_COLLISION_RECOVERY_MS = 1200;
 export const NPC_HONK_COOLDOWN_MS = 8500;
@@ -63,12 +63,21 @@ export function stepTrafficVehicle(input: TrafficStepInput): TrafficStepResult {
   let rotation = input.rotation;
   let speed = Math.max(0, ai.speed);
   let currentPathIndex = ai.currentPathIndex;
-  const path = ai.path;
+  let path = ai.path;
   let blocked = false;
   let blockedByPlayer = false;
   let collided = false;
   let honked = false;
 
+  if(ai.lanePaths&&(ai.blockedFor??0)>.7&&input.nowMs-(ai.lastLaneChange??-Infinity)>10000){
+    for(const change of [-1,1]){
+      const lane=(ai.laneIndex??0)+change;if(lane<0||lane>3)continue;
+      const next=ai.lanePaths[lane],p=next[currentPathIndex%next.length];
+      const clear=input.blockers.every(b=>Math.hypot(b.x-p.x,b.y-p.y)>220);
+      if(clear){ai.path=next;path=next;ai.laneIndex=lane;ai.lastLaneChange=input.nowMs;ai.blockedFor=0;break;}
+    }
+  }
+  if(ai.incidentAt&&input.nowMs>ai.incidentAt){ai.incidentUntil=input.nowMs+12000;ai.incidentAt=undefined;ai.collisionCooldownUntil=input.nowMs+5000;}
   if (path.length > 0 && dt > 0) {
     let target = path[currentPathIndex % path.length];
     let dx = target.x - x;
@@ -91,7 +100,7 @@ export function stepTrafficVehicle(input: TrafficStepInput): TrafficStepResult {
     // a stopped car ahead means wait, not drive through it.
     // Fixed stop window. A speed-dependent window shrank as the NPC braked
     // and produced a stop/go oscillation just outside the threshold.
-    const lookAhead = 140;
+    const lookAhead = Math.max(140,ai.maxSpeed*ai.maxSpeed*18+70);
     for (const blocker of input.blockers) {
       if (blocker.id === input.id) continue;
       const bx = blocker.x - x;
@@ -100,7 +109,7 @@ export function stepTrafficVehicle(input: TrafficStepInput): TrafficStepResult {
       if (distance > lookAhead + Math.max(blocker.width, blocker.height) * 0.5) continue;
       const ahead = bx * forwardX + by * forwardY;
       const lateral = -bx * forwardY + by * forwardX;
-      const corridor = 24 + blocker.width * 0.45;
+      const corridor = ai.lanePaths?18+blocker.width*.4:24+blocker.width*.45;
       if (ahead > 4 && Math.abs(lateral) < corridor && distance < lookAhead) {
         blocked = true;
         targetSpeed = 0;
@@ -109,6 +118,7 @@ export function stepTrafficVehicle(input: TrafficStepInput): TrafficStepResult {
       }
     }
 
+    if(input.nowMs<(ai.incidentUntil??0)){targetSpeed=Math.min(targetSpeed,.8);rotation+=Math.sin(input.nowMs/700)*.015*dt;honked=input.nowMs-(ai.lastHonkAt??0)>4000;if(honked)ai.lastHonkAt=input.nowMs;}
     if (input.nowMs < (ai.collisionCooldownUntil ?? 0)) {
       targetSpeed = 0;
       blocked = true;

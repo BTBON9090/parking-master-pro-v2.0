@@ -1,5 +1,53 @@
 [
   {
+    "id": "TRIKE",
+    "virtualFrontDeg": 44.442075316765944,
+    "rearInnerLimitDeg": 0,
+    "outerFrontRadiusM": 3.80000000000065
+  },
+  {
+    "id": "TRACTOR",
+    "virtualFrontDeg": 40.86971891762742,
+    "rearInnerLimitDeg": 0,
+    "outerFrontRadiusM": 5.100000000002584
+  },
+  {
+    "id": "SEMI",
+    "virtualFrontDeg": 37.21549120803864,
+    "rearInnerLimitDeg": 0,
+    "outerFrontRadiusM": 7.800000000004101
+  },
+  {
+    "id": "CYBERTRUCK",
+    "virtualFrontDeg": 29.732537367637804,
+    "rearInnerLimitDeg": 10,
+    "outerFrontRadiusM": 6.624999999999797
+  },
+  {
+    "id": "REVUELTO",
+    "virtualFrontDeg": 32.277705452702556,
+    "rearInnerLimitDeg": 3,
+    "outerFrontRadiusM": 5.650000000000254
+  },
+  {
+    "id": "VEYRON",
+    "virtualFrontDeg": 31.11861238586286,
+    "rearInnerLimitDeg": 0,
+    "outerFrontRadiusM": 6.000000000001379
+  },
+  {
+    "id": "V800",
+    "virtualFrontDeg": 37.03980840993939,
+    "rearInnerLimitDeg": 12,
+    "outerFrontRadiusM": 5.399999999997822
+  },
+  {
+    "id": "MINI",
+    "virtualFrontDeg": 30.589572779059935,
+    "rearInnerLimitDeg": 0,
+    "outerFrontRadiusM": 5.549999999997387
+  },
+  {
     "id": "SUV",
     "virtualFrontDeg": 38.44471751289176,
     "rearInnerLimitDeg": 0,
@@ -49,9 +97,9 @@
   },
   {
     "id": "COACH",
-    "virtualFrontDeg": 42.378061666915784,
+    "virtualFrontDeg": 46.074034799853635,
     "rearInnerLimitDeg": 0,
-    "outerFrontRadiusM": 9.400000000000002
+    "outerFrontRadiusM": 9.25
   },
   {
     "id": "VAN",

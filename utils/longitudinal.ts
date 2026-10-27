@@ -64,6 +64,8 @@ export interface LongitudinalContext {
   /** Weather grip multiplier (1 dry, 0.62 rain, 0.38 snow). */
   weatherGrip: number;
   rollingResistanceScale?: number;
+  /** Combined tyre-force budget left for propulsion during a turn. */
+  driveGripBudget?: number;
   /** Road grade projected onto the car heading (dh/dx, up positive). */
   slopeAlongCar: number;
   /** Shift duration in 60 Hz frames, already scaled by the car tuning. */
@@ -296,7 +298,7 @@ export function stepLongitudinal(
       a *= (0.4 + 0.6 * (launching ? state.launchBlend : 1)) * state.ignitionBlend;
       a *= 1 - smoothstep(0.96, 1.01, Math.abs(state.speed) / top);
       a *= pedalDriveEnvelope(state.throttle,Math.max(0,state.speed*Math.sign(inputs.gear))*4.1666666667);
-      engineForce = (inputs.gear === -1 ? -1 : 1) * a;
+      engineForce = (inputs.gear === -1 ? -1 : 1) * a * clamp(ctx.driveGripBudget??1,0,1);
     } else {
       state.overRevBlend = 0;
       state.ignitionBlend = 0;

@@ -58,9 +58,9 @@
   {
     "id": "COACH",
     "cases": 21,
-    "minSillClearanceCm": 6.581020552410486,
+    "minSillClearanceCm": 6.587667364816028,
     "maxAxleDriftMm": 7.105427357601002e-13,
-    "minSlopeTreadGapCm": 0.0010469883737548136
+    "minSlopeTreadGapCm": 0.0010469883743223515
   },
   {
     "id": "VAN",

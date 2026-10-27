@@ -30,7 +30,7 @@ export class VehicleRollover {
     new CANNON.Vec3(w.position.x,w.position.y-options.cgHeight,w.position.z),new CANNON.Quaternion(q.x,q.y,q.z,q.w));
   }
   this.body.velocity.set(options.velocity.x,options.velocity.y,options.velocity.z);
-  const angular=new THREE.Vector3(options.tipZ*.45,0,-options.tipX*.45).applyQuaternion(source.quaternion);
+  const angular=new THREE.Vector3(options.tipZ*1.25,0,-options.tipX*1.25).applyQuaternion(source.quaternion);
   this.body.angularVelocity.set(angular.x,angular.y,angular.z);
   this.world.defaultContactMaterial.friction=.75;this.world.defaultContactMaterial.restitution=.06;
   (this.world.solver as CANNON.GSSolver).iterations=20;

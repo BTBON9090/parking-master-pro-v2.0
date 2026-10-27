@@ -31,6 +31,15 @@ export interface ModelDef {
 }
 
 export const MODEL_REGISTRY: Record<string, ModelDef> = {
+ trike:{file:'cars/fleet-trike.glb',uniformScale:10},
+ tractor:{file:'cars/fleet-tractor.glb',uniformScale:10},
+ semi:{file:'cars/fleet-semi.glb',uniformScale:10},
+ cybertruck:{file:'cars/fleet-cybertruck.glb',uniformScale:10},
+ revuelto:{file:'cars/fleet-revuelto.glb',uniformScale:10},
+ veyron:{file:'cars/fleet-veyron.glb',uniformScale:10},
+ v800:{file:'cars/fleet-v800.glb',uniformScale:10},
+ mini:{file:'cars/fleet-mini.glb',uniformScale:10},
+
  tai7:{file:'cars/fangchengbao-tai7.glb',uniformScale:10},
  jeep:{file:'cars/trail-jeep.glb',uniformScale:10},
  midibus:{file:'cars/training-midibus.glb',uniformScale:10},coach:{file:'cars/training-coach.glb',uniformScale:10},
@@ -71,6 +80,15 @@ export const MODEL_REGISTRY: Record<string, ModelDef> = {
 
 // CarType → 模型注册名映射
 export const CAR_TYPE_TO_MODEL: Record<CarType, string> = {
+ [CarType.TRIKE]:'trike',
+ [CarType.TRACTOR]:'tractor',
+ [CarType.SEMI]:'semi',
+ [CarType.CYBERTRUCK]:'cybertruck',
+ [CarType.REVUELTO]:'revuelto',
+ [CarType.VEYRON]:'veyron',
+ [CarType.V800]:'v800',
+ [CarType.MINI]:'mini',
+
  [CarType.TAI7]:'tai7', [CarType.LI_I9]:'liI9', [CarType.N90]:'n90',
  [CarType.JEEP]:'jeep',[CarType.MIDIBUS]:'midibus',[CarType.COACH]:'coach',[CarType.VAN]:'van',[CarType.LIGHT_TRUCK]:'lightTruck',
   [CarType.SEDAN]: 'seal08',
@@ -182,7 +200,7 @@ export function applyPlayerVehicleFinish(group: THREE.Group, carType: CarType): 
  */
 export function normalizeModel(group: THREE.Group, def: ModelDef) {
   const nativeConcept = def.file === 'cars/concept-car.glb';
-  const authoredCar = ['cars/byd-seal-08.glb','cars/onvo-l80.glb','cars/fangchengbao-tai7.glb','cars/li-i9.glb','cars/xiaomi-n90.glb',
+  const authoredCar = def.file.startsWith('cars/fleet-') || ['cars/byd-seal-08.glb','cars/onvo-l80.glb','cars/fangchengbao-tai7.glb','cars/li-i9.glb','cars/xiaomi-n90.glb',
     'cars/trail-jeep.glb','cars/training-midibus.glb','cars/training-coach.glb','cars/training-van.glb','cars/training-light-truck.glb'].includes(def.file);
   const preciseBounds = nativeConcept || authoredCar;
   if (nativeConcept) neutralizeConceptWheels(group);
@@ -227,8 +245,8 @@ export function normalizeModel(group: THREE.Group, def: ModelDef) {
   box2.getCenter(center2);
 
   // XZ 居中
-  group.position.x -= center2.x;
-  group.position.z -= center2.z;
+  if(!group.getObjectByName('CarRoot')?.userData.fixed_origin)group.position.x -= center2.x;
+  if(!group.getObjectByName('CarRoot')?.userData.fixed_origin)group.position.z -= center2.z;
   // Y 坐地
   group.position.y -= box2.min.y;
 }

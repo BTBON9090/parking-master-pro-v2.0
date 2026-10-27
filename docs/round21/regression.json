@@ -1,16 +1,16 @@
 {
   "campus": {
     "size": [
-      4200,
-      2600
+      5000,
+      3400
     ],
-    "spots": 12,
-    "curves": 15,
-    "slopes": 2
+    "spots": 227,
+    "curves": 12,
+    "slopes": 3
   },
   "shoulder": {
-    "edgeChecks": 729,
-    "maxEdgeJumpCm": 0.004247999378890199
+    "edgeChecks": 2000,
+    "maxEdgeJumpCm": 0.04988282824342605
   },
   "roughnessRangeCm": 21.348773038025314,
   "sway": {
@@ -33,6 +33,6 @@
   },
   "rollover": {
     "elapsed": 5.000000000000038,
-    "travel": 164.51064006220562
+    "travel": 180.61745341464461
   }
 }

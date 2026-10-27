@@ -1,0 +1,101 @@
+Round19 brake, full steering travel, stacked garage connectivity, tight debris floor/boundary checks PASS {
+  "brakes": [
+    {
+      "hz": 30,
+      "mode": "abs",
+      "metres": 39.96092693898363,
+      "seconds": 2.8666666666666663
+    },
+    {
+      "hz": 30,
+      "mode": "locked",
+      "metres": 51.5841410150964,
+      "seconds": 3.6999999999999966
+    },
+    {
+      "hz": 30,
+      "mode": "hand",
+      "metres": 82.52962955402822,
+      "seconds": 5.9999999999999885
+    },
+    {
+      "hz": 60,
+      "mode": "abs",
+      "metres": 39.9601935871534,
+      "seconds": 2.8499999999999948
+    },
+    {
+      "hz": 60,
+      "mode": "locked",
+      "metres": 51.58483642184141,
+      "seconds": 3.6999999999999917
+    },
+    {
+      "hz": 60,
+      "mode": "hand",
+      "metres": 82.52913861701131,
+      "seconds": 5.983333333333317
+    },
+    {
+      "hz": 120,
+      "mode": "abs",
+      "metres": 40.07593432789418,
+      "seconds": 2.8499999999999925
+    },
+    {
+      "hz": 120,
+      "mode": "locked",
+      "metres": 51.70057716258215,
+      "seconds": 3.6999999999999895
+    },
+    {
+      "hz": 120,
+      "mode": "hand",
+      "metres": 82.64487935775209,
+      "seconds": 5.98333333333342
+    }
+  ],
+  "garage": [
+    {
+      "from": 1,
+      "to": 2,
+      "endElevation": -96,
+      "maxStep": 0.16363523666416313
+    },
+    {
+      "from": 2,
+      "to": 1,
+      "endElevation": -48,
+      "maxStep": 0.16363523666416313
+    },
+    {
+      "from": 2,
+      "to": 3,
+      "endElevation": -144,
+      "maxStep": 0.16363523666416313
+    },
+    {
+      "from": 3,
+      "to": 2,
+      "endElevation": -96,
+      "maxStep": 0.16363523666416313
+    }
+  ],
+  "debris": [
+    {
+      "hz": 30,
+      "maxGap": 0.0011842634101100202,
+      "maxSpeed": 0
+    },
+    {
+      "hz": 60,
+      "maxGap": 0.0011842634101100202,
+      "maxSpeed": 0
+    },
+    {
+      "hz": 120,
+      "maxGap": 0.0011842634101100202,
+      "maxSpeed": 0
+    }
+  ]
+}

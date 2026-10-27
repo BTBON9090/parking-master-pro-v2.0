@@ -1,6 +1,7 @@
 import {HudLayoutEditor} from './HudLayoutEditor';
 import {HudId,HudLayout,resolveHudLayout,hudStyle,isBus} from '../utils/mobileLayout';
 import {pedalFeedback} from '../utils/mobileInput';
+import {ExamPanel} from './ExamPanel';
 import {MobileControls} from './MobileControls';
 import {useTouchControls} from '../utils/device';
 import {SettingsPage} from './SettingsPage';
@@ -10,7 +11,7 @@ import { WORLD_ROUTES, WORLD_PLACES, WORLD_DESTINATIONS, WORLD_PUDDLES, mapCurve
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { UserSettings, InputState, Language, ParkingResultType, CarType, LevelData, CameraView, MirrorId, Marking } from '../types';
 import { STEERING_WHEEL_MAX_ROTATION, TRANSLATIONS, CAR_MODELS, GARAGE_CARS, LEVEL_LIST, DEFAULT_KEY_BINDINGS } from '../constants';
-import { getPowertrain, computeRpm, steeringWheelMaxDeg, isElectricVehicle } from '../utils/powertrain';
+import { getPowertrain, computeRpm, steeringWheelMaxDeg, isElectricVehicle, isAutomaticVehicle } from '../utils/powertrain';
 import TuningPanel from './TuningPanel';
 import { resolveCockpitPack } from './cockpit/stylePacks';
 import { publishMirrorGlassLayout } from '../utils/mirrorLayout';
@@ -885,7 +886,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
   const gearPt = getPowertrain(currentCarId);
   const gear = inputState.gear;
   const speedKmhForGear = Math.abs(liveCarSpeed) * 15;
-  const singleSpeed = isElectricVehicle(currentCarId) || gearPt.gearTops.length <= 1;
+  const singleSpeed = isAutomaticVehicle(currentCarId) || gearPt.gearTops.length <= 1;
   const gearIndex = gear > 0 ? Math.min(gearPt.gearTops.length - 1, gear - 1) : -1;
   const gearBandMin = gearIndex >= 0 ? (gearPt.normalBandMinKmh?.[gearIndex] ?? gearPt.gearMins[gearIndex] * 15 ?? 0) : 0;
   const gearBandMax = gearIndex >= 0 ? gearPt.gearTops[gearIndex] * 15 : 0;
@@ -1390,7 +1391,8 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
           </>
       )}
 
-      {levelData?.training && (
+      {levelData?.exam && <ExamPanel level={levelData} input={inputState} update={setInputState}/>}
+      {levelData?.training && !levelData.exam && (
           <div className="hud-tips absolute top-[368px] right-4 z-30 flex flex-col items-end gap-1.5 pointer-events-auto"
                style={{ maxWidth: 'calc(100vw - 2rem)' }}>
               {levelData.levelId === 1 && (
@@ -1453,7 +1455,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                   <div className="min-w-0">
                       <div className="mono text-[8px] font-bold tracking-[0.14em]" style={{ color: singleSpeed ? 'var(--cyan)' : 'var(--amber)' }}>
                           {singleSpeed
-                              ? (lang === Language.CN ? '单速电驱' : 'SINGLE-SPEED EV')
+                              ? (gearPt.gearTops.length===1 ? (lang === Language.CN ? '单速电驱' : 'SINGLE-SPEED EV') : (lang === Language.CN ? '自动变速' : 'AUTOMATIC'))
                               : (lang === Language.CN ? '燃油手动训练' : 'FUEL MANUAL TRAINING')}
                       </div>
                       <div className="text-[10px] mt-0.5 truncate" style={{ color: 'var(--text-dim)' }}>
@@ -1507,7 +1509,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
       </div>
 
       {/* ===== 设置抽屉（语言 + 按键指南 已迁移至此） ===== */}
-      {touch&&<MobileControls input={inputState} update={setInputState} car={currentCarId} layout={layoutStyle} editing={layoutDraft!==null} disabled={showSettings||showGuide||portrait||layoutDraft!==null} settings={()=>setShowSettings(true)} camera={()=>{const views:CameraView[]=['HOOD','FOLLOW_NEAR','FOLLOW_FAR','TOP','REVERSE'];onCameraViewChange(views[(views.indexOf(cameraView)+1)%views.length]);}} map={()=>setGlobalOverviewOpen(!globalOverviewOpen)} reset={resetLevel}/>}
+      {touch&&<MobileControls speedKmh={Math.abs(liveCarSpeed)*15} input={inputState} update={setInputState} car={currentCarId} layout={layoutStyle} editing={layoutDraft!==null} disabled={showSettings||showGuide||portrait||layoutDraft!==null} settings={()=>setShowSettings(true)} camera={()=>{const views:CameraView[]=['HOOD','FOLLOW_NEAR','FOLLOW_FAR','TOP','REVERSE'];onCameraViewChange(views[(views.indexOf(cameraView)+1)%views.length]);}} map={()=>setGlobalOverviewOpen(!globalOverviewOpen)} reset={resetLevel}/>}
       {touch&&portrait&&!showSettings&&<div className="rotate-device" role="status"><strong>请横屏驾驶</strong><p>转动手机，展开方向盘和踏板。</p><button onClick={()=>setShowSettings(true)}>打开设置</button></div>}
       {showSettings && <SettingsPage onLayout={editLayout} settings={settings} update={updateSettings} car={currentCarId} level={level} openWorld={!!levelData?.openWorld} onCar={onChangeCar} onMap={onChangeMap} onTravel={onTravel} close={()=>setShowSettings(false)} reset={resetLevel} exit={exitGame} lang={lang} setLang={setLang} capture={captureBinding} bind={setCaptureBinding} guide={()=>{setShowSettings(false);setShowGuide(true);}}/>}
       {layoutDraft!==null && <HudLayoutEditor rects={hudRects} width={hudViewport.w} height={hudViewport.h}

@@ -1,0 +1,554 @@
+{
+  "braking": [
+    {
+      "id": "TRIKE",
+      "hz": 30,
+      "startKmh": 55,
+      "meters": 17.079622246425636,
+      "seconds": 2.2333333333333334
+    },
+    {
+      "id": "TRIKE",
+      "hz": 60,
+      "startKmh": 55,
+      "meters": 17.332185628256404,
+      "seconds": 2.25
+    },
+    {
+      "id": "TRIKE",
+      "hz": 120,
+      "startKmh": 55,
+      "meters": 17.541101949433255,
+      "seconds": 2.25
+    },
+    {
+      "id": "TRACTOR",
+      "hz": 30,
+      "startKmh": 50,
+      "meters": 12.497146485422732,
+      "seconds": 1.8
+    },
+    {
+      "id": "TRACTOR",
+      "hz": 60,
+      "startKmh": 50,
+      "meters": 12.710424930977096,
+      "seconds": 1.8
+    },
+    {
+      "id": "TRACTOR",
+      "hz": 120,
+      "startKmh": 50,
+      "meters": 12.891125164327098,
+      "seconds": 1.8166666666666667
+    },
+    {
+      "id": "SEMI",
+      "hz": 30,
+      "startKmh": 100,
+      "meters": 57.700797171916264,
+      "seconds": 4.166666666666667
+    },
+    {
+      "id": "SEMI",
+      "hz": 60,
+      "startKmh": 100,
+      "meters": 58.201767751332426,
+      "seconds": 4.166666666666667
+    },
+    {
+      "id": "SEMI",
+      "hz": 120,
+      "startKmh": 100,
+      "meters": 58.60370291880765,
+      "seconds": 4.175
+    },
+    {
+      "id": "CYBERTRUCK",
+      "hz": 30,
+      "startKmh": 100,
+      "meters": 41.67827047060835,
+      "seconds": 3
+    },
+    {
+      "id": "CYBERTRUCK",
+      "hz": 60,
+      "startKmh": 100,
+      "meters": 42.141625900346206,
+      "seconds": 3.0166666666666666
+    },
+    {
+      "id": "CYBERTRUCK",
+      "hz": 120,
+      "startKmh": 100,
+      "meters": 42.52332425649094,
+      "seconds": 3.0166666666666666
+    },
+    {
+      "id": "REVUELTO",
+      "hz": 30,
+      "startKmh": 100,
+      "meters": 32.186788318624956,
+      "seconds": 2.3333333333333335
+    },
+    {
+      "id": "REVUELTO",
+      "hz": 60,
+      "startKmh": 100,
+      "meters": 32.619052412502214,
+      "seconds": 2.3333333333333335
+    },
+    {
+      "id": "REVUELTO",
+      "hz": 120,
+      "startKmh": 100,
+      "meters": 32.98446860343815,
+      "seconds": 2.3333333333333335
+    },
+    {
+      "id": "VEYRON",
+      "hz": 30,
+      "startKmh": 100,
+      "meters": 32.68081848484466,
+      "seconds": 2.3666666666666667
+    },
+    {
+      "id": "VEYRON",
+      "hz": 60,
+      "startKmh": 100,
+      "meters": 33.114792912347575,
+      "seconds": 2.3666666666666667
+    },
+    {
+      "id": "VEYRON",
+      "hz": 120,
+      "startKmh": 100,
+      "meters": 33.48122608930345,
+      "seconds": 2.375
+    },
+    {
+      "id": "V800",
+      "hz": 30,
+      "startKmh": 100,
+      "meters": 40.11600493412103,
+      "seconds": 2.9
+    },
+    {
+      "id": "V800",
+      "hz": 60,
+      "startKmh": 100,
+      "meters": 40.56453203172098,
+      "seconds": 2.9
+    },
+    {
+      "id": "V800",
+      "hz": 120,
+      "startKmh": 100,
+      "meters": 40.9388214749562,
+      "seconds": 2.908333333333333
+    },
+    {
+      "id": "MINI",
+      "hz": 30,
+      "startKmh": 100,
+      "meters": 37.92391645842238,
+      "seconds": 2.7333333333333334
+    },
+    {
+      "id": "MINI",
+      "hz": 60,
+      "startKmh": 100,
+      "meters": 38.38288658840237,
+      "seconds": 2.75
+    },
+    {
+      "id": "MINI",
+      "hz": 120,
+      "startKmh": 100,
+      "meters": 38.76186817715011,
+      "seconds": 2.75
+    },
+    {
+      "id": "SUV",
+      "hz": 30,
+      "startKmh": 100,
+      "meters": 39.73155127850601,
+      "seconds": 2.8666666666666667
+    },
+    {
+      "id": "SUV",
+      "hz": 60,
+      "startKmh": 100,
+      "meters": 40.18317030260936,
+      "seconds": 2.8666666666666667
+    },
+    {
+      "id": "SUV",
+      "hz": 120,
+      "startKmh": 100,
+      "meters": 40.55831548031373,
+      "seconds": 2.8833333333333333
+    },
+    {
+      "id": "SEAL08",
+      "hz": 30,
+      "startKmh": 100,
+      "meters": 40.49951539235936,
+      "seconds": 2.933333333333333
+    },
+    {
+      "id": "SEAL08",
+      "hz": 60,
+      "startKmh": 100,
+      "meters": 40.94963900729489,
+      "seconds": 2.933333333333333
+    },
+    {
+      "id": "SEAL08",
+      "hz": 120,
+      "startKmh": 100,
+      "meters": 41.32450716653379,
+      "seconds": 2.933333333333333
+    },
+    {
+      "id": "TAI7",
+      "hz": 30,
+      "startKmh": 100,
+      "meters": 40.099811109737516,
+      "seconds": 2.9
+    },
+    {
+      "id": "TAI7",
+      "hz": 60,
+      "startKmh": 100,
+      "meters": 40.55597445316408,
+      "seconds": 2.9
+    },
+    {
+      "id": "TAI7",
+      "hz": 120,
+      "startKmh": 100,
+      "meters": 40.93443295063759,
+      "seconds": 2.908333333333333
+    },
+    {
+      "id": "LI_I9",
+      "hz": 30,
+      "startKmh": 100,
+      "meters": 40.122215285168714,
+      "seconds": 2.9
+    },
+    {
+      "id": "LI_I9",
+      "hz": 60,
+      "startKmh": 100,
+      "meters": 40.5678235609653,
+      "seconds": 2.9
+    },
+    {
+      "id": "LI_I9",
+      "hz": 120,
+      "startKmh": 100,
+      "meters": 40.94050382996967,
+      "seconds": 2.908333333333333
+    },
+    {
+      "id": "N90",
+      "hz": 30,
+      "startKmh": 100,
+      "meters": 40.10887663363881,
+      "seconds": 2.9
+    },
+    {
+      "id": "N90",
+      "hz": 60,
+      "startKmh": 100,
+      "meters": 40.56075339706075,
+      "seconds": 2.9
+    },
+    {
+      "id": "N90",
+      "hz": 120,
+      "startKmh": 100,
+      "meters": 40.93689000806701,
+      "seconds": 2.908333333333333
+    },
+    {
+      "id": "TRUCK",
+      "hz": 30,
+      "startKmh": 100,
+      "meters": 50.64704820969551,
+      "seconds": 3.6666666666666665
+    },
+    {
+      "id": "TRUCK",
+      "hz": 60,
+      "startKmh": 100,
+      "meters": 51.167146759475095,
+      "seconds": 3.6666666666666665
+    },
+    {
+      "id": "TRUCK",
+      "hz": 120,
+      "startKmh": 100,
+      "meters": 51.579669391641104,
+      "seconds": 3.6666666666666665
+    },
+    {
+      "id": "JEEP",
+      "hz": 30,
+      "startKmh": 100,
+      "meters": 44.20901243776368,
+      "seconds": 3.2
+    },
+    {
+      "id": "JEEP",
+      "hz": 60,
+      "startKmh": 100,
+      "meters": 44.72504351331575,
+      "seconds": 3.2
+    },
+    {
+      "id": "JEEP",
+      "hz": 120,
+      "startKmh": 100,
+      "meters": 45.135865831906024,
+      "seconds": 3.2083333333333335
+    },
+    {
+      "id": "MIDIBUS",
+      "hz": 30,
+      "startKmh": 100,
+      "meters": 54.56895708653623,
+      "seconds": 3.933333333333333
+    },
+    {
+      "id": "MIDIBUS",
+      "hz": 60,
+      "startKmh": 100,
+      "meters": 55.11990006759106,
+      "seconds": 3.95
+    },
+    {
+      "id": "MIDIBUS",
+      "hz": 120,
+      "startKmh": 100,
+      "meters": 55.54892692012852,
+      "seconds": 3.9583333333333335
+    },
+    {
+      "id": "COACH",
+      "hz": 30,
+      "startKmh": 100,
+      "meters": 54.64369219115386,
+      "seconds": 3.933333333333333
+    },
+    {
+      "id": "COACH",
+      "hz": 60,
+      "startKmh": 100,
+      "meters": 55.159163529011295,
+      "seconds": 3.95
+    },
+    {
+      "id": "COACH",
+      "hz": 120,
+      "startKmh": 100,
+      "meters": 55.569017286821214,
+      "seconds": 3.9583333333333335
+    },
+    {
+      "id": "VAN",
+      "hz": 30,
+      "startKmh": 100,
+      "meters": 51.80681084707792,
+      "seconds": 3.7333333333333334
+    },
+    {
+      "id": "VAN",
+      "hz": 60,
+      "startKmh": 100,
+      "meters": 52.37569320748165,
+      "seconds": 3.75
+    },
+    {
+      "id": "VAN",
+      "hz": 120,
+      "startKmh": 100,
+      "meters": 52.81447266141894,
+      "seconds": 3.7583333333333333
+    },
+    {
+      "id": "LIGHT_TRUCK",
+      "hz": 30,
+      "startKmh": 100,
+      "meters": 54.602464340449856,
+      "seconds": 3.933333333333333
+    },
+    {
+      "id": "LIGHT_TRUCK",
+      "hz": 60,
+      "startKmh": 100,
+      "meters": 55.13749299813883,
+      "seconds": 3.95
+    },
+    {
+      "id": "LIGHT_TRUCK",
+      "hz": 120,
+      "startKmh": 100,
+      "meters": 55.55793441759399,
+      "seconds": 3.9583333333333335
+    }
+  ],
+  "launch": [
+    {
+      "id": "TRIKE",
+      "kmh": 13.462835543252785,
+      "headingChange": 20.47431684665441
+    },
+    {
+      "id": "TRACTOR",
+      "kmh": 7.762710044846682,
+      "headingChange": 9.143828058846422
+    },
+    {
+      "id": "SEMI",
+      "kmh": 8.782905686754864,
+      "headingChange": 6.053318530163822
+    },
+    {
+      "id": "CYBERTRUCK",
+      "kmh": 29.36689966702899,
+      "headingChange": 16.377973543030514
+    },
+    {
+      "id": "REVUELTO",
+      "kmh": 28.13957661515809,
+      "headingChange": 22.938472199881605
+    },
+    {
+      "id": "VEYRON",
+      "kmh": 28.178610449855178,
+      "headingChange": 22.710700513076297
+    },
+    {
+      "id": "V800",
+      "kmh": 25.161529834924476,
+      "headingChange": 19.815540757262863
+    },
+    {
+      "id": "MINI",
+      "kmh": 25.098959246144556,
+      "headingChange": 21.211723226401514
+    },
+    {
+      "id": "SUV",
+      "kmh": 23.669504007963464,
+      "headingChange": 21.810257903176865
+    },
+    {
+      "id": "SEAL08",
+      "kmh": 22.662722566955548,
+      "headingChange": 22.73736603387341
+    },
+    {
+      "id": "TAI7",
+      "kmh": 24.600776681588854,
+      "headingChange": 21.851174352832306
+    },
+    {
+      "id": "LI_I9",
+      "kmh": 23.96035645258041,
+      "headingChange": 21.934118493049137
+    },
+    {
+      "id": "N90",
+      "kmh": 24.48503662538549,
+      "headingChange": 21.079010138053956
+    },
+    {
+      "id": "TRUCK",
+      "kmh": 23.397064090620432,
+      "headingChange": 16.787412200033835
+    },
+    {
+      "id": "JEEP",
+      "kmh": 22.89804502008153,
+      "headingChange": 21.503882451126785
+    },
+    {
+      "id": "MIDIBUS",
+      "kmh": 21.25471185752562,
+      "headingChange": 16.945237605304712
+    },
+    {
+      "id": "COACH",
+      "kmh": 24.03420403394789,
+      "headingChange": 13.761266515819292
+    },
+    {
+      "id": "VAN",
+      "kmh": 21.170274314662613,
+      "headingChange": 18.352765076005767
+    },
+    {
+      "id": "LIGHT_TRUCK",
+      "kmh": 21.781590300359646,
+      "headingChange": 16.161877200958806
+    }
+  ],
+  "rollover": [
+    {
+      "steer": 0.025,
+      "flipped": false,
+      "minSupportMargin": 0.19999343316400808
+    },
+    {
+      "steer": 0.5,
+      "flipped": true,
+      "minSupportMargin": -0.031656551948357814
+    }
+  ],
+  "assets": [
+    {
+      "id": "TRIKE",
+      "triangles": 4167,
+      "wheelMounts": 3
+    },
+    {
+      "id": "TRACTOR",
+      "triangles": 5022,
+      "wheelMounts": 4
+    },
+    {
+      "id": "SEMI",
+      "triangles": 7091,
+      "wheelMounts": 6
+    },
+    {
+      "id": "CYBERTRUCK",
+      "triangles": 5716,
+      "wheelMounts": 4
+    },
+    {
+      "id": "REVUELTO",
+      "triangles": 5120,
+      "wheelMounts": 4
+    },
+    {
+      "id": "VEYRON",
+      "triangles": 5148,
+      "wheelMounts": 4
+    },
+    {
+      "id": "V800",
+      "triangles": 5798,
+      "wheelMounts": 4
+    },
+    {
+      "id": "MINI",
+      "triangles": 5370,
+      "wheelMounts": 4
+    }
+  ]
+}

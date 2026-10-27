@@ -1,3 +1,4 @@
+import {BASELINE_FLEET} from './baselineFleet';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import * as THREE from 'three';
@@ -24,7 +25,7 @@ const top={x:0,y:0,rotation:Math.PI/2};
 const reverseWheel={...wheel,steer:Math.PI};
 assert.equal(wheelCurbSupport(top,wheel,[curb]),wheelCurbSupport(top,reverseWheel,[curb]));
 
-for(const carId of GARAGE_CARS) {
+for(const carId of BASELINE_FLEET) {
   const cfg=CAR_MODELS[carId],def=MODEL_REGISTRY[CAR_TYPE_TO_MODEL[carId]];
   const file=fs.readFileSync(new URL(`../public/models/${def.file}`,import.meta.url));
   const gltf=await new GLTFLoader().parseAsync(file.buffer.slice(file.byteOffset,file.byteOffset+file.byteLength),'');

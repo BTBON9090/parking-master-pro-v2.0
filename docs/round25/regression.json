@@ -1,697 +1,1201 @@
 {
   "handling": [
     {
+      "id": "TRIKE",
+      "hz": 30,
+      "mode": "normal",
+      "peakDegrees": 1.0916237877444612,
+      "slipAfter3SecondsDegrees": 5.261815743637525e-10
+    },
+    {
+      "id": "TRIKE",
+      "hz": 30,
+      "mode": "flick",
+      "peakDegrees": 7.654821984533993,
+      "slipAfter3SecondsDegrees": 3.4787417532109767e-9
+    },
+    {
+      "id": "TRIKE",
+      "hz": 30,
+      "mode": "handbrake",
+      "peakDegrees": 29.17689589892633,
+      "slipAfter3SecondsDegrees": 6.087767108000784e-7
+    },
+    {
+      "id": "TRIKE",
+      "hz": 60,
+      "mode": "normal",
+      "peakDegrees": 1.0915264663946822,
+      "slipAfter3SecondsDegrees": 6.921494545129369e-10
+    },
+    {
+      "id": "TRIKE",
+      "hz": 60,
+      "mode": "flick",
+      "peakDegrees": 7.65290526319253,
+      "slipAfter3SecondsDegrees": 4.6075505598722745e-9
+    },
+    {
+      "id": "TRIKE",
+      "hz": 60,
+      "mode": "handbrake",
+      "peakDegrees": 29.687260493940098,
+      "slipAfter3SecondsDegrees": 8.977722478960318e-7
+    },
+    {
+      "id": "TRIKE",
+      "hz": 120,
+      "mode": "normal",
+      "peakDegrees": 1.0953105632682798,
+      "slipAfter3SecondsDegrees": 8.612620188057069e-10
+    },
+    {
+      "id": "TRIKE",
+      "hz": 120,
+      "mode": "flick",
+      "peakDegrees": 7.658128753940422,
+      "slipAfter3SecondsDegrees": 5.7872310380385324e-9
+    },
+    {
+      "id": "TRIKE",
+      "hz": 120,
+      "mode": "handbrake",
+      "peakDegrees": 29.874662876361725,
+      "slipAfter3SecondsDegrees": 0.0000011629948792409007
+    },
+    {
+      "id": "TRACTOR",
+      "hz": 30,
+      "mode": "normal",
+      "peakDegrees": 0.47230364314027384,
+      "slipAfter3SecondsDegrees": 2.0696607643008857e-10
+    },
+    {
+      "id": "TRACTOR",
+      "hz": 30,
+      "mode": "flick",
+      "peakDegrees": 6.037530904201356,
+      "slipAfter3SecondsDegrees": 1.085264467688154e-9
+    },
+    {
+      "id": "TRACTOR",
+      "hz": 30,
+      "mode": "handbrake",
+      "peakDegrees": 21.68950549478969,
+      "slipAfter3SecondsDegrees": 2.913711068337408e-8
+    },
+    {
+      "id": "TRACTOR",
+      "hz": 60,
+      "mode": "normal",
+      "peakDegrees": 0.47223669771411514,
+      "slipAfter3SecondsDegrees": 2.680189630321864e-10
+    },
+    {
+      "id": "TRACTOR",
+      "hz": 60,
+      "mode": "flick",
+      "peakDegrees": 6.076247886296517,
+      "slipAfter3SecondsDegrees": 1.4225515351965777e-9
+    },
+    {
+      "id": "TRACTOR",
+      "hz": 60,
+      "mode": "handbrake",
+      "peakDegrees": 22.298138510330993,
+      "slipAfter3SecondsDegrees": 4.127557228482221e-8
+    },
+    {
+      "id": "TRACTOR",
+      "hz": 120,
+      "mode": "normal",
+      "peakDegrees": 0.4754175025983849,
+      "slipAfter3SecondsDegrees": 3.427886524553896e-10
+    },
+    {
+      "id": "TRACTOR",
+      "hz": 120,
+      "mode": "flick",
+      "peakDegrees": 6.076540861978735,
+      "slipAfter3SecondsDegrees": 1.8377719777568563e-9
+    },
+    {
+      "id": "TRACTOR",
+      "hz": 120,
+      "mode": "handbrake",
+      "peakDegrees": 22.498961163917606,
+      "slipAfter3SecondsDegrees": 5.385043439766413e-8
+    },
+    {
+      "id": "SEMI",
+      "hz": 30,
+      "mode": "normal",
+      "peakDegrees": 2.245686976516469,
+      "slipAfter3SecondsDegrees": 0.000018441101977818054
+    },
+    {
+      "id": "SEMI",
+      "hz": 30,
+      "mode": "flick",
+      "peakDegrees": 8.07891062503369,
+      "slipAfter3SecondsDegrees": 0.00011092664456800046
+    },
+    {
+      "id": "SEMI",
+      "hz": 30,
+      "mode": "handbrake",
+      "peakDegrees": 28.029806324664584,
+      "slipAfter3SecondsDegrees": 0.022577085978136045
+    },
+    {
+      "id": "SEMI",
+      "hz": 60,
+      "mode": "normal",
+      "peakDegrees": 2.2457656067831895,
+      "slipAfter3SecondsDegrees": 0.00002129054113447689
+    },
+    {
+      "id": "SEMI",
+      "hz": 60,
+      "mode": "flick",
+      "peakDegrees": 8.076681462513035,
+      "slipAfter3SecondsDegrees": 0.000128413064418165
+    },
+    {
+      "id": "SEMI",
+      "hz": 60,
+      "mode": "handbrake",
+      "peakDegrees": 28.516090742638138,
+      "slipAfter3SecondsDegrees": 0.029952435663076322
+    },
+    {
+      "id": "SEMI",
+      "hz": 120,
+      "mode": "normal",
+      "peakDegrees": 2.246913232925893,
+      "slipAfter3SecondsDegrees": 0.000023557131827472148
+    },
+    {
+      "id": "SEMI",
+      "hz": 120,
+      "mode": "flick",
+      "peakDegrees": 8.078400258603823,
+      "slipAfter3SecondsDegrees": 0.00014224632619566188
+    },
+    {
+      "id": "SEMI",
+      "hz": 120,
+      "mode": "handbrake",
+      "peakDegrees": 28.716494151701575,
+      "slipAfter3SecondsDegrees": 0.03488019938338704
+    },
+    {
+      "id": "CYBERTRUCK",
+      "hz": 30,
+      "mode": "normal",
+      "peakDegrees": 3.1471872895071042,
+      "slipAfter3SecondsDegrees": 0.00007749976822119477
+    },
+    {
+      "id": "CYBERTRUCK",
+      "hz": 30,
+      "mode": "flick",
+      "peakDegrees": 11.107326025484765,
+      "slipAfter3SecondsDegrees": 0.00031756416360660634
+    },
+    {
+      "id": "CYBERTRUCK",
+      "hz": 30,
+      "mode": "handbrake",
+      "peakDegrees": 38.44234056671193,
+      "slipAfter3SecondsDegrees": 0.09022171524749752
+    },
+    {
+      "id": "CYBERTRUCK",
+      "hz": 60,
+      "mode": "normal",
+      "peakDegrees": 3.152705357623662,
+      "slipAfter3SecondsDegrees": 0.00008836658307666438
+    },
+    {
+      "id": "CYBERTRUCK",
+      "hz": 60,
+      "mode": "flick",
+      "peakDegrees": 11.103096318712584,
+      "slipAfter3SecondsDegrees": 0.00036340430543522643
+    },
+    {
+      "id": "CYBERTRUCK",
+      "hz": 60,
+      "mode": "handbrake",
+      "peakDegrees": 39.05147086204539,
+      "slipAfter3SecondsDegrees": 0.11900130868945771
+    },
+    {
+      "id": "CYBERTRUCK",
+      "hz": 120,
+      "mode": "normal",
+      "peakDegrees": 3.1512072093520422,
+      "slipAfter3SecondsDegrees": 0.00009658038054718622
+    },
+    {
+      "id": "CYBERTRUCK",
+      "hz": 120,
+      "mode": "flick",
+      "peakDegrees": 11.105065546996457,
+      "slipAfter3SecondsDegrees": 0.00039837279547394575
+    },
+    {
+      "id": "CYBERTRUCK",
+      "hz": 120,
+      "mode": "handbrake",
+      "peakDegrees": 39.30652206648664,
+      "slipAfter3SecondsDegrees": 0.1377757580072913
+    },
+    {
+      "id": "REVUELTO",
+      "hz": 30,
+      "mode": "normal",
+      "peakDegrees": 4.329892951508037,
+      "slipAfter3SecondsDegrees": 0.00003256290886861605
+    },
+    {
+      "id": "REVUELTO",
+      "hz": 30,
+      "mode": "flick",
+      "peakDegrees": 14.876069511764591,
+      "slipAfter3SecondsDegrees": 0.00011592607802230662
+    },
+    {
+      "id": "REVUELTO",
+      "hz": 30,
+      "mode": "handbrake",
+      "peakDegrees": 46.28014186148382,
+      "slipAfter3SecondsDegrees": 0.03963028462887249
+    },
+    {
+      "id": "REVUELTO",
+      "hz": 60,
+      "mode": "normal",
+      "peakDegrees": 4.329744434161789,
+      "slipAfter3SecondsDegrees": 0.00003793103684557622
+    },
+    {
+      "id": "REVUELTO",
+      "hz": 60,
+      "mode": "flick",
+      "peakDegrees": 14.871386755983368,
+      "slipAfter3SecondsDegrees": 0.0001354419145845884
+    },
+    {
+      "id": "REVUELTO",
+      "hz": 60,
+      "mode": "handbrake",
+      "peakDegrees": 46.69877617119203,
+      "slipAfter3SecondsDegrees": 0.050435344527483855
+    },
+    {
+      "id": "REVUELTO",
+      "hz": 120,
+      "mode": "normal",
+      "peakDegrees": 4.327914474581103,
+      "slipAfter3SecondsDegrees": 0.00004169368652131645
+    },
+    {
+      "id": "REVUELTO",
+      "hz": 120,
+      "mode": "flick",
+      "peakDegrees": 14.88146579252009,
+      "slipAfter3SecondsDegrees": 0.00014967366610605997
+    },
+    {
+      "id": "REVUELTO",
+      "hz": 120,
+      "mode": "handbrake",
+      "peakDegrees": 46.868845934953654,
+      "slipAfter3SecondsDegrees": 0.05777485872344576
+    },
+    {
+      "id": "VEYRON",
+      "hz": 30,
+      "mode": "normal",
+      "peakDegrees": 4.451987170716507,
+      "slipAfter3SecondsDegrees": 0.000029455719662597474
+    },
+    {
+      "id": "VEYRON",
+      "hz": 30,
+      "mode": "flick",
+      "peakDegrees": 14.779733450800261,
+      "slipAfter3SecondsDegrees": 0.00010440523729218276
+    },
+    {
+      "id": "VEYRON",
+      "hz": 30,
+      "mode": "handbrake",
+      "peakDegrees": 46.53343808422912,
+      "slipAfter3SecondsDegrees": 0.04636015129691211
+    },
+    {
+      "id": "VEYRON",
+      "hz": 60,
+      "mode": "normal",
+      "peakDegrees": 4.451832398737947,
+      "slipAfter3SecondsDegrees": 0.000034419683724600886
+    },
+    {
+      "id": "VEYRON",
+      "hz": 60,
+      "mode": "flick",
+      "peakDegrees": 14.77570617490938,
+      "slipAfter3SecondsDegrees": 0.00012228022947718124
+    },
+    {
+      "id": "VEYRON",
+      "hz": 60,
+      "mode": "handbrake",
+      "peakDegrees": 46.95873388819483,
+      "slipAfter3SecondsDegrees": 0.05934673079524197
+    },
+    {
+      "id": "VEYRON",
+      "hz": 120,
+      "mode": "normal",
+      "peakDegrees": 4.450314811904045,
+      "slipAfter3SecondsDegrees": 0.00003784220234054417
+    },
+    {
+      "id": "VEYRON",
+      "hz": 120,
+      "mode": "flick",
+      "peakDegrees": 14.785692830495133,
+      "slipAfter3SecondsDegrees": 0.00013518087216855509
+    },
+    {
+      "id": "VEYRON",
+      "hz": 120,
+      "mode": "handbrake",
+      "peakDegrees": 47.133888578797375,
+      "slipAfter3SecondsDegrees": 0.06816955419857469
+    },
+    {
+      "id": "V800",
+      "hz": 30,
+      "mode": "normal",
+      "peakDegrees": 3.3551847339837253,
+      "slipAfter3SecondsDegrees": 0.00007101444167480175
+    },
+    {
+      "id": "V800",
+      "hz": 30,
+      "mode": "flick",
+      "peakDegrees": 11.64919917746159,
+      "slipAfter3SecondsDegrees": 0.00027681031176935735
+    },
+    {
+      "id": "V800",
+      "hz": 30,
+      "mode": "handbrake",
+      "peakDegrees": 40.42532877528054,
+      "slipAfter3SecondsDegrees": 0.09903077343337911
+    },
+    {
+      "id": "V800",
+      "hz": 60,
+      "mode": "normal",
+      "peakDegrees": 3.3605210378167656,
+      "slipAfter3SecondsDegrees": 0.00008117395246220404
+    },
+    {
+      "id": "V800",
+      "hz": 60,
+      "mode": "flick",
+      "peakDegrees": 11.644826505450547,
+      "slipAfter3SecondsDegrees": 0.00031759738079729406
+    },
+    {
+      "id": "V800",
+      "hz": 60,
+      "mode": "handbrake",
+      "peakDegrees": 41.04478140835724,
+      "slipAfter3SecondsDegrees": 0.13146646427874364
+    },
+    {
+      "id": "V800",
+      "hz": 120,
+      "mode": "normal",
+      "peakDegrees": 3.358852771241082,
+      "slipAfter3SecondsDegrees": 0.00008879289567206379
+    },
+    {
+      "id": "V800",
+      "hz": 120,
+      "mode": "flick",
+      "peakDegrees": 11.645262399983459,
+      "slipAfter3SecondsDegrees": 0.0003485791065708569
+    },
+    {
+      "id": "V800",
+      "hz": 120,
+      "mode": "handbrake",
+      "peakDegrees": 41.303064644377706,
+      "slipAfter3SecondsDegrees": 0.1527266247240409
+    },
+    {
+      "id": "MINI",
+      "hz": 30,
+      "mode": "normal",
+      "peakDegrees": 4.73533313594804,
+      "slipAfter3SecondsDegrees": 0.000021708136815620935
+    },
+    {
+      "id": "MINI",
+      "hz": 30,
+      "mode": "flick",
+      "peakDegrees": 12.53596514148729,
+      "slipAfter3SecondsDegrees": 0.00006367128154765179
+    },
+    {
+      "id": "MINI",
+      "hz": 30,
+      "mode": "handbrake",
+      "peakDegrees": 44.287271290771415,
+      "slipAfter3SecondsDegrees": 0.09944515978868575
+    },
+    {
+      "id": "MINI",
+      "hz": 60,
+      "mode": "normal",
+      "peakDegrees": 4.74202401991221,
+      "slipAfter3SecondsDegrees": 0.000025892674494582042
+    },
+    {
+      "id": "MINI",
+      "hz": 60,
+      "mode": "flick",
+      "peakDegrees": 12.531291576273738,
+      "slipAfter3SecondsDegrees": 0.00007565775627146061
+    },
+    {
+      "id": "MINI",
+      "hz": 60,
+      "mode": "handbrake",
+      "peakDegrees": 44.79409531688039,
+      "slipAfter3SecondsDegrees": 0.1321701475050812
+    },
+    {
+      "id": "MINI",
+      "hz": 120,
+      "mode": "normal",
+      "peakDegrees": 4.737935777440206,
+      "slipAfter3SecondsDegrees": 0.00002848759567807879
+    },
+    {
+      "id": "MINI",
+      "hz": 120,
+      "mode": "flick",
+      "peakDegrees": 12.534995450901656,
+      "slipAfter3SecondsDegrees": 0.00008368855296366335
+    },
+    {
+      "id": "MINI",
+      "hz": 120,
+      "mode": "handbrake",
+      "peakDegrees": 45.01387622166217,
+      "slipAfter3SecondsDegrees": 0.15433785282443133
+    },
+    {
       "id": "SUV",
       "hz": 30,
       "mode": "normal",
-      "peakDegrees": 3.789070821523845,
-      "slipAfter3SecondsDegrees": 0.000048932959457425894
+      "peakDegrees": 3.789239459837986,
+      "slipAfter3SecondsDegrees": 0.00004887980639923865
     },
     {
       "id": "SUV",
       "hz": 30,
       "mode": "flick",
-      "peakDegrees": 11.347161466922547,
-      "slipAfter3SecondsDegrees": 0.00017962227575961528
+      "peakDegrees": 12.183411973756316,
+      "slipAfter3SecondsDegrees": 0.0001842231747687157
     },
     {
       "id": "SUV",
       "hz": 30,
       "mode": "handbrake",
-      "peakDegrees": 43.132551494644034,
-      "slipAfter3SecondsDegrees": 0.20336200025168594
+      "peakDegrees": 42.89833614671956,
+      "slipAfter3SecondsDegrees": 0.14589205514730189
     },
     {
       "id": "SUV",
       "hz": 60,
       "mode": "normal",
-      "peakDegrees": 3.7930237320482414,
-      "slipAfter3SecondsDegrees": 0.00005640385983907937
+      "peakDegrees": 3.7930806153912235,
+      "slipAfter3SecondsDegrees": 0.000056342607243863487
     },
     {
       "id": "SUV",
       "hz": 60,
       "mode": "flick",
-      "peakDegrees": 11.343276448873238,
-      "slipAfter3SecondsDegrees": 0.00020768026092281386
+      "peakDegrees": 12.178995608674585,
+      "slipAfter3SecondsDegrees": 0.00021301555874696216
     },
     {
       "id": "SUV",
       "hz": 60,
       "mode": "handbrake",
-      "peakDegrees": 43.815475451379065,
-      "slipAfter3SecondsDegrees": 0.27957412394561987
+      "peakDegrees": 43.52992476803553,
+      "slipAfter3SecondsDegrees": 0.19813793733426227
     },
     {
       "id": "SUV",
       "hz": 120,
       "mode": "normal",
-      "peakDegrees": 3.79109295783574,
-      "slipAfter3SecondsDegrees": 0.00006183118999261958
+      "peakDegrees": 3.791210414716939,
+      "slipAfter3SecondsDegrees": 0.00006176439215744854
     },
     {
       "id": "SUV",
       "hz": 120,
       "mode": "flick",
-      "peakDegrees": 11.345048545561266,
-      "slipAfter3SecondsDegrees": 0.0002285671518934212
+      "peakDegrees": 12.180927680571033,
+      "slipAfter3SecondsDegrees": 0.00023441553670590942
     },
     {
       "id": "SUV",
       "hz": 120,
       "mode": "handbrake",
-      "peakDegrees": 44.102627103088224,
-      "slipAfter3SecondsDegrees": 0.3300546978521859
+      "peakDegrees": 43.79633959251388,
+      "slipAfter3SecondsDegrees": 0.23270039686706737
     },
     {
       "id": "SEAL08",
       "hz": 30,
       "mode": "normal",
-      "peakDegrees": 4.023090395824447,
-      "slipAfter3SecondsDegrees": 0.00005897929927669878
+      "peakDegrees": 4.023441123157737,
+      "slipAfter3SecondsDegrees": 0.00005887099787111818
     },
     {
       "id": "SEAL08",
       "hz": 30,
       "mode": "flick",
-      "peakDegrees": 11.602342537003656,
-      "slipAfter3SecondsDegrees": 0.0002218501240301512
+      "peakDegrees": 12.396188218044522,
+      "slipAfter3SecondsDegrees": 0.0002251227053834842
     },
     {
       "id": "SEAL08",
       "hz": 30,
       "mode": "handbrake",
-      "peakDegrees": 43.80681783623303,
-      "slipAfter3SecondsDegrees": 0.38206885685056086
+      "peakDegrees": 43.50938615418387,
+      "slipAfter3SecondsDegrees": 0.25946521892429536
     },
     {
       "id": "SEAL08",
       "hz": 60,
       "mode": "normal",
-      "peakDegrees": 4.0272978907598,
-      "slipAfter3SecondsDegrees": 0.00006789981995372801
+      "peakDegrees": 4.027466210505733,
+      "slipAfter3SecondsDegrees": 0.00006777516273139548
     },
     {
       "id": "SEAL08",
       "hz": 60,
       "mode": "flick",
-      "peakDegrees": 11.598505922016473,
-      "slipAfter3SecondsDegrees": 0.0002562003524854454
+      "peakDegrees": 12.391814333384938,
+      "slipAfter3SecondsDegrees": 0.00025999713292649813
     },
     {
       "id": "SEAL08",
       "hz": 60,
       "mode": "handbrake",
-      "peakDegrees": 44.47783182502882,
-      "slipAfter3SecondsDegrees": 0.5295040128737392
+      "peakDegrees": 44.13997158492129,
+      "slipAfter3SecondsDegrees": 0.355139316348015
     },
     {
       "id": "SEAL08",
       "hz": 120,
       "mode": "normal",
-      "peakDegrees": 4.024623183185079,
-      "slipAfter3SecondsDegrees": 0.00007443661889163669
+      "peakDegrees": 4.0248902889709255,
+      "slipAfter3SecondsDegrees": 0.00007430070376123771
     },
     {
       "id": "SEAL08",
       "hz": 120,
       "mode": "flick",
-      "peakDegrees": 11.600082107836357,
-      "slipAfter3SecondsDegrees": 0.000281982630188192
+      "peakDegrees": 12.393541194001111,
+      "slipAfter3SecondsDegrees": 0.0002861312669321995
     },
     {
       "id": "SEAL08",
       "hz": 120,
       "mode": "handbrake",
-      "peakDegrees": 44.76686883516562,
-      "slipAfter3SecondsDegrees": 0.6265899613773843
+      "peakDegrees": 44.411400645606406,
+      "slipAfter3SecondsDegrees": 0.4181906145243129
     },
     {
       "id": "TAI7",
       "hz": 30,
       "mode": "normal",
-      "peakDegrees": 4.082414761745086,
-      "slipAfter3SecondsDegrees": 0.000038636289480978496
+      "peakDegrees": 4.082916639285703,
+      "slipAfter3SecondsDegrees": 0.000038554923184955474
     },
     {
       "id": "TAI7",
       "hz": 30,
       "mode": "flick",
-      "peakDegrees": 11.480899104917816,
-      "slipAfter3SecondsDegrees": 0.00013800291175961952
+      "peakDegrees": 12.29488415998809,
+      "slipAfter3SecondsDegrees": 0.00014108489386713215
     },
     {
       "id": "TAI7",
       "hz": 30,
       "mode": "handbrake",
-      "peakDegrees": 44.252437579641395,
-      "slipAfter3SecondsDegrees": 0.2821426737346277
+      "peakDegrees": 43.95017598565852,
+      "slipAfter3SecondsDegrees": 0.1967312260182055
     },
     {
       "id": "TAI7",
       "hz": 60,
       "mode": "normal",
-      "peakDegrees": 4.087876665004211,
-      "slipAfter3SecondsDegrees": 0.000044817928491128304
+      "peakDegrees": 4.088181563505031,
+      "slipAfter3SecondsDegrees": 0.00004472357495116328
     },
     {
       "id": "TAI7",
       "hz": 60,
       "mode": "flick",
-      "peakDegrees": 11.476960723938626,
-      "slipAfter3SecondsDegrees": 0.00016045873712413022
+      "peakDegrees": 12.290415448897189,
+      "slipAfter3SecondsDegrees": 0.00016404848617806582
     },
     {
       "id": "TAI7",
       "hz": 60,
       "mode": "handbrake",
-      "peakDegrees": 44.9364899760286,
-      "slipAfter3SecondsDegrees": 0.3940440877979248
+      "peakDegrees": 44.49077039677491,
+      "slipAfter3SecondsDegrees": 0.26292919028433287
     },
     {
       "id": "TAI7",
       "hz": 120,
       "mode": "normal",
-      "peakDegrees": 4.085184699047324,
-      "slipAfter3SecondsDegrees": 0.00004917831243378088
+      "peakDegrees": 4.085489163525325,
+      "slipAfter3SecondsDegrees": 0.00004907517618582116
     },
     {
       "id": "TAI7",
       "hz": 120,
       "mode": "flick",
-      "peakDegrees": 11.479412746997637,
-      "slipAfter3SecondsDegrees": 0.00017685365582148423
+      "peakDegrees": 12.293006452961777,
+      "slipAfter3SecondsDegrees": 0.00018078707308290346
     },
     {
       "id": "TAI7",
       "hz": 120,
       "mode": "handbrake",
-      "peakDegrees": 45.19431821260497,
-      "slipAfter3SecondsDegrees": 0.4628371460574092
+      "peakDegrees": 44.725269531037085,
+      "slipAfter3SecondsDegrees": 0.30705300291438764
     },
     {
       "id": "LI_I9",
       "hz": 30,
       "mode": "normal",
-      "peakDegrees": 3.6875494862638587,
-      "slipAfter3SecondsDegrees": 0.000050169783947652854
+      "peakDegrees": 3.6876511287210714,
+      "slipAfter3SecondsDegrees": 0.00005012733073612476
     },
     {
       "id": "LI_I9",
       "hz": 30,
       "mode": "flick",
-      "peakDegrees": 11.148057976322452,
-      "slipAfter3SecondsDegrees": 0.0001864889527839518
+      "peakDegrees": 11.980877880804229,
+      "slipAfter3SecondsDegrees": 0.00019151349767098782
     },
     {
       "id": "LI_I9",
       "hz": 30,
       "mode": "handbrake",
-      "peakDegrees": 42.46980769420233,
-      "slipAfter3SecondsDegrees": 0.19031380779273416
+      "peakDegrees": 42.236943220879276,
+      "slipAfter3SecondsDegrees": 0.136650156477896
     },
     {
       "id": "LI_I9",
       "hz": 60,
       "mode": "normal",
-      "peakDegrees": 3.6923346752330404,
-      "slipAfter3SecondsDegrees": 0.0000577724762467978
+      "peakDegrees": 3.6923484950208043,
+      "slipAfter3SecondsDegrees": 0.00005772360332971063
     },
     {
       "id": "LI_I9",
       "hz": 60,
       "mode": "flick",
-      "peakDegrees": 11.144171996333977,
-      "slipAfter3SecondsDegrees": 0.00021541295500358243
+      "peakDegrees": 11.976460571798414,
+      "slipAfter3SecondsDegrees": 0.00022123407191224022
     },
     {
       "id": "LI_I9",
       "hz": 60,
       "mode": "handbrake",
-      "peakDegrees": 43.15518474242268,
-      "slipAfter3SecondsDegrees": 0.2611043683557228
+      "peakDegrees": 42.86950323221804,
+      "slipAfter3SecondsDegrees": 0.18521516012594766
     },
     {
       "id": "LI_I9",
       "hz": 120,
       "mode": "normal",
-      "peakDegrees": 3.690279714901474,
-      "slipAfter3SecondsDegrees": 0.00006331102049909533
+      "peakDegrees": 3.690294898396354,
+      "slipAfter3SecondsDegrees": 0.00006325776286798194
     },
     {
       "id": "LI_I9",
       "hz": 120,
       "mode": "flick",
-      "peakDegrees": 11.146174752584761,
-      "slipAfter3SecondsDegrees": 0.00023697880092453535
+      "peakDegrees": 11.978001511793257,
+      "slipAfter3SecondsDegrees": 0.00024335812191164506
     },
     {
       "id": "LI_I9",
       "hz": 120,
       "mode": "handbrake",
-      "peakDegrees": 43.442314305499295,
-      "slipAfter3SecondsDegrees": 0.3079603674528393
+      "peakDegrees": 43.13614627497579,
+      "slipAfter3SecondsDegrees": 0.21731862377231992
     },
     {
       "id": "N90",
       "hz": 30,
       "mode": "normal",
-      "peakDegrees": 3.8199518644156987,
-      "slipAfter3SecondsDegrees": 0.00004634408809074891
+      "peakDegrees": 3.8201462913460817,
+      "slipAfter3SecondsDegrees": 0.000046288930184751776
     },
     {
       "id": "N90",
       "hz": 30,
       "mode": "flick",
-      "peakDegrees": 11.266505968882093,
-      "slipAfter3SecondsDegrees": 0.00016968708011041742
+      "peakDegrees": 12.092745206423658,
+      "slipAfter3SecondsDegrees": 0.0001739770715695516
     },
     {
       "id": "N90",
       "hz": 30,
       "mode": "handbrake",
-      "peakDegrees": 43.11100323736632,
-      "slipAfter3SecondsDegrees": 0.21852884343283036
+      "peakDegrees": 42.86071584926572,
+      "slipAfter3SecondsDegrees": 0.15566142088795856
     },
     {
       "id": "N90",
       "hz": 60,
       "mode": "normal",
-      "peakDegrees": 3.8248674084810617,
-      "slipAfter3SecondsDegrees": 0.00005348495420285043
+      "peakDegrees": 3.8249424106062233,
+      "slipAfter3SecondsDegrees": 0.00005342131434759616
     },
     {
       "id": "N90",
       "hz": 60,
       "mode": "flick",
-      "peakDegrees": 11.262601823861463,
-      "slipAfter3SecondsDegrees": 0.00019640075673781087
+      "peakDegrees": 12.088310031578533,
+      "slipAfter3SecondsDegrees": 0.00020137938301511944
     },
     {
       "id": "N90",
       "hz": 60,
       "mode": "handbrake",
-      "peakDegrees": 43.796356009650594,
-      "slipAfter3SecondsDegrees": 0.3017007760033507
+      "peakDegrees": 43.49722216145768,
+      "slipAfter3SecondsDegrees": 0.21231733526437244
     },
     {
       "id": "N90",
       "hz": 120,
       "mode": "normal",
-      "peakDegrees": 3.8226099317421007,
-      "slipAfter3SecondsDegrees": 0.00005863939162076295
+      "peakDegrees": 3.82268597948368,
+      "slipAfter3SecondsDegrees": 0.000058569964470855436
     },
     {
       "id": "N90",
       "hz": 120,
       "mode": "flick",
-      "peakDegrees": 11.264372226721994,
-      "slipAfter3SecondsDegrees": 0.00021619860200166148
+      "peakDegrees": 12.090224309255245,
+      "slipAfter3SecondsDegrees": 0.0002216550098225882
     },
     {
       "id": "N90",
       "hz": 120,
       "mode": "handbrake",
-      "peakDegrees": 44.087272240266756,
-      "slipAfter3SecondsDegrees": 0.3568849096221465
+      "peakDegrees": 43.767754420274514,
+      "slipAfter3SecondsDegrees": 0.2498672620619635
     },
     {
       "id": "TRUCK",
       "hz": 30,
       "mode": "normal",
-      "peakDegrees": 3.6202941509199698,
-      "slipAfter3SecondsDegrees": 0.00004373696316137825
+      "peakDegrees": 3.6201747404532103,
+      "slipAfter3SecondsDegrees": 0.0000436984833754045
     },
     {
       "id": "TRUCK",
       "hz": 30,
       "mode": "flick",
-      "peakDegrees": 9.15039839526405,
-      "slipAfter3SecondsDegrees": 0.0001793942674922921
+      "peakDegrees": 9.801623499242922,
+      "slipAfter3SecondsDegrees": 0.00018691176543684897
     },
     {
       "id": "TRUCK",
       "hz": 30,
       "mode": "handbrake",
-      "peakDegrees": 37.175766506328756,
-      "slipAfter3SecondsDegrees": 0.5151884206954065
+      "peakDegrees": 36.732675077455156,
+      "slipAfter3SecondsDegrees": 0.32401337495461224
     },
     {
       "id": "TRUCK",
       "hz": 60,
       "mode": "normal",
-      "peakDegrees": 3.6251278208258344,
-      "slipAfter3SecondsDegrees": 0.00005055366177334562
+      "peakDegrees": 3.625104228205342,
+      "slipAfter3SecondsDegrees": 0.00005050920234309238
     },
     {
       "id": "TRUCK",
       "hz": 60,
       "mode": "flick",
-      "peakDegrees": 9.150870766713815,
-      "slipAfter3SecondsDegrees": 0.00020769222245624677
+      "peakDegrees": 9.811789862977392,
+      "slipAfter3SecondsDegrees": 0.00021640535629671517
     },
     {
       "id": "TRUCK",
       "hz": 60,
       "mode": "handbrake",
-      "peakDegrees": 37.860205509148855,
-      "slipAfter3SecondsDegrees": 0.7307039089248973
+      "peakDegrees": 37.38311768100664,
+      "slipAfter3SecondsDegrees": 0.45511492069468606
     },
     {
       "id": "TRUCK",
       "hz": 120,
       "mode": "normal",
-      "peakDegrees": 3.622414318411413,
-      "slipAfter3SecondsDegrees": 0.000055368508123855237
+      "peakDegrees": 3.6223483691795813,
+      "slipAfter3SecondsDegrees": 0.0000553201807604787
     },
     {
       "id": "TRUCK",
       "hz": 120,
       "mode": "flick",
-      "peakDegrees": 9.153220119261116,
-      "slipAfter3SecondsDegrees": 0.00022833872413998725
+      "peakDegrees": 9.81206396790924,
+      "slipAfter3SecondsDegrees": 0.00023787439775847148
     },
     {
       "id": "TRUCK",
       "hz": 120,
       "mode": "handbrake",
-      "peakDegrees": 38.166591477308984,
-      "slipAfter3SecondsDegrees": 0.8734992380542335
+      "peakDegrees": 37.67472369505747,
+      "slipAfter3SecondsDegrees": 0.5424933532345231
     },
     {
       "id": "JEEP",
       "hz": 30,
       "mode": "normal",
-      "peakDegrees": 4.371524990921346,
-      "slipAfter3SecondsDegrees": 0.00004053321961943456
+      "peakDegrees": 4.371777177421209,
+      "slipAfter3SecondsDegrees": 0.00004037757076218238
     },
     {
       "id": "JEEP",
       "hz": 30,
       "mode": "flick",
-      "peakDegrees": 10.750032812914883,
-      "slipAfter3SecondsDegrees": 0.00013444556839459844
+      "peakDegrees": 11.472778426822403,
+      "slipAfter3SecondsDegrees": 0.00013685389138338064
     },
     {
       "id": "JEEP",
       "hz": 30,
       "mode": "handbrake",
-      "peakDegrees": 43.146010155689645,
-      "slipAfter3SecondsDegrees": 0.5732998509469607
+      "peakDegrees": 42.746900194725185,
+      "slipAfter3SecondsDegrees": 0.3826106167279518
     },
     {
       "id": "JEEP",
       "hz": 60,
       "mode": "normal",
-      "peakDegrees": 4.3818739800074225,
-      "slipAfter3SecondsDegrees": 0.00004714310609164155
+      "peakDegrees": 4.382546998439511,
+      "slipAfter3SecondsDegrees": 0.00004696215361814978
     },
     {
       "id": "JEEP",
       "hz": 60,
       "mode": "flick",
-      "peakDegrees": 10.746216613151024,
-      "slipAfter3SecondsDegrees": 0.0001566217474663135
+      "peakDegrees": 11.468418293271059,
+      "slipAfter3SecondsDegrees": 0.00015943023585841668
     },
     {
       "id": "JEEP",
       "hz": 60,
       "mode": "handbrake",
-      "peakDegrees": 43.84797597653801,
-      "slipAfter3SecondsDegrees": 0.8166933797610382
+      "peakDegrees": 43.4209580476584,
+      "slipAfter3SecondsDegrees": 0.5396775687248149
     },
     {
       "id": "JEEP",
       "hz": 120,
       "mode": "normal",
-      "peakDegrees": 4.377974264739606,
-      "slipAfter3SecondsDegrees": 0.00005173768210971752
+      "peakDegrees": 4.378644658584436,
+      "slipAfter3SecondsDegrees": 0.00005153983419167326
     },
     {
       "id": "JEEP",
       "hz": 120,
       "mode": "flick",
-      "peakDegrees": 10.748590712005816,
-      "slipAfter3SecondsDegrees": 0.00017266730459721073
+      "peakDegrees": 11.470558241797365,
+      "slipAfter3SecondsDegrees": 0.00017572814146041112
     },
     {
       "id": "JEEP",
       "hz": 120,
       "mode": "handbrake",
-      "peakDegrees": 44.15895039436908,
-      "slipAfter3SecondsDegrees": 0.9786660638945512
+      "peakDegrees": 43.716319253535325,
+      "slipAfter3SecondsDegrees": 0.6446245353773562
     },
     {
       "id": "MIDIBUS",
       "hz": 30,
       "mode": "normal",
-      "peakDegrees": 3.2251073167400035,
-      "slipAfter3SecondsDegrees": 0.00006805476727611963
+      "peakDegrees": 3.054873203165841,
+      "slipAfter3SecondsDegrees": 0.000053872318603269217
     },
     {
       "id": "MIDIBUS",
       "hz": 30,
       "mode": "flick",
-      "peakDegrees": 8.315131440559988,
-      "slipAfter3SecondsDegrees": 0.0002850941511554132
+      "peakDegrees": 8.8494121029784,
+      "slipAfter3SecondsDegrees": 0.0002501968273873858
     },
     {
       "id": "MIDIBUS",
       "hz": 30,
       "mode": "handbrake",
-      "peakDegrees": 33.92851692724028,
-      "slipAfter3SecondsDegrees": 0.4135146876610327
+      "peakDegrees": 33.2442631663309,
+      "slipAfter3SecondsDegrees": 0.19009377832687993
     },
     {
       "id": "MIDIBUS",
       "hz": 60,
       "mode": "normal",
-      "peakDegrees": 3.230248742933818,
-      "slipAfter3SecondsDegrees": 0.00007788913914694643
+      "peakDegrees": 3.0615133816368005,
+      "slipAfter3SecondsDegrees": 0.0000617597619578945
     },
     {
       "id": "MIDIBUS",
       "hz": 60,
       "mode": "flick",
-      "peakDegrees": 8.312047286207731,
-      "slipAfter3SecondsDegrees": 0.0003269448257019921
+      "peakDegrees": 8.84655493255185,
+      "slipAfter3SecondsDegrees": 0.00028747725034421694
     },
     {
       "id": "MIDIBUS",
       "hz": 60,
       "mode": "handbrake",
-      "peakDegrees": 34.58595819478895,
-      "slipAfter3SecondsDegrees": 0.5776500914461433
+      "peakDegrees": 33.86375290392091,
+      "slipAfter3SecondsDegrees": 0.2625606364007741
     },
     {
       "id": "MIDIBUS",
       "hz": 120,
       "mode": "normal",
-      "peakDegrees": 3.227647029213714,
-      "slipAfter3SecondsDegrees": 0.00008514049333601614
+      "peakDegrees": 3.0592437255588893,
+      "slipAfter3SecondsDegrees": 0.00006764698227788592
     },
     {
       "id": "MIDIBUS",
       "hz": 120,
       "mode": "flick",
-      "peakDegrees": 8.312695332607253,
-      "slipAfter3SecondsDegrees": 0.00035832947776815084
+      "peakDegrees": 8.848784033284323,
+      "slipAfter3SecondsDegrees": 0.0003156197626037821
     },
     {
       "id": "MIDIBUS",
       "hz": 120,
       "mode": "handbrake",
-      "peakDegrees": 34.87978059611758,
-      "slipAfter3SecondsDegrees": 0.6858837571223595
+      "peakDegrees": 34.138277790440895,
+      "slipAfter3SecondsDegrees": 0.3108256399666157
     },
     {
       "id": "COACH",
       "hz": 30,
       "mode": "normal",
-      "peakDegrees": 1.6445570215983745,
-      "slipAfter3SecondsDegrees": 0.00009066025895655363
+      "peakDegrees": 1.2401007734592882,
+      "slipAfter3SecondsDegrees": 0.000042030278729031516
     },
     {
       "id": "COACH",
       "hz": 30,
       "mode": "flick",
-      "peakDegrees": 6.110569885154906,
-      "slipAfter3SecondsDegrees": 0.00044458880270989497
+      "peakDegrees": 6.089010284779752,
+      "slipAfter3SecondsDegrees": 0.00025686898084208187
     },
     {
       "id": "COACH",
       "hz": 30,
       "mode": "handbrake",
-      "peakDegrees": 22.188787873700747,
-      "slipAfter3SecondsDegrees": 0.02385390390318392
+      "peakDegrees": 19.792007624867104,
+      "slipAfter3SecondsDegrees": 0.005857924012869828
     },
     {
       "id": "COACH",
       "hz": 60,
       "mode": "normal",
-      "peakDegrees": 1.6444797077255349,
-      "slipAfter3SecondsDegrees": 0.00010217113815945012
+      "peakDegrees": 1.2400299230718432,
+      "slipAfter3SecondsDegrees": 0.0000476226001177302
     },
     {
       "id": "COACH",
       "hz": 60,
       "mode": "flick",
-      "peakDegrees": 6.116644831103272,
-      "slipAfter3SecondsDegrees": 0.0005021611072851497
+      "peakDegrees": 6.096395333008954,
+      "slipAfter3SecondsDegrees": 0.00029183274638535376
     },
     {
       "id": "COACH",
       "hz": 60,
       "mode": "handbrake",
-      "peakDegrees": 22.64089575650862,
-      "slipAfter3SecondsDegrees": 0.029995470448509545
+      "peakDegrees": 20.175171332369693,
+      "slipAfter3SecondsDegrees": 0.007243429409538676
     },
     {
       "id": "COACH",
       "hz": 120,
       "mode": "normal",
-      "peakDegrees": 1.6446941366878234,
-      "slipAfter3SecondsDegrees": 0.0001111429158576423
+      "peakDegrees": 1.2407846071942323,
+      "slipAfter3SecondsDegrees": 0.00005214527011510848
     },
     {
       "id": "COACH",
       "hz": 120,
       "mode": "flick",
-      "peakDegrees": 6.1149206419173225,
-      "slipAfter3SecondsDegrees": 0.0005466523992759002
+      "peakDegrees": 6.093277807880244,
+      "slipAfter3SecondsDegrees": 0.0003195477363975685
     },
     {
       "id": "COACH",
       "hz": 120,
       "mode": "handbrake",
-      "peakDegrees": 22.82337403955153,
-      "slipAfter3SecondsDegrees": 0.03392970619004597
+      "peakDegrees": 20.318243051535877,
+      "slipAfter3SecondsDegrees": 0.008153554088191663
     },
     {
       "id": "VAN",
       "hz": 30,
       "mode": "normal",
-      "peakDegrees": 3.769350382938634,
-      "slipAfter3SecondsDegrees": 0.00007173462586246652
+      "peakDegrees": 3.769193438992101,
+      "slipAfter3SecondsDegrees": 0.00007164208414154105
     },
     {
       "id": "VAN",
       "hz": 30,
       "mode": "flick",
-      "peakDegrees": 9.13994532706038,
-      "slipAfter3SecondsDegrees": 0.00026990089334394705
+      "peakDegrees": 9.774503253835604,
+      "slipAfter3SecondsDegrees": 0.00028006174956754916
     },
     {
       "id": "VAN",
       "hz": 30,
       "mode": "handbrake",
-      "peakDegrees": 37.47367149003167,
-      "slipAfter3SecondsDegrees": 0.7496695956473147
+      "peakDegrees": 36.99275908836664,
+      "slipAfter3SecondsDegrees": 0.4687927994722397
     },
     {
       "id": "VAN",
       "hz": 60,
       "mode": "normal",
-      "peakDegrees": 3.773971544122224,
-      "slipAfter3SecondsDegrees": 0.00008233731490114727
+      "peakDegrees": 3.7739568880932626,
+      "slipAfter3SecondsDegrees": 0.00008223112365510092
     },
     {
       "id": "VAN",
       "hz": 60,
       "mode": "flick",
-      "peakDegrees": 9.141966722068789,
-      "slipAfter3SecondsDegrees": 0.00031045394617318866
+      "peakDegrees": 9.782827058523184,
+      "slipAfter3SecondsDegrees": 0.0003221612016640146
     },
     {
       "id": "VAN",
       "hz": 60,
       "mode": "handbrake",
-      "peakDegrees": 38.161736964904286,
-      "slipAfter3SecondsDegrees": 1.0593913442110303
+      "peakDegrees": 37.652768502804754,
+      "slipAfter3SecondsDegrees": 0.6569036959623135
     },
     {
       "id": "VAN",
       "hz": 120,
       "mode": "normal",
-      "peakDegrees": 3.7708578922978977,
-      "slipAfter3SecondsDegrees": 0.00009009310865440538
+      "peakDegrees": 3.7707803284398875,
+      "slipAfter3SecondsDegrees": 0.00008997785644291666
     },
     {
       "id": "VAN",
       "hz": 120,
       "mode": "flick",
-      "peakDegrees": 9.143576646019481,
-      "slipAfter3SecondsDegrees": 0.0003408227324129851
+      "peakDegrees": 9.783238632872791,
+      "slipAfter3SecondsDegrees": 0.00035360756241531547
     },
     {
       "id": "VAN",
       "hz": 120,
       "mode": "handbrake",
-      "peakDegrees": 38.47115511440931,
-      "slipAfter3SecondsDegrees": 1.2623603889516295
+      "peakDegrees": 37.947767583547815,
+      "slipAfter3SecondsDegrees": 0.7814074672492783
     },
     {
       "id": "LIGHT_TRUCK",
       "hz": 30,
       "mode": "normal",
-      "peakDegrees": 2.7415710298802707,
-      "slipAfter3SecondsDegrees": 0.00007771992929358045
+      "peakDegrees": 2.304339633389865,
+      "slipAfter3SecondsDegrees": 0.00003723756313975685
     },
     {
       "id": "LIGHT_TRUCK",
       "hz": 30,
       "mode": "flick",
-      "peakDegrees": 7.812348906167006,
-      "slipAfter3SecondsDegrees": 0.00034678126611733753
+      "peakDegrees": 8.124977740554412,
+      "slipAfter3SecondsDegrees": 0.00019895485605180344
     },
     {
       "id": "LIGHT_TRUCK",
       "hz": 30,
       "mode": "handbrake",
-      "peakDegrees": 31.180405421080142,
-      "slipAfter3SecondsDegrees": 0.19432595379733525
+      "peakDegrees": 29.939412875549237,
+      "slipAfter3SecondsDegrees": 0.04884541407911447
     },
     {
       "id": "LIGHT_TRUCK",
       "hz": 60,
       "mode": "normal",
-      "peakDegrees": 2.746473135877489,
-      "slipAfter3SecondsDegrees": 0.00008848033947577099
+      "peakDegrees": 2.31087803603022,
+      "slipAfter3SecondsDegrees": 0.00004263701822871395
     },
     {
       "id": "LIGHT_TRUCK",
       "hz": 60,
       "mode": "flick",
-      "peakDegrees": 7.809372515031688,
-      "slipAfter3SecondsDegrees": 0.000395655521285573
+      "peakDegrees": 8.121641584531249,
+      "slipAfter3SecondsDegrees": 0.00022844547966200372
     },
     {
       "id": "LIGHT_TRUCK",
       "hz": 60,
       "mode": "handbrake",
-      "peakDegrees": 31.793648510440438,
-      "slipAfter3SecondsDegrees": 0.2641497418585773
+      "peakDegrees": 30.523626070372583,
+      "slipAfter3SecondsDegrees": 0.06546138085618222
     },
     {
       "id": "LIGHT_TRUCK",
       "hz": 120,
       "mode": "normal",
-      "peakDegrees": 2.7446675605930335,
-      "slipAfter3SecondsDegrees": 0.00009657326441070677
+      "peakDegrees": 2.3100378083969395,
+      "slipAfter3SecondsDegrees": 0.000046843216440521056
     },
     {
       "id": "LIGHT_TRUCK",
       "hz": 120,
       "mode": "flick",
-      "peakDegrees": 7.808933752161937,
-      "slipAfter3SecondsDegrees": 0.00043271088620603043
+      "peakDegrees": 8.120529766976812,
+      "slipAfter3SecondsDegrees": 0.0002513783943770998
     },
     {
       "id": "LIGHT_TRUCK",
       "hz": 120,
       "mode": "handbrake",
-      "peakDegrees": 32.06430407985049,
-      "slipAfter3SecondsDegrees": 0.3099118324617557
+      "peakDegrees": 30.770534906238982,
+      "slipAfter3SecondsDegrees": 0.07653236307057158
     }
   ],
   "impacts": [

@@ -1,3 +1,4 @@
+import {ArticulatedTrailer} from './articulatedTrailer';
 import * as THREE from 'three';
 import { CarType } from '../types';
 import type { CarConfig } from '../types';
@@ -31,10 +32,10 @@ export function buildNativeAuthoredVehicle(source: THREE.Group, cfg: CarConfig):
   const suv = cfg.height > 16;
   const calibration = source.getObjectByName('CarRoot')?.userData ?? {};
   const halfCabin = cfg.width / 10 * .425;
-  const floor = suv ? .36 : .29;
+  const floor = calibration.liner_floor_m ?? (suv ? .36 : .29);
   const belt = calibration.liner_belt_m ?? (suv ? 1.15 : .96);
   const rear = calibration.liner_rear_m ?? (suv ? -2.15 : -1.70);
-  const front = 1.02;
+  const front = calibration.liner_front_m ?? 1.02;
   const corners = [
     [-halfCabin,floor,rear],[halfCabin,floor,rear],[halfCabin,floor,front],[-halfCabin,floor,front],
     [-halfCabin,belt-.10,rear],[halfCabin,belt-.10,rear],[halfCabin,belt-.10,front],[-halfCabin,belt-.10,front],
@@ -123,10 +124,11 @@ export function buildNativeAuthoredVehicle(source: THREE.Group, cfg: CarConfig):
   };
 
   // ---- four authored wheel assemblies: steer around Y, roll around X ----
-  WHEEL_LABELS.forEach((label, index) => {
+  const labels=cfg.id===CarType.TRIKE?['FrontL','RearL','RearR']:cfg.id===CarType.SEMI?[...WHEEL_LABELS,'Rear2L','Rear2R']:WHEEL_LABELS;
+  labels.forEach((label,index)=>{
     const wheelRoot = source.getObjectByName(`Wheel${label}`);
     if (!wheelRoot) throw new Error(`Authored asset missing Wheel${label}`);
-    const isFront = index < 2;
+    const isFront = label.startsWith('Front');
     const center = wheelRoot.getWorldPosition(new THREE.Vector3());
     const steer = new THREE.Group();
     steer.name = `Wheel${label}-steer-pivot`;
@@ -285,6 +287,8 @@ export function buildNativeAuthoredVehicle(source: THREE.Group, cfg: CarConfig):
     if (/^Interior/.test(node.name)) node.userData.partRole = 'interior';
   });
 
+  const trailerNode=source.getObjectByName('TrailerRoot');
+  if(trailerNode)parts.trailer=new ArticulatedTrailer(group,trailerNode);
   group.updateWorldMatrix(true, true);
   let bodyFootprint = collectVehicleFootprint(group, false);
   const wheelFootprints = parts.wheelMounts.map(mount => collectVehicleFootprint(mount, true));
@@ -310,5 +314,5 @@ export function buildNativeAuthoredVehicle(source: THREE.Group, cfg: CarConfig):
 }
 
 export function isAuthoredVehicle(carType: CarType): boolean {
-  return [CarType.TRUCK,CarType.TAI7,CarType.LI_I9,CarType.N90,CarType.SEDAN,CarType.SEAL08,CarType.SUV,CarType.JEEP,CarType.MIDIBUS,CarType.COACH,CarType.VAN,CarType.LIGHT_TRUCK].includes(carType);
+  return [CarType.TRIKE,CarType.TRACTOR,CarType.SEMI,CarType.CYBERTRUCK,CarType.REVUELTO,CarType.VEYRON,CarType.V800,CarType.MINI,CarType.TRUCK,CarType.TAI7,CarType.LI_I9,CarType.N90,CarType.SEDAN,CarType.SEAL08,CarType.SUV,CarType.JEEP,CarType.MIDIBUS,CarType.COACH,CarType.VAN,CarType.LIGHT_TRUCK].includes(carType);
 }

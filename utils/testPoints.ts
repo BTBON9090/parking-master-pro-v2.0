@@ -11,10 +11,10 @@ export interface DrivingTestPoint {
   hint?: string;
 }
 export const CAMPUS_TEST_POINTS:DrivingTestPoint[]=[
- {id:'campus-main',label:'四区连接主路',x:1700,y:1400,rotation:0,hint:'沿主路通向曲线、紧凑倒库和斜列停车区'},
- {id:'campus-s',label:'加宽 S 弯入口',x:2890,y:605,rotation:-1.46,hint:'顺白色边线低速通过连续 S 弯'},
- {id:'campus-tight',label:'紧凑倒库入口',x:2410,y:1550,rotation:Math.PI/2,hint:'南行进入两侧错位窄车位'},
- {id:'campus-angle',label:'斜列车位入口',x:3160,y:1700,rotation:Math.PI/2,hint:'前方左转进入斜列泊车区'},
+ {id:'campus-main',label:'考试起点与收费站',x:260,y:330,rotation:0,hint:'沿主路通向曲线、紧凑倒库和斜列停车区'},
+ {id:'campus-s',label:'加宽 S 弯入口',x:3440,y:680,rotation:-1.46,hint:'顺白色边线低速通过连续 S 弯'},
+ {id:'campus-tight',label:'紧凑倒库入口',x:1200,y:1160,rotation:Math.PI/2,hint:'南行进入两侧错位窄车位'},
+ {id:'campus-angle',label:'斜列车位入口',x:2720,y:2290,rotation:Math.PI/2,hint:'前方左转进入斜列泊车区'},
 ];
 export const GARAGE_TEST_POINTS: DrivingTestPoint[] = [
  {id:'garage-b2-aisle',label:'B2 车位与雷达线',x:800,y:522,rotation:0,deckHeight:-96,hint:'检查三色线贴当前地板、柱子位于车位之间'},
@@ -25,7 +25,7 @@ export const GARAGE_TEST_POINTS: DrivingTestPoint[] = [
  {id:'garage-b3',label:'B3 上行坡道入口',x:1625,y:770,rotation:-Math.PI/2,deckHeight:-144,hint:'靠右上坡返回 B2，末端左转进库'},
  {id:'garage-b2-up',label:'B2 上行坡道入口',x:1625,y:770,rotation:-Math.PI/2,deckHeight:-96,hint:'靠右上坡返回 B1'},
 ];
-export const DRIVING_TEST_POINTS: DrivingTestPoint[] = [
+const LEGACY_DRIVING_POINTS: DrivingTestPoint[] = [
  {id:'rollover-bank',label:'极陡横坡失稳',x:11980,y:2760,rotation:.709,hint:'约 54° 横坡；高重心皮卡翻滚，低重心车型临界角不同'},
   {id:'handling-field',label:'高速转向空地',x:10500,y:10000,rotation:0,hint:'远离障碍的平坦空地；加速后转弯，检查侧滑与车身回正'},
   { id: 'straight', label: '平直加速', x: 1180, y: 3900, rotation: 0, hint: '东向直行' },
@@ -57,3 +57,5 @@ export const DRIVING_TEST_POINTS: DrivingTestPoint[] = [
   { id: 'rough', label: '崎岖路', x: 1500, y: 5000, rotation: -Math.PI / 2, hint: '北向 崎岖 gate' },
   { id: 'collision', label: '碰撞验证', x: 2040, y: 4100, rotation: Math.PI / 2, hint: '南向 静态 NPC 尾' },
 ];
+
+export const DRIVING_TEST_POINTS:DrivingTestPoint[]=LEGACY_DRIVING_POINTS.map(p=>p.x>=8600?{...p,x:23600+(p.x-8600)*2,y:16300+(p.y-1300)*2,deckHeight:undefined}:{...p,x:p.x+15000,y:p.y+15000});

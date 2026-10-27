@@ -1,0 +1,101 @@
+Actual GLBs: combined grades/banks/steer, tyre orientation/contact, gravity/braking loads, fast descents and rigid-body rollover PASS [
+  {
+    id: 'SUV',
+    cases: 45,
+    maxGapCm: 5.3290705182007514e-14,
+    maxAxleDriftMm: 7.105427357601002e-13,
+    minTreadGapCm: -5.911793676816046e-7,
+    maxTravelCm: 5.008822080312202,
+    fastestGapCm: 1.1368683772161603e-12
+  },
+  {
+    id: 'SEAL08',
+    cases: 45,
+    maxGapCm: 5.3290705182007514e-14,
+    maxAxleDriftMm: 7.105427357601002e-13,
+    minTreadGapCm: -5.266868230435762e-7,
+    maxTravelCm: 3.08007827164662,
+    fastestGapCm: 1.1368683772161603e-12
+  },
+  {
+    id: 'TAI7',
+    cases: 45,
+    maxGapCm: 3.552713678800501e-14,
+    maxAxleDriftMm: 5.329070518200751e-13,
+    minTreadGapCm: -5.481838538656802e-7,
+    maxTravelCm: 6.345163816928424,
+    fastestGapCm: 1.1368683772161603e-12
+  },
+  {
+    id: 'LI_I9',
+    cases: 45,
+    maxGapCm: 5.3290705182007514e-14,
+    maxAxleDriftMm: 3.552713678800501e-13,
+    minTreadGapCm: -5.69681590789628e-7,
+    maxTravelCm: 5.632861995353093,
+    fastestGapCm: 2.2737367544323206e-12
+  },
+  {
+    id: 'N90',
+    cases: 45,
+    maxGapCm: 5.3290705182007514e-14,
+    maxAxleDriftMm: 3.552713678800501e-13,
+    minTreadGapCm: -5.69681590789628e-7,
+    maxTravelCm: 6.01055343513295,
+    fastestGapCm: 1.1368683772161603e-12
+  },
+  {
+    id: 'TRUCK',
+    cases: 45,
+    maxGapCm: 3.552713678800501e-14,
+    maxAxleDriftMm: 7.105427357601002e-13,
+    minTreadGapCm: -5.696815863487359e-7,
+    maxTravelCm: 6.7754524646882865,
+    fastestGapCm: 1.1368683772161603e-12
+  },
+  {
+    id: 'JEEP',
+    cases: 45,
+    maxGapCm: 5.3290705182007514e-14,
+    maxAxleDriftMm: 3.552713678800501e-13,
+    minTreadGapCm: -5.911785638801348e-7,
+    maxTravelCm: 6.3782230191327915,
+    fastestGapCm: 1.1368683772161603e-12
+  },
+  {
+    id: 'MIDIBUS',
+    cases: 45,
+    maxGapCm: 7.105427357601002e-14,
+    maxAxleDriftMm: 7.105427357601002e-13,
+    minTreadGapCm: -6.2342524032033e-7,
+    maxTravelCm: 6.830223026024797,
+    fastestGapCm: 1.7053025658242404e-12
+  },
+  {
+    id: 'COACH',
+    cases: 45,
+    maxGapCm: 7.105427357601002e-14,
+    maxAxleDriftMm: 7.105427357601002e-13,
+    minTreadGapCm: -6.341733715942155e-7,
+    maxTravelCm: 9.405946388195636,
+    fastestGapCm: 1.1368683772161603e-12
+  },
+  {
+    id: 'VAN',
+    cases: 45,
+    maxGapCm: 5.3290705182007514e-14,
+    maxAxleDriftMm: 3.552713678800501e-13,
+    minTreadGapCm: -6.234251825887327e-7,
+    maxTravelCm: 7.196364185380549,
+    fastestGapCm: 1.1368683772161603e-12
+  },
+  {
+    id: 'LIGHT_TRUCK',
+    cases: 45,
+    maxGapCm: 5.3290705182007514e-14,
+    maxAxleDriftMm: 7.105427357601002e-13,
+    minTreadGapCm: -6.234252314385458e-7,
+    maxTravelCm: 7.832570003317255,
+    fastestGapCm: 1.1368683772161603e-12
+  }
+]

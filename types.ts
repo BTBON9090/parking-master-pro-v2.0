@@ -1,4 +1,13 @@
 export enum CarType {
+  TRIKE='TRIKE',
+  TRACTOR='TRACTOR',
+  SEMI='SEMI',
+  CYBERTRUCK='CYBERTRUCK',
+  REVUELTO='REVUELTO',
+  VEYRON='VEYRON',
+  V800='V800',
+  MINI='MINI',
+
   /** 海豹 08 手动训练车：保留离合/挡位教学，动力总成明确为模拟。 */
   SEDAN = 'SEDAN',
   /** 海豹 08 EV 905 旗舰：官方三电/尺寸，单速纯电，无假熄火。 */
@@ -94,6 +103,7 @@ export interface TransmissionSpec {
 }
 
 export interface CarConfig {
+  automatic?:boolean;
   id: CarType;
   name: string;
   price: number;
@@ -177,6 +187,10 @@ export interface VehicleTuning {
 }
 
 export interface AiConfig {
+    laneIndex?:number;
+    lanePaths?:Vector2[][];
+    incidentAt?:number;
+    incidentUntil?:number;
     path: Vector2[];
     currentPathIndex: number;
     /** Current speed in game speed units (1 = 15 km/h). */
@@ -344,7 +358,14 @@ export interface ElevatedRoad {
   rampLength: number;
 }
 
+export interface ExamStation {
+ id:string;name:string;hint:string;x:number;y:number;radius:number;
+ kind:'drive'|'stop'|'hill'|'park'|'reverse'|'left'|'right'|'highbeam'|'lowbeam'|'wiper'|'signal'|'accelerate'|'shift'|'merge'|'overtake'|'uturn';
+ exit:{x:number;y:number};speedLimit:number;targetHeading?:number;path?:Vector2[];laneWidth?:number;bayWidth?:number;bayLength?:number;
+}
 export interface LevelData {
+ exam?:ExamStation[];
+ highway?:boolean;
   garage?: boolean;
   /** Original challenge-world height field and surface calibration. */
   challengeTerrain?: {kind:'mud'|'snow'|'quarry'|'forest'|'coast'; seed:number; grip:number; rolling:number};
@@ -521,6 +542,8 @@ export interface InputState {
   handbrake: boolean;
   parkingBrake?: boolean;
   lights: boolean;
+  indicator?: -1 | 0 | 1;
+  wipers?:boolean;
   headlightMode?: 0 | 1 | 2; // off / dipped / main beam
   engineStarted: boolean; 
 }

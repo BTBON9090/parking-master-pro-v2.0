@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import type { LevelData, Obstacle } from '../types';
-import { MOUNTAIN_BOUNDS, WORLD_ROUTES, WORLD_PUDDLES, WORLD_PLACES, worldHeight, nearestWorldRoad, terrainVertexHeight, worldTreePlacements, worldSignPlacements } from '../utils/openWorld';
+import { MOUNTAIN_BOUNDS, WORLD_TERRAIN_STEP, inCity, WORLD_ROUTES, WORLD_PUDDLES, WORLD_PLACES, worldHeight, roadVertexHeight, nearestWorldRoad, terrainVertexHeight, worldTreePlacements, worldSignPlacements } from '../utils/openWorld';
 
 /** All surfaces and paint use the same world-height sampler as the four tyres. */
 export function addOpenWorldScene(scene:THREE.Scene,level:LevelData,track:(g:THREE.BufferGeometry)=>THREE.BufferGeometry){
@@ -11,16 +11,20 @@ export function addOpenWorldScene(scene:THREE.Scene,level:LevelData,track:(g:THR
   if(colors)g.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));g.computeVertexNormals();
   const m=new THREE.Mesh(g,material);m.receiveShadow=true;scene.add(m);return m;
  };
- const groundColor=(h:number)=>new THREE.Color('#627455').lerp(new THREE.Color('#a29d85'),Math.min(.55,Math.max(0,(h-400)/900)));
- const pos:number[]=[],ix:number[]=[],colors:number[]=[],b=MOUNTAIN_BOUNDS;
- const nx=Math.ceil((b.x1-b.x0)/40),ny=Math.ceil((b.y1-b.y0)/40);
- for(let j=0;j<=ny;j++)for(let i=0;i<=nx;i++){
-  const x=b.x0+(b.x1-b.x0)*i/nx,y=b.y0+(b.y1-b.y0)*j/ny,r=nearestWorldRoad(x,y),h=worldHeight(x,y);
-  pos.push(x,terrainVertexHeight(x,y)+.025,y);
-  const c=groundColor(h);colors.push(c.r,c.g,c.b);
-  if(i<nx&&j<ny){const a=j*(nx+1)+i;ix.push(a,a+nx+1,a+1,a+1,a+nx+1,a+nx+2);}
+ const groundColor=(h:number)=>new THREE.Color('#627455').lerp(new THREE.Color('#a29d85'),Math.min(.55,Math.max(0,(h-2500)/9000)));
+ const b=MOUNTAIN_BOUNDS,step=WORLD_TERRAIN_STEP,chunk=24;
+ const material=new THREE.MeshStandardMaterial({vertexColors:true,roughness:1});
+ const nx=Math.ceil((b.x1-b.x0)/step),ny=Math.ceil((b.y1-b.y0)/step);
+ // Individual terrain tiles can be frustum-culled in the main view and mirrors.
+ for(let cy=0;cy<ny;cy+=chunk)for(let cx=0;cx<nx;cx+=chunk){
+  const w=Math.min(chunk,nx-cx),h=Math.min(chunk,ny-cy),pos:number[]=[],ix:number[]=[],colors:number[]=[];
+  for(let j=0;j<=h;j++)for(let i=0;i<=w;i++){
+   const x=(cx+i)*step,y=(cy+j)*step,height=terrainVertexHeight(x,y),c=groundColor(height);
+   pos.push(x,height+.025,y);colors.push(c.r,c.g,c.b);
+   if(i<w&&j<h&&!inCity(x+step/2,y+step/2)){const a=j*(w+1)+i;ix.push(a,a+w+1,a+1,a+1,a+w+1,a+w+2);}
+  }
+  if(ix.length)mesh(pos,ix,material,colors).name='MountainTerrain';
  }
- mesh(pos,ix,new THREE.MeshStandardMaterial({vertexColors:true,roughness:1}),colors).name='MountainTerrain';
  // Shoulder ribbons cover the coarse terrain edge and use the same support height.
  const shoulderP:number[]=[],shoulderI:number[]=[],shoulderC:number[]=[];
  for(const r of WORLD_ROUTES)for(const side of [-1,1]){
@@ -29,8 +33,8 @@ export function addOpenWorldScene(scene:THREE.Scene,level:LevelData,track:(g:THR
    const q=r.samples[i];
    for(let j=0;j<=cols;j++){
     const off=(r.width/2+j*5)*side,x=q.x+q.nx*off,y=q.y+q.ny*off;
-    const h=worldHeight(x,y),c=groundColor(h);shoulderP.push(x,h+.035,y);shoulderC.push(c.r,c.g,c.b);
-    if(i<r.samples.length-1&&j<cols){const a=base+i*(cols+1)+j;shoulderI.push(a,a+cols+1,a+1,a+1,a+cols+1,a+cols+2);}
+    const h=roadVertexHeight(x,y),c=groundColor(h);shoulderP.push(x,h+.035,y);shoulderC.push(c.r,c.g,c.b);
+    if(i<r.samples.length-1&&j<cols){const a=base+i*(cols+1)+j;if(side>0)shoulderI.push(a,a+cols+1,a+1,a+1,a+cols+1,a+cols+2);else shoulderI.push(a,a+cols+1,a+cols+2,a,a+cols+2,a+1);}
    }
   }
  }
@@ -44,7 +48,7 @@ export function addOpenWorldScene(scene:THREE.Scene,level:LevelData,track:(g:THR
    const p=r.samples[i];
    for(let j=0;j<=cols;j++){
     const off=(j/cols-.5)*r.width,x=p.x+p.nx*off,y=p.y+p.ny*off;
-    target.p.push(x,worldHeight(x,y)+(r.gravel?.16:.055),y);
+    target.p.push(x,roadVertexHeight(x,y)+(r.gravel?.16:.055),y);
     const noise=.004*Math.sin(x*2.31+y*3.12),c=new THREE.Color(r.gravel?'#8d8066':'#45494b');c.offsetHSL(0,0,noise);target.c.push(c.r,c.g,c.b);
     if(i<r.samples.length-1&&j<cols){const a=base+i*(cols+1)+j;target.i.push(a,a+cols+1,a+1,a+1,a+cols+1,a+cols+2);}
    }
@@ -60,7 +64,7 @@ export function addOpenWorldScene(scene:THREE.Scene,level:LevelData,track:(g:THR
      // on a cambered crest those two interpolations can put paint below asphalt.
      const cell=Math.max(0,Math.min(cols-1,Math.floor((off/r.width+.5)*cols)));
      const lo=(cell/cols-.5)*r.width,hi=((cell+1)/cols-.5)*r.width;
-     const h0=worldHeight(q.x+q.nx*lo,q.y+q.ny*lo),h1=worldHeight(q.x+q.nx*hi,q.y+q.ny*hi);
+     const h0=roadVertexHeight(q.x+q.nx*lo,q.y+q.ny*lo),h1=roadVertexHeight(q.x+q.nx*hi,q.y+q.ny*hi);
      out.p.push(x,h0+(h1-h0)*(off-lo)/(hi-lo)+.105,y);
     }
     out.i.push(base,base+2,base+1,base+1,base+2,base+3);

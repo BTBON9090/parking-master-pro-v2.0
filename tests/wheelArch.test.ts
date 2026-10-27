@@ -1,3 +1,4 @@
+import {BASELINE_FLEET} from './baselineFleet';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import * as THREE from 'three';
@@ -27,7 +28,7 @@ function trimIslands(mesh:THREE.Mesh) {
  return islands;
 }
 const report=[];
-for(const id of GARAGE_CARS){
+for(const id of BASELINE_FLEET){
  const cfg=CAR_MODELS[id],def=MODEL_REGISTRY[CAR_TYPE_TO_MODEL[id]],spec=suspensionForCar(id);
  const b=fs.readFileSync(new URL(`../public/models/${def.file}`,import.meta.url));
  const gltf=await new GLTFLoader().parseAsync(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength),'');

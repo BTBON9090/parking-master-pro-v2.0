@@ -1,0 +1,2 @@
+import {WORLD_ROUTES,worldHeight} from '../utils/openWorld';
+const rows=[];for(const r of WORLD_ROUTES)for(let i=1;i<r.samples.length;i++){const a=r.samples[i-1],b=r.samples[i],ds=Math.hypot(a.x-b.x,a.y-b.y),jump=Math.abs(worldHeight(a.x,a.y)-worldHeight(b.x,b.y));if(jump>Math.max(2.6,ds*.5))rows.push({id:r.id,i,x:b.x,y:b.y,h:b.h,actual:worldHeight(b.x,b.y),jump,ds});}console.log(rows.sort((a,b)=>b.jump-a.jump).slice(0,30));

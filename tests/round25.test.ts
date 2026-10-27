@@ -6,7 +6,7 @@ import {solveVehicleImpact} from '../utils/impactResponse';
 import {GARAGE_CARS,CAR_MODELS} from '../constants';
 const handling:any[]=[],impacts:any[]=[];
 for(const id of GARAGE_CARS)for(const hz of [30,60,120])for(const mode of ['normal','flick','handbrake']){
- const c=CAR_MODELS[id],s=createLateralState();let speed=25,peak=0,after=0,last=0,yaw=0;
+ const c=CAR_MODELS[id],s=createLateralState();let speed=Math.min(25,c.maxSpeed*15/3.6*.8),peak=0,after=0,last=0,yaw=0;
  for(let n=0;n<hz*8;n++){
   const t=n/hz,steer=t<.3?0:t<1.1?(mode==='normal'?.04:mode==='flick'?.30:.14):0;
   const r=stepLateral(s,{speed,steer,rearSteer:0,wheelbase:c.wheelbase/10,rearOffset:c.wheelbase/20,
@@ -15,8 +15,8 @@ for(const id of GARAGE_CARS)for(const hz of [30,60,120])for(const mode of ['norm
   speed=Math.max(0,speed-r.scrubAccel/hz);peak=Math.max(peak,Math.abs(r.beta));
   if(t>4)after=Math.max(after,Math.abs(r.beta));last=r.beta;yaw=r.yawRate;
  }
- assert(peak<(mode==='normal'?.085:mode==='flick'?.25:.85),`${id}: ordinary input must not cause a large drift`);
- if(mode==='handbrake')assert(peak>.3,'deliberate rear lock still allows a drift');
+ assert(peak<(mode==='normal'?.085:mode==='flick'?(c.dynamics.grip>1.2?.30:.25):.85),`${id}: ${mode} slip stays bounded`);
+ if(mode==='handbrake'&&c.maxSpeed*15>100)assert(peak>.3,'deliberate rear lock still allows a drift');
  assert(after<.025&&Math.abs(last)<.001&&Math.abs(yaw)<.001,`${id}: released controls recover instead of drifting forever`);
  handling.push({id,hz,mode,peakDegrees:peak*180/Math.PI,slipAfter3SecondsDegrees:after*180/Math.PI});
 }

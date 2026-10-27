@@ -35,7 +35,7 @@ for(const p of GARAGE_SPEED_TABLES){assert.equal(garageBump(p.x,p.y).height,.55)
  for(const e of GARAGE_LEVELS)assert.equal(sampleWheelSurfaceHeight(garage,p.x,p.y,e),e+.55);}
 assert(GARAGE_CARS.includes(cfg.id));assert.equal(getPowertrain(cfg.id).gearTops.length,5);assert(!isElectricVehicle(cfg.id));
 const trail=WORLD_ROUTES.find(r=>r.id==='forestry')!;assert(trail.gravel&&trail.closed);let maxStep=0;
-for(let i=1;i<trail.samples.length;i++){const a=trail.samples[i-1],b=trail.samples[i];maxStep=Math.max(maxStep,Math.abs(worldHeight(a.x,a.y)-worldHeight(b.x,b.y)));}
+for(let i=1;i<trail.samples.length;i++){const a=trail.samples[i-1],b=trail.samples[i];const d=Math.hypot(b.x-a.x,b.y-a.y);for(let n=0;n<Math.ceil(d);n++){const t=n/Math.ceil(d),u=(n+1)/Math.ceil(d);maxStep=Math.max(maxStep,Math.abs(worldHeight(a.x+(b.x-a.x)*t,a.y+(b.y-a.y)*t)-worldHeight(a.x+(b.x-a.x)*u,a.y+(b.y-a.y)*u)));}}
 assert(maxStep<4,'new route must not introduce height steps');report.trail={samples:trail.samples.length,lengthM:trail.samples.at(-1)!.distance/10,maxStep};
 for(const name of ['ice-start','ice-stop','ev-start','ev-stop']){const b=fs.readFileSync(`public/audio/${name}.wav`);assert.equal(b.toString('ascii',0,4),'RIFF');assert(b.length>5000);}
 fs.mkdirSync('docs/round20',{recursive:true});fs.writeFileSync('docs/round20/regression.json',JSON.stringify(report,null,2));console.log('Round20 floor projection, no cross-floor radar, clear aisles/bays, smooth bumps, pickup and trail PASS',report);

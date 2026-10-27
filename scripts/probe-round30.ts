@@ -1,0 +1,14 @@
+import {CAR_MODELS,GARAGE_CARS,DEFAULT_VEHICLE_TUNING} from '../constants';
+import {createLongitudinalState,stepLongitudinal} from '../utils/longitudinal';
+import {getPowertrain} from '../utils/powertrain';
+import {stepLateral,createLateralState,cornerDriveBudget} from '../utils/lateralDynamics';
+import {createChassisState,stepChassis} from '../utils/chassisSupport';
+import {suspensionForCar} from '../utils/suspension';
+for(const id of GARAGE_CARS){const c=CAR_MODELS[id],pt=getPowertrain(id),ctx={carId:id,cc:c,pt,vehicleTune:DEFAULT_VEHICLE_TUNING[id],weatherGrip:1,slopeAlongCar:0,tunedShiftFrames:pt.shiftFrames,elapsedFrames:1};
+let s=createLongitudinalState(Math.min(100,c.maxSpeed*15)/15),distance=0,seconds=0;
+for(let n=0;n<1200&&s.speed>.001;n++){distance+=s.speed*15/3.6/60;seconds+=1/60;s=stepLongitudinal(s,{gear:0,engineStarted:true,gasPressed:false,shiftPressed:false,throttle:0,brake:1,handbrake:false,absEnabled:true},ctx);}
+const l=createLateralState();s={...createLongitudinalState(),ignitionBlend:1};let yaw=0,peak=0;
+for(let n=0;n<900;n++){s=stepLongitudinal(s,{gear:1,engineStarted:true,gasPressed:false,shiftPressed:false,throttle:1,brake:0,handbrake:false}, {...ctx,driveGripBudget:cornerDriveBudget(s.speed*15/3.6,c.dynamics.maxSteerAngle,c.wheelbase/10,c.dynamics.grip)});const r=stepLateral(l,{speed:s.speed*15/3.6,steer:c.dynamics.maxSteerAngle,rearSteer:0,wheelbase:c.wheelbase/10,rearOffset:c.wheelbase/20,frontBias:c.dynamics.frontWeightBias,grip:c.dynamics.grip,layout:c.dynamics.driveLayout,throttle:1,handbrake:false,frontLocked:false,dt:1/60,understeer:c.dynamics.understeerGradient});s.speed=Math.max(0,s.speed-r.scrubAccel/60/ (15/3.6));yaw+=r.yawRate/60;peak=Math.max(peak,s.speed*15);}
+console.log(id,'brake',distance.toFixed(1),seconds.toFixed(1),'lock launch',peak.toFixed(1),'yaw',yaw.toFixed(1));
+if(['TAI7','SUV','COACH','SEAL08'].includes(id))for(const steer of [.025,.5]){const lateral=createLateralState(),chassis=createChassisState(),wheels=[[-1,1],[1,1],[-1,-1],[1,-1]].map(([x,z])=>({x:x*(c.trackWidth??c.width*.88)/2,z:z*c.wheelbase/2,y:4,radius:4,halfWidth:1.4,steer:0}));let peak=0,min=1,roll=false;for(let n=0;n<240;n++){const lat=stepLateral(lateral,{speed:30,steer:n<20?0:steer,rearSteer:0,wheelbase:c.wheelbase/10,rearOffset:c.wheelbase/20,frontBias:c.dynamics.frontWeightBias,grip:c.dynamics.grip,layout:c.dynamics.driveLayout,throttle:.1,handbrake:false,frontLocked:false,dt:1/120,understeer:c.dynamics.understeerGradient});const p=stepChassis(chassis,{wheels,spec:suspensionForCar(id),mass:c.weight,cgM:c.dynamics.cgHeightM,frontBias:c.dynamics.frontWeightBias,longG:0,latG:lat.lateralG,deltaLeft:0,deltaForward:0,rideHeight:0,dt:1/120,support:(i,h,a)=>4*(Math.sqrt(1-a.y*a.y)-1)+1.4*Math.abs(a.y)});peak=Math.max(peak,lat.lateralG);min=Math.min(min,p.loads.margin);roll ||=p.unstable;};console.log('roll',steer,peak,min,roll)}
+}

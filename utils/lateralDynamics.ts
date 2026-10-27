@@ -28,21 +28,22 @@ export function stepLateral(s:LateralState,i:LateralInput){
   // A brief front-tyre reserve during a rapid steering input improves
   // turn-in. It decays after the input, leaving the sustained grip limit and
   // the normal stability-recovery response intact.
-  const frontMu=i.grip*(1+.06*s.breakaway)*(i.frontLocked?.16:1)*(1-(i.layout==='FWD'?.18:.04)*i.throttle);
-  const rearMu=i.grip*(i.handbrake?.26:1)*(1-(i.layout==='RWD'?.16:.04)*i.throttle)
+  const turnIn=i.handbrake?0:smooth(.06,.22,Math.abs(i.steer));
+  const frontMu=i.grip*(1+.08*s.breakaway)*(i.frontLocked?.16:1)*(1-(i.layout==='FWD'?.18:.04)*i.throttle);
+  const rearMu=i.grip*(i.handbrake?.26:1)*(1-(i.layout==='RWD'?.16:.04)*i.throttle-.14*smooth(.4,1,i.throttle)*(i.layout==='FWD'?0:1))
     *(1-.08*s.breakaway*smooth(.10,.40,Math.abs(rearSlip)));
   const frontLoad=9.80665*i.frontBias,rearLoad=9.80665*(1-i.frontBias);
-  const front=frontLoad*frontMu*Math.tanh(frontSlip*(7.5/(1+i.understeer*.12))/Math.max(.1,frontMu))*direction;
-  const rear=rearLoad*rearMu*Math.tanh(rearSlip*8.1/Math.max(.1,rearMu))*direction;
+  const front=frontLoad*frontMu*Math.tanh(frontSlip*((7.5+1.5*turnIn)/(1+i.understeer*.12))/Math.max(.1,frontMu))*direction;
+  const rear=rearLoad*rearMu*Math.tanh(rearSlip*(8.1-.4*turnIn)/Math.max(.1,rearMu))*direction;
   lateral=front*Math.cos(i.steer)+rear*Math.cos(i.rearSteer);
   const yawAcceleration=(a*front*Math.cos(i.steer)-b*rear*Math.cos(i.rearSteer))/inertia;
   // Road-car stability assistance: saturated front/rear forces alone can
   // cancel their moments and leave a permanent spin. Once the handbrake is
   // released, oppose excess yaw while preserving the requested corner arc.
   const gripYaw=9.80665*i.grip/v;
-  const referenceYaw=clamp(parkingYaw,-gripYaw,gripYaw);
+  const referenceYaw=clamp(parkingYaw,-gripYaw*(1+.1*turnIn),gripYaw*(1+.1*turnIn));
   const slipRecovery=smooth(.05,.28,Math.abs(Math.atan(s.beta)));
-  const yawRecovery=i.handbrake?0:(2.0+slipRecovery*3.5)*(s.yaw-referenceYaw);
+  const yawRecovery=i.handbrake?0:(2.0+slipRecovery*4.8)*(s.yaw-referenceYaw);
   s.yaw=clamp(s.yaw+(yawAcceleration-.35*s.yaw-yawRecovery)*dt,-2.5,2.5);
   s.beta=clamp(s.beta+(lateral/bodyV-s.yaw)*dt,-1.15,1.15);
   // A smooth low-speed handover preserves accurate parking arcs.
@@ -62,4 +63,14 @@ export function stepLateral(s:LateralState,i:LateralInput){
 export function advanceLateralPose(x:number,y:number,heading:number,distance:number,beta:number,turn:number){
  const chord=Math.abs(turn)<1e-8?distance:distance*2*Math.sin(turn/2)/turn;
  return {x:x+chord*Math.cos(heading+beta+turn/2),y:y+chord*Math.sin(heading+beta+turn/2),rotation:heading+turn};
+}
+
+/** A steering tyre cannot supply its full forward traction at the same time
+ * as maximum lateral grip. This reduces DRIVE torque, never road speed: an
+ * unpowered downhill car still slides, while a full-lock launch settles into
+ * a parking circle instead of accelerating through its own front tyres. */
+export function cornerDriveBudget(speedMps:number,steer:number,wb:number,grip:number){
+ const demand=speedMps*speedMps*Math.abs(Math.tan(steer))/Math.max(1,wb);
+ const utilisation=demand/Math.max(.5,grip*9.80665);
+ return 1-smooth(.35,1.25,utilisation)*.98;
 }

@@ -186,6 +186,7 @@ export interface VehicleExtras {
 }
 
 export interface CarMeshParts {
+  trailer?: import('./articulatedTrailer').ArticulatedTrailer;
   group: THREE.Group;
   wheels: THREE.Object3D[];      // 所有轮子
   wheelMounts: THREE.Object3D[]; // 独立悬架/转向节安装点

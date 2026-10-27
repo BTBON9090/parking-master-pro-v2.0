@@ -3,8 +3,8 @@ import React, {useRef, useEffect} from 'react';
 import {Settings, Camera, Map, RotateCcw, Power, CircleParking} from 'lucide-react';
 import type {InputState, CarType} from '../types';
 import {CAR_MODELS} from '../constants';
-import {getPowertrain, isElectricVehicle, steeringWheelMaxDeg} from '../utils/powertrain';
-import {MobileInputController, type HeldControl} from '../utils/mobileInput';
+import {getPowertrain, isElectricVehicle, isAutomaticVehicle, steeringWheelMaxDeg} from '../utils/powertrain';
+import {MobileInputController, steeringRulerZoom, steeringRulerTicks, type HeldControl} from '../utils/mobileInput';
 
 // Non-primary fingers do not reliably synthesize click; act on pointer-down.
 function action(run: () => void) {
@@ -20,11 +20,15 @@ function HoldBrakeIcon() {
 function HeadlightIcon() {
   return <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 4.8c-4 0-4 14.4 0 14.4s9-2.7 9-7.2s-5-7.2-9-7.2m.1 12.4C12.7 16.8 12 15 12 12s.7-4.8 1.1-5.2C16 6.9 20 8.7 20 12s-4 5.1-6.9 5.2M2 5h7.5c-.2.4-.5.8-.6 1.4c-.1.2-.1.4-.2.6H2zm6 6H2V9h6.2c-.1.6-.1 1.3-.2 2m.7 6c.2.8.5 1.4.9 2H2.1v-2zm-.5-2H2v-2h6c.1.7.1 1.4.2 2"/></svg>;
 }
-export function MobileControls(p: {input: InputState; update: React.Dispatch<React.SetStateAction<InputState>>; car: CarType; settings: () => void; camera: () => void; map: () => void; reset: () => void; disabled: boolean; layout?: (id:HudId)=>React.CSSProperties; editing?:boolean}) {
+export function MobileControls(p: {input: InputState; update: React.Dispatch<React.SetStateAction<InputState>>; car: CarType; speedKmh?:number; settings: () => void; camera: () => void; map: () => void; reset: () => void; disabled: boolean; layout?: (id:HudId)=>React.CSSProperties; editing?:boolean}) {
   const controller = useRef(new MobileInputController());
   const update = useRef(p.update); update.current = p.update;
   const lock = steeringWheelMaxDeg(CAR_MODELS[p.car]);
-  const singleSpeed = isElectricVehicle(p.car) || getPowertrain(p.car).gearTops.length <= 1;
+  const zoom=steeringRulerZoom(p.speedKmh??0);
+  const centre=controller.current.held('steer')?controller.current.rulerCentre:
+    Math.max(-lock+lock/zoom,Math.min(lock-lock/zoom,p.input.steeringWheelAngle));
+  const ticks=steeringRulerTicks(lock,centre,zoom);
+  const singleSpeed = isAutomaticVehicle(p.car) || getPowertrain(p.car).gearTops.length <= 1;
   const publish = () => {
     const {handbrakeHeld, steeringWheelAngle, ...pedals} = controller.current.snapshot();
     update.current(v => ({...v, ...pedals, handbrake: !!v.parkingBrake || handbrakeHeld,
@@ -43,12 +47,12 @@ export function MobileControls(p: {input: InputState; update: React.Dispatch<Rea
       e.preventDefault(); e.stopPropagation();
       if (p.disabled || !controller.current.begin(control, e.pointerId, e.clientX, e.clientY, p.input.steeringWheelAngle)) return;
       e.currentTarget.setPointerCapture(e.pointerId);
-      if (control === 'steer') {const r=e.currentTarget.getBoundingClientRect();controller.current.steerAt(e.pointerId,e.clientX,r.left,r.width,lock);}
+      if (control === 'steer') {const r=e.currentTarget.getBoundingClientRect();controller.current.steerAt(e.pointerId,e.clientX,r.left,r.width,lock,zoom);}
       publish();
     },
     onPointerMove: (e: React.PointerEvent<HTMLElement>) => {
       const r=e.currentTarget.getBoundingClientRect();
-      if (control === 'steer' ? controller.current.steerAt(e.pointerId,e.clientX,r.left,r.width,lock) : controller.current.move(control, e.pointerId, e.clientX, e.clientY, lock)) publish();
+      if (control === 'steer' ? controller.current.steerAt(e.pointerId,e.clientX,r.left,r.width,lock,zoom) : controller.current.move(control, e.pointerId, e.clientX, e.clientY, lock)) publish();
     },
     onPointerUp: (e: React.PointerEvent<HTMLElement>) => {if (controller.current.end(control, e.pointerId)) publish();},
     onPointerCancel: (e: React.PointerEvent<HTMLElement>) => {if (controller.current.end(control, e.pointerId)) publish();},
@@ -64,7 +68,7 @@ export function MobileControls(p: {input: InputState; update: React.Dispatch<Rea
     {(!p.disabled || p.editing) && <>
       <div className="mobile-steer-zone hud-positioned" style={p.layout?.('steer')} role="slider" aria-label="左右绝对位置转向" aria-valuemin={-lock} aria-valuemax={lock} aria-valuenow={Math.round(p.input.steeringWheelAngle)} tabIndex={0} {...hold('steer')}
         onKeyDown={e => {if (['ArrowLeft','ArrowRight','Home'].includes(e.key)) {e.preventDefault(); p.update(v => ({...v, steeringWheelAngle: e.key === 'Home' ? 0 : Math.max(-lock,Math.min(lock,v.steeringWheelAngle + (e.key === 'ArrowLeft' ? -15 : 15)))}));}}}>
-        <span className="mobile-steer-scale"><span className="mobile-steer-title">左转 <span>转向</span> 右转</span><span className="mobile-steer-track"><i/><b style={{left:`${Math.max(0,Math.min(100,50+50*p.input.steeringWheelAngle/lock))}%`}}/></span></span>
+        <span className="mobile-steer-scale"><span className="mobile-steer-title">左转 <span>转向</span> 右转</span><span className="mobile-steer-track" data-zoomed={zoom>1.01}><span className="steer-ruler-ticks">{ticks.map(t=><i key={t.n} data-major={t.major} data-medium={t.medium} data-centre={t.n===24} style={{left:`${t.left}%`}}/>)}</span><b style={{left:`${Math.max(0,Math.min(100,50+50*(p.input.steeringWheelAngle-centre)/lock*zoom))}%`}}/></span></span>
       </div>
       <div className="mobile-drive">
         <div className="mobile-gears hud-positioned" style={p.layout?.('gears')}>{[-1,0,1].map(g => <button key={g} aria-label={g === -1 ? '倒挡' : g === 0 ? '空挡' : '前进挡'} aria-pressed={p.input.gear === g || (g === 1 && p.input.gear > 0)} {...action(() => p.update(v => ({...v, gear:g})))}>{g === -1 ? 'R' : g === 0 ? 'N' : singleSpeed ? 'D' : Math.max(1,p.input.gear)}</button>)}

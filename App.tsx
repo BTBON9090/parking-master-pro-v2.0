@@ -803,6 +803,9 @@ function App() {
             return;
         }
         const rawKey = e.key.toLowerCase();
+        if(!e.repeat && isInGame && ['[',']','v'].includes(rawKey)){
+          e.preventDefault();updateInput(v=>rawKey==='v'?{...v,wipers:!v.wipers}:{...v,indicator:v.indicator===(rawKey==='['?-1:1)?0:(rawKey==='['?-1:1)});return;
+        }
         const k = mapDrivingKey(rawKey);
         const bindings = { ...DEFAULT_KEY_BINDINGS, ...(settings.keyBindings || {}) } as KeyBindings;
         const action = (Object.keys(bindings) as Array<keyof KeyBindings>)
@@ -868,7 +871,7 @@ function App() {
 
         if (action === 'gearUp' || k === 'arrowright') {
             const gear = inputRef.current.gear;
-            requestGearChange(gear === -1 ? 0 : Math.min(5, gear + 1));
+            requestGearChange(gear === -1 ? 0 : Math.min(getPowertrain(currentCar).gearTops.length, gear + 1));
         }
         if (action === 'gearDown' || k === 'arrowleft') {
             const gear = inputRef.current.gear;

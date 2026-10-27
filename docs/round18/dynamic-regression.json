@@ -35,68 +35,68 @@
     {
       "id": "SUV",
       "trackM": 1.7200000286102295,
-      "maxRollDeg": 2.8884108000007713,
-      "minBodyClearanceCm": 14.795980250726846
+      "maxRollDeg": 1.7162018250804254,
+      "minBodyClearanceCm": 16.526259626490685
     },
     {
       "id": "SEAL08",
       "trackM": 1.7300000190734863,
-      "maxRollDeg": 1.4310507974427749,
-      "minBodyClearanceCm": 12.554940274738733
+      "maxRollDeg": 0.8235730892600842,
+      "minBodyClearanceCm": 12.666090166280151
     },
     {
       "id": "TAI7",
       "trackM": 1.7200000286102295,
-      "maxRollDeg": 3.254245119891666,
-      "minBodyClearanceCm": 13.637069074392487
+      "maxRollDeg": 2.4083574984385625,
+      "minBodyClearanceCm": 14.976900213107633
     },
     {
       "id": "LI_I9",
       "trackM": 1.6950000524520874,
-      "maxRollDeg": 2.712221580045719,
-      "minBodyClearanceCm": 16.49857496796801
+      "maxRollDeg": 2.0215444386076933,
+      "minBodyClearanceCm": 17.58467991651713
     },
     {
       "id": "N90",
       "trackM": 1.7230000495910645,
-      "maxRollDeg": 2.8301365159531002,
-      "minBodyClearanceCm": 16.287875856769602
+      "maxRollDeg": 2.2424554884218635,
+      "minBodyClearanceCm": 17.227925521425806
     },
     {
       "id": "TRUCK",
       "trackM": 1.6799999475479126,
-      "maxRollDeg": 3.8046989833755633,
-      "minBodyClearanceCm": 18.36786300961597
+      "maxRollDeg": 1.8379691391862203,
+      "minBodyClearanceCm": 20.90748370946919
     },
     {
       "id": "JEEP",
       "trackM": 1.600000023841858,
-      "maxRollDeg": 4.580874906970327,
-      "minBodyClearanceCm": 20.915685079552688
+      "maxRollDeg": 2.468439077215601,
+      "minBodyClearanceCm": 23.668923636612448
     },
     {
       "id": "MIDIBUS",
       "trackM": 1.8747999668121338,
-      "maxRollDeg": 3.29744775737288,
-      "minBodyClearanceCm": 16.487497785108367
+      "maxRollDeg": 1.5944621005194055,
+      "minBodyClearanceCm": 19.194956479468388
     },
     {
       "id": "COACH",
-      "trackM": 2.081199884414673,
-      "maxRollDeg": 3.2897991605817474,
-      "minBodyClearanceCm": 3.9481066766419914
+      "trackM": 2.193000078201294,
+      "maxRollDeg": 2.2108208072838487,
+      "minBodyClearanceCm": 22.826105792023696
     },
     {
       "id": "VAN",
       "trackM": 1.7630000114440918,
-      "maxRollDeg": 4.090318658569622,
-      "minBodyClearanceCm": 21.31671524178998
+      "maxRollDeg": 1.9899848451872357,
+      "minBodyClearanceCm": 23.759073213038285
     },
     {
       "id": "LIGHT_TRUCK",
       "trackM": 1.960800051689148,
-      "maxRollDeg": 4.237995962308338,
-      "minBodyClearanceCm": 10.426244408814433
+      "maxRollDeg": 1.9421302209033697,
+      "minBodyClearanceCm": 13.830797439815612
     }
   ]
 }

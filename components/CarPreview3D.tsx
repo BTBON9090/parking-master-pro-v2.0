@@ -110,7 +110,7 @@ const CarPreview3D: React.FC<CarPreview3DProps> = ({ carType, accentColor = '#f5
 
     // 拖拽环视
     const pointers=new Map<number,{x:number;y:number}>();
-    let elevation=.27,radius=90;
+    let elevation=.27,radius=125;
     const orbit=()=>{camera.position.set(radius*Math.cos(elevation)*.707,6+radius*Math.sin(elevation),radius*Math.cos(elevation)*.707);camera.lookAt(0,6,0);};
     const dom=renderer.domElement;
     const down=(e:PointerEvent)=>{e.preventDefault();pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});spinRef.current.dragging=true;dom.setPointerCapture(e.pointerId);};

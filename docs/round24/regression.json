@@ -1,6 +1,126 @@
 {
   "pedals": [
     {
+      "id": "TRIKE",
+      "throttle": 0.08,
+      "kmh": 3.9886578519745104
+    },
+    {
+      "id": "TRIKE",
+      "throttle": 0.15,
+      "kmh": 9.010652446598591
+    },
+    {
+      "id": "TRIKE",
+      "throttle": 0.3,
+      "kmh": 13.470907185548532
+    },
+    {
+      "id": "TRACTOR",
+      "throttle": 0.08,
+      "kmh": 4.029106215327662
+    },
+    {
+      "id": "TRACTOR",
+      "throttle": 0.15,
+      "kmh": 7.789686512384122
+    },
+    {
+      "id": "TRACTOR",
+      "throttle": 0.3,
+      "kmh": 7.8250915419346985
+    },
+    {
+      "id": "SEMI",
+      "throttle": 0.08,
+      "kmh": 3.9210260143370497
+    },
+    {
+      "id": "SEMI",
+      "throttle": 0.15,
+      "kmh": 8.601602062195274
+    },
+    {
+      "id": "SEMI",
+      "throttle": 0.3,
+      "kmh": 8.850835164147664
+    },
+    {
+      "id": "CYBERTRUCK",
+      "throttle": 0.08,
+      "kmh": 4.025003911649699
+    },
+    {
+      "id": "CYBERTRUCK",
+      "throttle": 0.15,
+      "kmh": 9.21428213983972
+    },
+    {
+      "id": "CYBERTRUCK",
+      "throttle": 0.3,
+      "kmh": 30.89602977584684
+    },
+    {
+      "id": "REVUELTO",
+      "throttle": 0.08,
+      "kmh": 4.189545230764183
+    },
+    {
+      "id": "REVUELTO",
+      "throttle": 0.15,
+      "kmh": 9.480926399387641
+    },
+    {
+      "id": "REVUELTO",
+      "throttle": 0.3,
+      "kmh": 31.59446172418788
+    },
+    {
+      "id": "VEYRON",
+      "throttle": 0.08,
+      "kmh": 4.182348615574512
+    },
+    {
+      "id": "VEYRON",
+      "throttle": 0.15,
+      "kmh": 9.469680023914062
+    },
+    {
+      "id": "VEYRON",
+      "throttle": 0.3,
+      "kmh": 31.56494057078011
+    },
+    {
+      "id": "V800",
+      "throttle": 0.08,
+      "kmh": 3.812486533900775
+    },
+    {
+      "id": "V800",
+      "throttle": 0.15,
+      "kmh": 8.897323499820617
+    },
+    {
+      "id": "V800",
+      "throttle": 0.3,
+      "kmh": 30.132607508269544
+    },
+    {
+      "id": "MINI",
+      "throttle": 0.08,
+      "kmh": 4.058409722113166
+    },
+    {
+      "id": "MINI",
+      "throttle": 0.15,
+      "kmh": 9.291960944871882
+    },
+    {
+      "id": "MINI",
+      "throttle": 0.3,
+      "kmh": 31.025771237726975
+    },
+    {
       "id": "SUV",
       "throttle": 0.08,
       "kmh": 3.8512832931943493
@@ -123,17 +243,17 @@
     {
       "id": "COACH",
       "throttle": 0.08,
-      "kmh": 3.729692838257392
+      "kmh": 3.9373093921311977
     },
     {
       "id": "COACH",
       "throttle": 0.15,
-      "kmh": 8.828156423886925
+      "kmh": 9.114749535345062
     },
     {
       "id": "COACH",
       "throttle": 0.3,
-      "kmh": 28.86933578915887
+      "kmh": 29.241412579053268
     },
     {
       "id": "VAN",
@@ -181,21 +301,21 @@
       "hz": 30,
       "steer": 0.35,
       "handbrake": false,
-      "maxSlip": 0.20347176626586627,
-      "maxYaw": 0.7560409133988362,
-      "maxG": 0.9792257446624326,
-      "finalSpeed": 20.552255112602754,
-      "scrub": 4.447744887397254
+      "maxSlip": 0.25257702022681433,
+      "maxYaw": 0.7927297520381252,
+      "maxG": 0.9932763743952465,
+      "finalSpeed": 20.19566714289847,
+      "scrub": 4.8043328571015405
     },
     {
       "hz": 30,
       "steer": 0.14,
       "handbrake": true,
-      "maxSlip": 0.8550527371260165,
+      "maxSlip": 0.8546563657349767,
       "maxYaw": 2.5,
-      "maxG": 1.0348082365691325,
-      "finalSpeed": 18.232200035621958,
-      "scrub": 6.767799964378055
+      "maxG": 1.0348084064248126,
+      "finalSpeed": 18.18957084742305,
+      "scrub": 6.8104291525769565
     },
     {
       "hz": 60,
@@ -211,11 +331,11 @@
       "hz": 60,
       "steer": 0.35,
       "handbrake": false,
-      "maxSlip": 0.20351479605940878,
-      "maxYaw": 0.7573197088685668,
-      "maxG": 0.9792517086144225,
-      "finalSpeed": 20.544483637563342,
-      "scrub": 4.455516362436672
+      "maxSlip": 0.2526899021501472,
+      "maxYaw": 0.7945019235179664,
+      "maxG": 0.9933231231666103,
+      "finalSpeed": 20.187707580708736,
+      "scrub": 4.81229241929126
     },
     {
       "hz": 60,
@@ -223,9 +343,9 @@
       "handbrake": true,
       "maxSlip": 0.8550527371260165,
       "maxYaw": 2.5,
-      "maxG": 1.0348082555929492,
-      "finalSpeed": 18.212958948690222,
-      "scrub": 6.787041051309782
+      "maxG": 1.03480855233307,
+      "finalSpeed": 18.16770836317531,
+      "scrub": 6.832291636824698
     },
     {
       "hz": 120,
@@ -241,11 +361,11 @@
       "hz": 120,
       "steer": 0.35,
       "handbrake": false,
-      "maxSlip": 0.2036264178130301,
-      "maxYaw": 0.7574521987102639,
-      "maxG": 0.9793053639059509,
-      "finalSpeed": 20.539857115656584,
-      "scrub": 4.460142884343432
+      "maxSlip": 0.25272994537576465,
+      "maxYaw": 0.7948285191780412,
+      "maxG": 0.9933474659179453,
+      "finalSpeed": 20.182829947903446,
+      "scrub": 4.8171700520966
     },
     {
       "hz": 120,
@@ -253,12 +373,52 @@
       "handbrake": true,
       "maxSlip": 0.8550527371260165,
       "maxYaw": 2.5,
-      "maxG": 1.0348082569511117,
-      "finalSpeed": 18.203756059265874,
-      "scrub": 6.796243940734123
+      "maxG": 1.034808624848931,
+      "finalSpeed": 18.158894712052522,
+      "scrub": 6.841105287947464
     }
   ],
   "assets": [
+    {
+      "id": "TRIKE",
+      "markerAboveHub": 1.758893698067526,
+      "blockedTriangles": 0
+    },
+    {
+      "id": "TRACTOR",
+      "markerAboveHub": 1.7588936980675243,
+      "blockedTriangles": 0
+    },
+    {
+      "id": "SEMI",
+      "markerAboveHub": 1.7588936980675243,
+      "blockedTriangles": 0
+    },
+    {
+      "id": "CYBERTRUCK",
+      "markerAboveHub": 1.758893698067526,
+      "blockedTriangles": 0
+    },
+    {
+      "id": "REVUELTO",
+      "markerAboveHub": 1.758893698067526,
+      "blockedTriangles": 0
+    },
+    {
+      "id": "VEYRON",
+      "markerAboveHub": 1.758893698067526,
+      "blockedTriangles": 0
+    },
+    {
+      "id": "V800",
+      "markerAboveHub": 1.758893698067526,
+      "blockedTriangles": 0
+    },
+    {
+      "id": "MINI",
+      "markerAboveHub": 1.758893698067526,
+      "blockedTriangles": 0
+    },
     {
       "id": "SUV",
       "markerAboveHub": 1.758893698067526,
@@ -316,6 +476,102 @@
     }
   ],
   "reversal": [
+    {
+      "id": "TRIKE",
+      "direction": -1,
+      "maxStep": 0.015467484078677015,
+      "finalKmh": 13.473400531134772
+    },
+    {
+      "id": "TRIKE",
+      "direction": 1,
+      "maxStep": 0.015467484078677015,
+      "finalKmh": -12.831049745361927
+    },
+    {
+      "id": "TRACTOR",
+      "direction": -1,
+      "maxStep": 0.01372350744662354,
+      "finalKmh": 7.833123910447879
+    },
+    {
+      "id": "TRACTOR",
+      "direction": 1,
+      "maxStep": 0.01372350744662354,
+      "finalKmh": -7.465985666772611
+    },
+    {
+      "id": "SEMI",
+      "direction": -1,
+      "maxStep": 0.011820291384491144,
+      "finalKmh": 8.847721992128509
+    },
+    {
+      "id": "SEMI",
+      "direction": 1,
+      "maxStep": 0.011820291384491144,
+      "finalKmh": -8.424600435074387
+    },
+    {
+      "id": "CYBERTRUCK",
+      "direction": -1,
+      "maxStep": 0.016232624081220504,
+      "finalKmh": 30.556462450542337
+    },
+    {
+      "id": "CYBERTRUCK",
+      "direction": 1,
+      "maxStep": 0.016505929367960026,
+      "finalKmh": -30.822353248384413
+    },
+    {
+      "id": "REVUELTO",
+      "direction": -1,
+      "maxStep": 0.030438014263951985,
+      "finalKmh": 31.577434466250615
+    },
+    {
+      "id": "REVUELTO",
+      "direction": 1,
+      "maxStep": 0.034575299784557645,
+      "finalKmh": -31.597190187472915
+    },
+    {
+      "id": "VEYRON",
+      "direction": -1,
+      "maxStep": 0.029127295938420783,
+      "finalKmh": 31.54468070947433
+    },
+    {
+      "id": "VEYRON",
+      "direction": 1,
+      "maxStep": 0.033176061250300815,
+      "finalKmh": -31.565604616020977
+    },
+    {
+      "id": "V800",
+      "direction": -1,
+      "maxStep": 0.016841224026112656,
+      "finalKmh": 28.16871862355907
+    },
+    {
+      "id": "V800",
+      "direction": 1,
+      "maxStep": 0.016841224026112656,
+      "finalKmh": -29.17076805648274
+    },
+    {
+      "id": "MINI",
+      "direction": -1,
+      "maxStep": 0.01781412675134142,
+      "finalKmh": 30.854039235079544
+    },
+    {
+      "id": "MINI",
+      "direction": 1,
+      "maxStep": 0.01781412675134142,
+      "finalKmh": -30.910616945734798
+    },
     {
       "id": "SUV",
       "direction": -1,
@@ -415,14 +671,14 @@
     {
       "id": "COACH",
       "direction": -1,
-      "maxStep": 0.012471940461465048,
-      "finalKmh": 24.256967102116135
+      "maxStep": 0.012474275357480247,
+      "finalKmh": 26.72545963294153
     },
     {
       "id": "COACH",
       "direction": 1,
-      "maxStep": 0.012471940461465048,
-      "finalKmh": -23.95083242568951
+      "maxStep": 0.012474275357480247,
+      "finalKmh": -26.661495741617905
     },
     {
       "id": "VAN",

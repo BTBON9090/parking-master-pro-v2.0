@@ -7,6 +7,7 @@ export interface VehicleCollider {
   width: number;
   rotation: number;
   footprint?: Vector2[];
+  articulated?: Vector2[][];
   /** Vertical road layer in game units (bridge deck vs ground). */
   elevation?: number;
   /** Vehicle/obstacle vertical extent above its base. */
@@ -80,7 +81,7 @@ function polygonsOverlap(a: Vector2[], b: Vector2[]): boolean {
   return true;
 }
 export function checkVehicleCollision(a: VehicleCollider, b: VehicleCollider): boolean {
-  return polygonsOverlap(getVehicleBoundaryPoints(a), getVehicleBoundaryPoints(b));
+  return [a.footprint,...(a.articulated??[])].some(footprint=>polygonsOverlap(getVehicleBoundaryPoints({...a,footprint}),getVehicleBoundaryPoints(b)));
 }
 
 function toRectLocal(point: Vector2, rect: Rect): Vector2 {
@@ -140,7 +141,7 @@ export function getVehicleRectContactNormal(vehicle: VehicleCollider, rect: Rect
 }
 
 export function checkVehicleRectCollision(vehicle: VehicleCollider, rect: Rect): boolean {
-  return polygonsOverlap(getVehicleBoundaryPoints(vehicle), getRectCorners(rect));
+  return [vehicle.footprint,...(vehicle.articulated??[])].some(footprint=>polygonsOverlap(getVehicleBoundaryPoints({...vehicle,footprint}),getRectCorners(rect)));
 }
 
 // Get normals of rectangle edges

@@ -38,7 +38,7 @@ for(const explode of [false,true]){
 for(const fps of [30,60,120]){
  let angle=180;
  for(let frame=0;frame<fps;frame++)angle=autoCenterWheelAngle(angle,.2,1,1000/fps,true);
- assert(angle<100 && angle>70,`return must be quicker but controlled at ${fps} fps: ${angle}`);
+ assert(angle<10 && angle>=0,`return must be quicker but controlled at ${fps} fps: ${angle}`);
  let zero=180;for(let frame=0;frame<fps*4;frame++)zero=autoCenterWheelAngle(zero,0,1,1000/fps,true);
  assert.equal(zero,0,'stationary assist reaches exact centre');
  assert.equal(autoCenterWheelAngle(180,1,0),180,'zero setting disables the assist');

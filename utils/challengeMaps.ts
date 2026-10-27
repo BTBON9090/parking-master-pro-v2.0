@@ -1,3 +1,5 @@
+import {RouteHeightIndex} from './routeHeightIndex';
+import {CatmullRomCurve3,Vector3} from 'three';
 import type {LevelData,Vector2} from '../types';
 
 const specs = [
@@ -7,7 +9,7 @@ const specs = [
  {id:11,kind:'forest',name:'林场窄路',grip:.78,rolling:1.2,color:'#665e4e',seed:53,points:[[350,500],[800,850],[1280,470],[1740,870],[1410,1300],[2070,1050],[2600,1450],[3180,850],[3850,1200],[3390,1650],[3790,2250],[3100,2600],[2410,2150],[1800,2620],[900,2250],[400,2750]]},
  {id:12,kind:'coast',name:'海崖盘山路',grip:.89,rolling:1.05,color:'#44484a',seed:71,points:[[360,450],[980,430],[1450,750],[2000,500],[2580,850],[3100,450],[3840,740],[3580,1250],[3070,1120],[2620,1600],[3150,1890],[3700,2300],[3100,2730],[2230,2350],[1600,2700],[850,2240],[400,2600]]},
 ] as const;
-export const CHALLENGE_MAPS=specs.map(s=>({id:s.id,name:s.name,desc:s.kind==='snow'?'低附着力雪路、山脊弯道与缓坡。':s.kind==='mud'?'深浅不一的非铺装山路、坑洼与弯坡。':'长距离弯道、窄路与起伏地形。',locked:false,thumbnail:`/thumbnails/map-${s.id}.svg`}));
+export const CHALLENGE_MAPS=specs.map(s=>({id:s.id,name:s.name,desc:s.kind==='snow'?'积雪路肩、冰滑斑块、260 米高差与回头弯。':s.kind==='mud'?'窄幅车辙、随机深坑、陡坡与泥泞山谷。':'长距离弯道、窄路与起伏地形。',locked:false,thumbnail:`/thumbnails/map-${s.id}.svg`}));
 
 // Seeded, smooth value noise avoids the visibly regular washboard pattern of
 // a stack of sine waves. Its fixed spatial scale also makes tyre contact and
@@ -21,20 +23,34 @@ function terrainNoise(x:number,y:number,seed:number,scale:number):number {
 }
 /** Smooth, deterministic terrain in game units; both wheel contact and the
  * rendered ground use this function. Values are game calibration, not survey data. */
+const routeCache=new WeakMap<LevelData,Array<{x:number;y:number;h:number}>>();
+function heightRoute(level:LevelData){
+ let cached=routeCache.get(level);if(cached)return cached;
+ const spec=specs.find(s=>s.id===level.levelId)!,n=spec.points.length-1;
+ const top=spec.kind==='mud'?1800:spec.kind==='snow'?2600:spec.kind==='quarry'?1600:spec.kind==='forest'?2100:3200;
+ const points=spec.points.map(([x,y],i)=>new Vector3(x*2,top*(i/n)*(.72+.28*terrainNoise(i*83,3,spec.seed,210)),y*2));
+ const curve=new CatmullRomCurve3(points,false,'centripetal');
+ cached=curve.getSpacedPoints(700).map(p=>({x:p.x,y:p.z,h:p.y}));routeCache.set(level,cached);return cached;
+}
+const heightIndexCache=new WeakMap<LevelData,RouteHeightIndex>();
+const vertexCache=new WeakMap<LevelData,Map<string,number>>();
 export function challengeHeight(level:LevelData,x:number,y:number):number {
  const t=level.challengeTerrain;if(!t)return 0;
- const seed=t.seed, rough=t.kind==='mud'?2.5:t.kind==='quarry'?2.0:t.kind==='snow'?.65:1.0;
- const broad=48*Math.sin((x+seed*13)/310)*Math.sin((y-seed*9)/410)+12*Math.sin((x+y)/205+seed);
- const detail=rough*(terrainNoise(x,y,seed,75)+.55*terrainNoise(x,y,seed+17,34));
- const route:readonly (readonly [number,number])[]=specs.find(s=>s.id===level.levelId)?.points??[];
- const holes=route.reduce((sum,p,i)=>{
-   if(i===0||i%2===0)return sum;
-   const previous=route[i-1],cx=previous[0]*.42+p[0]*.58,cy=previous[1]*.42+p[1]*.58;
-   return sum-1.8*Math.exp(-((x-cx)**2+(y-cy)**2)/650);
- },0);
- return broad+detail+(t.kind==='mud'||t.kind==='quarry'?holes:0);
+ let cache=vertexCache.get(level);if(!cache){cache=new Map();vertexCache.set(level,cache);}const key=x+','+y,old=cache.get(key);if(old!==undefined)return old;
+ let index=heightIndexCache.get(level);if(!index){index=new RouteHeightIndex(heightRoute(level));heightIndexCache.set(level,index);}
+ const {distance,height}=index.nearest(x,y);
+ const roadWidth=level.curvedRoads![0].width,edge=Math.max(0,distance-roadWidth/2),smooth=(v:number)=>{const z=Math.min(1,Math.max(0,v));return z*z*(3-2*z);};
+ const cliff=smooth(edge/(t.kind==='coast'?100:t.kind==='quarry'?135:260));
+ const mountain=320*terrainNoise(x,y,t.seed,800)+180*terrainNoise(x,y,t.seed+9,340);
+ // A cut shelf on sea cliffs; uneven hills elsewhere. No periodic wave function.
+ const land=t.kind==='coast'?-Math.min(height+200,650)*cliff:mountain*cliff;
+ const rough=t.kind==='mud'?7.2:t.kind==='quarry'?5.0:t.kind==='forest'?3.8:t.kind==='snow'?1.8:.3;
+ const patch=.3+.7*smooth((terrainNoise(x,y,t.seed+22,170)+.3)/1.3);
+ const detail=rough*patch*(terrainNoise(x,y,t.seed,54)+.4*terrainNoise(x,y,t.seed+7,29));
+ const bank=t.kind==='snow'?10*Math.exp(-(((distance-roadWidth*.65)/17)**2))*(1+.6*terrainNoise(x,y,41,90)):0;
+ const result=height+land+detail+bank;cache.set(key,result);return result;
 }
-export const CHALLENGE_COLUMNS=210,CHALLENGE_ROWS=160;
+export const CHALLENGE_COLUMNS=420,CHALLENGE_ROWS=320;
 /** Match the two triangles in the rendered PlaneGeometry, not a different
  * analytic surface between vertices. This keeps tyres on the visible mesh. */
 export function challengeMeshHeight(level:LevelData,x:number,y:number):number {
@@ -51,16 +67,16 @@ export function challengeSample(level:LevelData,x:number,y:number){
 }
 export function buildChallengeMap(id:number):LevelData {
  const s=specs.find(v=>v.id===id);if(!s)throw Error('Unknown challenge map');
- const points:Vector2[]=s.points.map(([x,y])=>({x,y}));
+ const points:Vector2[]=s.points.map(([x,y])=>({x:x*2,y:y*2}));
  const boundaries:LevelData['obstacles']=[
-  {id:'north',x:2100,y:0,width:4200,height:10,rotation:0,type:'wall',movable:false,weight:0,color:'#606964',collisionOnly:true},
-  {id:'south',x:2100,y:3200,width:4200,height:10,rotation:0,type:'wall',movable:false,weight:0,color:'#606964',collisionOnly:true},
-  {id:'west',x:0,y:1600,width:10,height:3200,rotation:0,type:'wall',movable:false,weight:0,color:'#606964',collisionOnly:true},
-  {id:'east',x:4200,y:1600,width:10,height:3200,rotation:0,type:'wall',movable:false,weight:0,color:'#606964',collisionOnly:true},
+  {id:'north',x:4200,y:0,width:8400,height:10,rotation:0,type:'wall',movable:false,weight:0,color:'#606964',collisionOnly:true},
+  {id:'south',x:4200,y:6400,width:8400,height:10,rotation:0,type:'wall',movable:false,weight:0,color:'#606964',collisionOnly:true},
+  {id:'west',x:0,y:3200,width:10,height:6400,rotation:0,type:'wall',movable:false,weight:0,color:'#606964',collisionOnly:true},
+  {id:'east',x:8400,y:3200,width:10,height:6400,rotation:0,type:'wall',movable:false,weight:0,color:'#606964',collisionOnly:true},
  ];
- const level:LevelData={levelId:id,mapWidth:4200,mapHeight:3200,startPos:{x:points[0].x,y:points[0].y,rotation:Math.atan2(points[1].y-points[0].y,points[1].x-points[0].x)},
+ const level:LevelData={levelId:id,mapWidth:8400,mapHeight:6400,startPos:{x:points[0].x,y:points[0].y,rotation:Math.atan2(points[1].y-points[0].y,points[1].x-points[0].x)},
   challengeTerrain:{kind:s.kind,seed:s.seed,grip:s.grip,rolling:s.rolling},spots:[],obstacles:boundaries,markings:[],
-  curvedRoads:[{points,width:s.kind==='mud'?70:s.kind==='snow'?86:72,color:s.color,lanes:1,direction:'one-way'}],
+  curvedRoads:[{points,width:s.kind==='mud'?46:s.kind==='snow'?86:s.kind==='forest'?48:72,color:s.color,lanes:1,direction:'one-way'}],
   training:{title:s.name,tips:[s.kind==='snow'?'积雪路面附着力低，请提前减速并避免急打方向。':'注意弯坡、路面变化和车速，地形与车辆接触共用同一高度场。','路线是虚构训练场景，可自由探索；路面表现为游戏标定。']}};
  const dist=(p:Vector2,a:Vector2,b:Vector2)=>{const dx=b.x-a.x,dy=b.y-a.y,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy)));return Math.hypot(p.x-a.x-t*dx,p.y-a.y-t*dy);};
  // Low-cost instanced scenery and matching trunk collision shapes. Keep the
@@ -68,8 +84,14 @@ export function buildChallengeMap(id:number):LevelData {
  for(let i=1;i<points.length;i++)for(const side of [-1,1])for(let n=0;n<3;n++){
   const a=points[i-1],b=points[i],dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy),u=(n+1)/4;
   const off=110+((i*83+n*59+s.seed)%150),p={x:a.x+dx*u-side*dy/len*off,y:a.y+dy*u+side*dx/len*off};
-  if(p.x<40||p.y<40||p.x>4160||p.y>3160||points.slice(1).some((q,j)=>dist(p,points[j],q)<65))continue;
+  if(p.x<40||p.y<40||p.x>8360||p.y>6360||points.slice(1).some((q,j)=>dist(p,points[j],q)<65))continue;
   boundaries.push({id:`challenge-tree-${i}-${side}-${n}`,x:p.x,y:p.y,width:4,height:4,rotation:0,type:'wall',movable:false,weight:0,color:'#514d3e',collisionOnly:true,elevation:challengeMeshHeight(level,p.x,p.y),verticalHeight:35});
  }
+ level.startPos.elevation=challengeMeshHeight(level,points[0].x,points[0].y);
  return level;
+}
+
+export function challengeGripAt(level:LevelData,x:number,y:number){
+ const t=level.challengeTerrain;if(!t)return 1;
+ return t.kind==='snow'?t.grip*(.55+.45*Math.max(0,Math.min(1,(terrainNoise(x,y,t.seed,160)+.3)/.9))):t.grip;
 }

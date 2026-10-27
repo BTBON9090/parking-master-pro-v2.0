@@ -26,11 +26,11 @@ for(const id of GARAGE_CARS){
  // Keyboard W leaves the analogue field at zero in App; use the actual
  // target pedal reported by the drivetrain, including non-stepping frames.
  for(const fps of [30,60,120,144]){
-  let state=createLongitudinalState(1),heldForce=0;
-  for(let frame=0;frame<fps*2;frame++){
+  let state=createLongitudinalState(pt.gearTops[0]*.10),heldForce=0;
+  for(let frame=0;frame<fps*.6;frame++){
    const r=stepLongitudinal(state,{gear:1,engineStarted:true,throttle:0,gasPressed:true,shiftPressed:true,brake:0,handbrake:false},{...ctx,slopeAlongCar:0,elapsedFrames:60/fps});
    heldForce=driveForceForAudio(heldForce,r.engineForce,state.pendingFrames,60/fps);state=r;
-   if(frame>fps/2)assert(hasMotorDrive(true,1,r.targetThrottle,heldForce,0,false),`${id} keyboard drive cannot flicker at ${fps} Hz`);
+   if(frame>fps*.2)assert(hasMotorDrive(true,1,r.targetThrottle,heldForce,0,false),`${id} keyboard drive cannot flicker at ${fps} Hz`);
   }
  }
  const outside=motorMix(5,.3,false,true,insulation),inside=motorMix(5,.3,true,true,insulation);

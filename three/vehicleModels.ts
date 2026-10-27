@@ -1314,7 +1314,7 @@ export async function buildVehicleParts(carType: CarType, cfg: CarConfig): Promi
     parts.group.userData.axleGeometry = {
       wheelbase: axleZ(front) - axleZ(rear),
       rearOffset: -axleZ(rear),
-      halfTrack: parts.wheelMounts.reduce((sum, m) => sum + Math.abs(m.position.x), 0) / parts.wheelMounts.length,
+      halfTrack: Math.max(...parts.wheelMounts.map(m=>Math.abs(m.position.x))),
     };
   }
   parts.group.userData.collisionFootprint = collectVehicleFootprint(parts.group, true);

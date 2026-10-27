@@ -21,9 +21,9 @@
     "id": "TAI7",
     "cases": 45,
     "maxGapCm": 3.552713678800501e-14,
-    "maxAxleDriftMm": 3.552713678800501e-13,
+    "maxAxleDriftMm": 5.329070518200751e-13,
     "minTreadGapCm": -5.481838538656802e-7,
-    "maxTravelCm": 5.4992374682286425,
+    "maxTravelCm": 6.345163816928424,
     "fastestGapCm": 1.1368683772161603e-12
   },
   {
@@ -32,8 +32,8 @@
     "maxGapCm": 5.3290705182007514e-14,
     "maxAxleDriftMm": 3.552713678800501e-13,
     "minTreadGapCm": -5.69681590789628e-7,
-    "maxTravelCm": 4.904701653822544,
-    "fastestGapCm": 1.1368683772161603e-12
+    "maxTravelCm": 5.632861995353093,
+    "fastestGapCm": 2.2737367544323206e-12
   },
   {
     "id": "N90",
@@ -41,7 +41,7 @@
     "maxGapCm": 5.3290705182007514e-14,
     "maxAxleDriftMm": 3.552713678800501e-13,
     "minTreadGapCm": -5.69681590789628e-7,
-    "maxTravelCm": 4.997734154220227,
+    "maxTravelCm": 6.01055343513295,
     "fastestGapCm": 1.1368683772161603e-12
   },
   {
@@ -75,9 +75,9 @@
     "id": "COACH",
     "cases": 45,
     "maxGapCm": 7.105427357601002e-14,
-    "maxAxleDriftMm": 1.0658141036401503e-12,
-    "minTreadGapCm": -6.341741709547932e-7,
-    "maxTravelCm": 6.886690212788151,
+    "maxAxleDriftMm": 7.105427357601002e-13,
+    "minTreadGapCm": -6.341733715942155e-7,
+    "maxTravelCm": 9.405946388195636,
     "fastestGapCm": 1.1368683772161603e-12
   },
   {

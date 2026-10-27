@@ -30,9 +30,18 @@ export const GAME_UNITS_PER_METRE = 10;
 export const SPRING_SCALE = 500000; // N/m per spec.spring unit
 
 const SPECS: Record<CarType, SuspensionSpec> = {
+[CarType.TRIKE]:{massKg:970,bodyResponse:.08,roll:.65,spring:0.06,damping:0.62,travel:1,bumpTravel:2.6,droopTravel:1.5,antiRoll:0.35},
+[CarType.TRACTOR]:{massKg:7800,bodyResponse:.08,roll:.65,spring:0.24,damping:0.65,travel:1,bumpTravel:2.4,droopTravel:1.5,antiRoll:0.35},
+[CarType.SEMI]:{massKg:36000,bodyResponse:.08,roll:.65,spring:1.0,damping:0.78,travel:1,bumpTravel:2.1,droopTravel:1.5,antiRoll:0.55},
+[CarType.CYBERTRUCK]:{massKg:3009,bodyResponse:.08,roll:.65,spring:0.14,damping:0.85,travel:1,bumpTravel:2.4,droopTravel:1.5,antiRoll:0.7},
+[CarType.REVUELTO]:{massKg:1900,bodyResponse:.08,roll:.65,spring:0.18,damping:0.85,travel:1,bumpTravel:0.95,droopTravel:1.5,antiRoll:0.85},
+[CarType.VEYRON]:{massKg:1968,bodyResponse:.08,roll:.65,spring:0.17,damping:0.85,travel:1,bumpTravel:1.1,droopTravel:1.5,antiRoll:0.85},
+[CarType.V800]:{massKg:3120,bodyResponse:.08,roll:.65,spring:0.14,damping:0.9,travel:1,bumpTravel:2.1,droopTravel:1.5,antiRoll:0.78},
+[CarType.MINI]:{massKg:1285,bodyResponse:.08,roll:.65,spring:0.09,damping:0.78,travel:1,bumpTravel:1.4,droopTravel:1.5,antiRoll:0.75},
+
   [CarType.JEEP]:{massKg:2050,bodyResponse:.075,roll:.72,spring:.075,damping:.72,travel:1.5,bumpTravel:2.8,droopTravel:1.7,antiRoll:.43},
   [CarType.MIDIBUS]:{massKg:4500,bodyResponse:.065,roll:.7,spring:.16,damping:.78,travel:1.1,bumpTravel:2,droopTravel:1.3,antiRoll:.55},
-  [CarType.COACH]:{massKg:10500,bodyResponse:.075,roll:.66,spring:.32,damping:.88,travel:1.0,bumpTravel:1.8,droopTravel:1.3,antiRoll:.65},
+  [CarType.COACH]:{massKg:13000,bodyResponse:.075,roll:.66,spring:.32,damping:.88,travel:1.0,bumpTravel:1.8,droopTravel:1.3,antiRoll:.65},
   [CarType.VAN]:{massKg:2650,bodyResponse:.07,roll:.7,spring:.09,damping:.72,travel:1.2,bumpTravel:2.2,droopTravel:1.4,antiRoll:.48},
   [CarType.LIGHT_TRUCK]:{massKg:6200,bodyResponse:.07,roll:.73,spring:.19,damping:.67,travel:1.3,bumpTravel:2.4,droopTravel:1.5,antiRoll:.5},
   // Distinct simulation calibrations; OEM damping maps and wheel travel are not published.

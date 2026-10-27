@@ -1,3 +1,5 @@
+import {FLEET30_IDS} from './utils/fleet30';
+import {buildHighway} from './utils/highway';
 import {frontSteerForTurningRadius} from './utils/driving';
 import {buildTrainingCampus} from './utils/trainingCampus';
 import {buildChallengeMap,CHALLENGE_MAPS} from './utils/challengeMaps';
@@ -606,12 +608,13 @@ export const TRANSLATIONS = {
   }
 };
 
-export const GARAGE_CARS: CarType[] = [CarType.SUV, CarType.SEAL08, CarType.TAI7, CarType.LI_I9, CarType.N90, CarType.TRUCK,CarType.JEEP,CarType.MIDIBUS,CarType.COACH,CarType.VAN,CarType.LIGHT_TRUCK];
+export const GARAGE_CARS: CarType[] = [...FLEET30_IDS,CarType.SUV, CarType.SEAL08, CarType.TAI7, CarType.LI_I9, CarType.N90, CarType.TRUCK,CarType.JEEP,CarType.MIDIBUS,CarType.COACH,CarType.VAN,CarType.LIGHT_TRUCK];
 
 export const LEVEL_LIST = [
  {id:1,name:'城市与青岚山',desc:'城市街区、盘山公路、林场窄路与溪谷浅水。',locked:false,thumbnail:'/thumbnails/map-1.svg'},
- {id:4,name:'综合驾驶试验场',desc:'合并双驾校、紧凑车库和斜列停车场：坡道、S 弯、窄桥与泊车。',locked:false,thumbnail:'/thumbnails/map-4.svg'},
+ {id:4,name:'综合驾驶试验场',desc:'18 项计分考核、多排车位、坡起、曲线、灯光与连续弯道地库。',locked:false,thumbnail:'/thumbnails/map-4.svg'},
  {id:6,name:'三层地库',desc:'B1 / B2 / B3、双向坡道与楼层停车挑战。',locked:false,thumbnail:'/thumbnails/map-6.svg'},
+ {id:13,name:'环线高速',desc:'双向八车道、互通匝道、收费站与动态车流。',locked:false,thumbnail:'/thumbnails/map-13.svg'},
  ...CHALLENGE_MAPS
 ];
 
@@ -1131,7 +1134,7 @@ export const generateLegacyLevel = (level: number): LevelData => {
 };
 
 export const GENERATE_LEVEL=(id:number):LevelData=>{
- const level=id>=8&&id<=12?buildChallengeMap(id):[2,3,4,5].includes(id)?buildTrainingCampus(generateLegacyLevel):generateLegacyLevel(id===7?1:id);
+ const level=id===13?buildHighway():id>=8&&id<=12?buildChallengeMap(id):[2,3,4,5].includes(id)?buildTrainingCampus(generateLegacyLevel):generateLegacyLevel(id===7?1:id);
  // Old parking layouts used 80/100 as arbitrary weights, or marked cars
  // immovable. Give every parked car a plausible simulation mass in kg.
  for(const obstacle of level.obstacles)if(obstacle.type==='car'){

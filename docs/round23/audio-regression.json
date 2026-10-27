@@ -1,5 +1,53 @@
 [
   {
+    "id": "TRIKE",
+    "cabinRoadAmplitudeRatio": 0.28600000000000003,
+    "driveToneHz": 85.5,
+    "cabinMotorGain": 0.010965405601253425
+  },
+  {
+    "id": "TRACTOR",
+    "cabinRoadAmplitudeRatio": 0.28600000000000003,
+    "driveToneHz": 85.5,
+    "cabinMotorGain": 0.010965405601253425
+  },
+  {
+    "id": "SEMI",
+    "cabinRoadAmplitudeRatio": 0.28600000000000003,
+    "driveToneHz": 85.5,
+    "cabinMotorGain": 0.010965405601253425
+  },
+  {
+    "id": "CYBERTRUCK",
+    "cabinRoadAmplitudeRatio": 0.28600000000000003,
+    "driveToneHz": 85.5,
+    "cabinMotorGain": 0.010965405601253425
+  },
+  {
+    "id": "REVUELTO",
+    "cabinRoadAmplitudeRatio": 0.28600000000000003,
+    "driveToneHz": 85.5,
+    "cabinMotorGain": 0.010965405601253425
+  },
+  {
+    "id": "VEYRON",
+    "cabinRoadAmplitudeRatio": 0.28600000000000003,
+    "driveToneHz": 85.5,
+    "cabinMotorGain": 0.010965405601253425
+  },
+  {
+    "id": "V800",
+    "cabinRoadAmplitudeRatio": 0.28600000000000003,
+    "driveToneHz": 85.5,
+    "cabinMotorGain": 0.010965405601253425
+  },
+  {
+    "id": "MINI",
+    "cabinRoadAmplitudeRatio": 0.28600000000000003,
+    "driveToneHz": 85.5,
+    "cabinMotorGain": 0.010965405601253425
+  },
+  {
     "id": "SUV",
     "cabinRoadAmplitudeRatio": 0.198,
     "driveToneHz": 85.5,

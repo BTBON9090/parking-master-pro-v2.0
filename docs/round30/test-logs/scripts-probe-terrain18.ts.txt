@@ -1,0 +1,23 @@
+Production mountain profile, low-speed contact and fast crest PASS [
+  {
+    speedMps: 2,
+    airtimeSeconds: 0,
+    maxWheelGapM: 9.837831385084428e-8,
+    minWheelGapM: -8.887672038326855e-8,
+    maxHeightM: 50.000429935889215
+  },
+  {
+    speedMps: 25,
+    airtimeSeconds: 0.4624999999999996,
+    maxWheelGapM: 0.3898573035153731,
+    minWheelGapM: -4.336536107985012e-8,
+    maxHeightM: 50.3533705762037
+  },
+  {
+    speedMps: 35,
+    airtimeSeconds: 1.3499999999999965,
+    maxWheelGapM: 2.4966507389306627,
+    minWheelGapM: -5.43951387044217e-8,
+    maxHeightM: 52.30497928690954
+  }
+]

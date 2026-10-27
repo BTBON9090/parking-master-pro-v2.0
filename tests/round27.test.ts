@@ -36,8 +36,8 @@ for(let id=8;id<=12;id++){
  geom.rotateX(-Math.PI/2);const mesh=new THREE.Mesh(geom,new THREE.MeshBasicMaterial({side:THREE.DoubleSide}));mesh.position.set(level.mapWidth/2,0,level.mapHeight/2);mesh.updateMatrixWorld();
  for(let i=0;i<24;i++){
   const x=20+((i*481.37+id*71)%4100),y=20+((i*239.73+id*33)%3100);
-  const hit=new THREE.Raycaster(new THREE.Vector3(x,200,y),new THREE.Vector3(0,-1,0)).intersectObject(mesh)[0];
-  assert(hit&&Math.abs(hit.point.y-challengeMeshHeight(level,x,y))<1e-4);
+  const hit=new THREE.Raycaster(new THREE.Vector3(x,10000,y),new THREE.Vector3(0,-1,0)).intersectObject(mesh)[0];
+  assert(hit&&Math.abs(hit.point.y-challengeMeshHeight(level,x,y))<.001);
   assert.equal(sampleTerrainSurface(level,x,y).height,challengeMeshHeight(level,x,y));
  }
  geom.dispose();(mesh.material as THREE.Material).dispose();

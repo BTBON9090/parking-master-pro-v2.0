@@ -1,0 +1,17 @@
+[
+  {
+    "archive": "release/mac/Parking Master Pro.app/Contents/Resources/app.asar",
+    "version": "0.25.0",
+    "verifiedBundledFiles": 84
+  },
+  {
+    "archive": "release/mac-arm64/Parking Master Pro.app/Contents/Resources/app.asar",
+    "version": "0.25.0",
+    "verifiedBundledFiles": 84
+  },
+  {
+    "archive": "release/win-unpacked/resources/app.asar",
+    "version": "0.25.0",
+    "verifiedBundledFiles": 84
+  }
+]

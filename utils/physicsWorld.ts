@@ -207,12 +207,12 @@ export class PhysicsWorld {
   /**
    * 将交通车运动学结果施加到刚体
    */
-  updateTrafficKinematics(id: string, x: number, z: number, rotY: number, speed: number, rotation: number) {
+  updateTrafficKinematics(id: string, x: number, z: number, rotY: number, speed: number, rotation: number, elevation=0) {
     const body = this.trafficBodies.get(id);
     if (!body) return;
     body.position.x = x;
     body.position.z = z;
-    body.position.y = 5;
+    body.position.y = 5+elevation;
     body.quaternion.setFromEuler(0, rotY, 0);
     const worldSpeed = gameSpeedToWorldVelocity(speed);
     const vx = Math.cos(rotation) * worldSpeed;

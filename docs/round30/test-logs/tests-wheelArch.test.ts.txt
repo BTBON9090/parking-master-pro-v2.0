@@ -1,0 +1,79 @@
+All five actual GLBs: fixed axle through ±35° grades, steered slope contact, and full-travel/steering sill clearance PASS [
+  {
+    id: 'SUV',
+    cases: 21,
+    minSillClearanceCm: 4.442516193966846,
+    maxAxleDriftMm: 7.105427357601002e-13,
+    minSlopeTreadGapCm: 0.0007861045250366817
+  },
+  {
+    id: 'SEAL08',
+    cases: 21,
+    minSillClearanceCm: 4.442628815886174,
+    maxAxleDriftMm: 5.329070518200751e-13,
+    minSlopeTreadGapCm: 0.0007078083639707568
+  },
+  {
+    id: 'TAI7',
+    cases: 21,
+    minSillClearanceCm: 5.013100349442272,
+    maxAxleDriftMm: 3.552713678800501e-13,
+    minSlopeTreadGapCm: 0.0007928008702523751
+  },
+  {
+    id: 'LI_I9',
+    cases: 21,
+    minSillClearanceCm: 3.877656346423688,
+    maxAxleDriftMm: 7.105427357601002e-13,
+    minSlopeTreadGapCm: 0.000777572256300395
+  },
+  {
+    id: 'N90',
+    cases: 21,
+    minSillClearanceCm: 3.8763954594347183,
+    maxAxleDriftMm: 3.552713678800501e-13,
+    minSlopeTreadGapCm: 0.0007660360940152942
+  },
+  {
+    id: 'TRUCK',
+    cases: 21,
+    minSillClearanceCm: 4.925483749759003,
+    maxAxleDriftMm: 7.105427357601002e-13,
+    minSlopeTreadGapCm: 0.0007826678740390614
+  },
+  {
+    id: 'JEEP',
+    cases: 21,
+    minSillClearanceCm: 4.279731444306147,
+    maxAxleDriftMm: 3.552713678800501e-13,
+    minSlopeTreadGapCm: 0.0008033902848908985
+  },
+  {
+    id: 'MIDIBUS',
+    cases: 21,
+    minSillClearanceCm: 6.203356475129489,
+    maxAxleDriftMm: 3.552713678800501e-13,
+    minSlopeTreadGapCm: 0.000863838169502853
+  },
+  {
+    id: 'COACH',
+    cases: 21,
+    minSillClearanceCm: 6.587667364816028,
+    maxAxleDriftMm: 7.105427357601002e-13,
+    minSlopeTreadGapCm: 0.0010469883743223515
+  },
+  {
+    id: 'VAN',
+    cases: 21,
+    minSillClearanceCm: 5.836237662531811,
+    maxAxleDriftMm: 7.105427357601002e-13,
+    minSlopeTreadGapCm: 0.0007429709571886797
+  },
+  {
+    id: 'LIGHT_TRUCK',
+    cases: 21,
+    minSillClearanceCm: 6.359892432463923,
+    maxAxleDriftMm: 1.0658141036401503e-12,
+    minSlopeTreadGapCm: 0.0009242717756098627
+  }
+]
