@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type { LevelData } from '../types';
 import { contactShadowTexture } from './materials';
 import { CURB_HEIGHT, CURB_WIDTH } from '../utils/terrainSampling';
+import {mergeCurbVisuals} from '../utils/curbVisuals';
 
 /** Low-poly Beijing courtyard frontage: masonry blocks and shallow grey gables. */
 export function addBeijingScenery(scene:THREE.Scene,level:LevelData,trackGeo:(g:THREE.BufferGeometry)=>THREE.BufferGeometry) {
@@ -99,7 +100,7 @@ export function addBeijingScenery(scene:THREE.Scene,level:LevelData,trackGeo:(g:
  }
 
  // ===== Instanced curbs along the main streets =====
- const curbs=level.curbSegments??[];
+ const curbs=mergeCurbVisuals(level.curbSegments??[]);
  if(curbs.length){
   const curbMesh=new THREE.InstancedMesh(
    trackGeo(new THREE.BoxGeometry(1,1,1)),

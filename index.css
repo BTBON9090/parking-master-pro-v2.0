@@ -580,9 +580,10 @@ html,body,#root{overscroll-behavior:none}body{-webkit-touch-callout:none}button,
 .release-actions {flex-wrap:wrap;gap:12px}
 /* Absolute touch steering: the visible rail and pointer coordinate share the
    same bounds. The transparent hit area remains at least 44px high. */
-.mobile-steer-zone {top:auto;left:auto;right:max(12px,env(safe-area-inset-right));bottom:calc(max(12px,env(safe-area-inset-bottom)) + 138px);width:min(220px,34vw);min-width:145px;height:48px;padding:0;z-index:2;border-radius:9px;background:#12212bd9;display:flex;flex-direction:column;justify-content:center;gap:7px}
+.mobile-steer-zone {top:max(155px,env(safe-area-inset-top));left:max(12px,env(safe-area-inset-left));right:auto;bottom:max(6px,env(safe-area-inset-bottom));width:calc(50% - 124px);min-width:145px;height:auto;padding:0;z-index:1;background:transparent;display:block}
+.mobile-steer-scale {position:absolute;top:0;left:0;width:100%;height:31px;padding:3px 0 4px;border-radius:6px;background:#12212bba;pointer-events:none}
 .mobile-steer-title {display:flex;justify-content:space-between;padding:0 8px;font-size:10px;color:#e3e7e5;pointer-events:none}
-.mobile-steer-track {display:block;position:relative;width:100%;height:4px;background:#9caeb4;pointer-events:none}
+.mobile-steer-track {display:block;position:relative;width:100%;height:9px;margin-top:2px;background:repeating-linear-gradient(to right,#a9b7b9 0 1px,transparent 1px 4.1667%);border-bottom:1px solid #9caeb4;pointer-events:none}
 .mobile-steer-track i {position:absolute;left:50%;top:-3px;width:1px;height:10px;background:#e5c777}
 .mobile-steer-track b {position:absolute;top:50%;width:14px;height:14px;border-radius:50%;background:#eac56b;transform:translate(-50%,-50%)}
-@media(max-height:550px){.mobile-steer-zone {bottom:calc(max(12px,env(safe-area-inset-bottom)) + 130px)}}
+@media(max-height:550px){.mobile-steer-zone {top:max(135px,env(safe-area-inset-top))}}

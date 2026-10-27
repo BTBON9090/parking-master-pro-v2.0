@@ -11,9 +11,11 @@ import { garageFloorAt, GARAGE_LEVELS } from '../utils/garage';
 // The scene and audio own native resources and long-lived frame closures.
 // Remount on development edits so a new mixer cannot use an older graph.
 import { CrashDebris } from '../three/crashDebris';
+import {AccidentFire} from '../three/accidentFire';
 import {VehicleDamage} from '../three/vehicleDamage';
 import type {DamageTier} from '../utils/impactResponse';
 import { solveVehicleImpact, impactContactArm } from '../utils/impactResponse';
+import {parkedCarImpact} from '../utils/parkedImpact';
 import { createDriverMotion, stepDriverMotion } from '../utils/driverMotion';
 import { motorMix, roadMix, cabinInsulation, hasMotorDrive, driveForceForAudio } from '../utils/motorAudio';
 import {createChassisState,stepChassis,hubPose,chassisRotation,type RigWheel} from '../utils/chassisSupport';
@@ -629,6 +631,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     let wreck:CrashDebris|null=null;
     let damageModel:VehicleDamage|null=null;
     const looseDebris:CrashDebris[]=[];
+    const fires:AccidentFire[]=[];
     const inspectionFocus=new THREE.Vector3(startX,0,startZ);
     let rollover:VehicleRollover|null=null;
     let chassisState=createChassisState();
@@ -638,6 +641,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     const lateralState=createLateralState();
     let directionChangeActive=false;
     const impactMotion={x:0,y:0,yaw:0,time:0};
+    const movingParked=new Map<string,{x:number;y:number}>(); // metres/second
     setWrecked(false);setDamagePercent(0);setDamageTier('none');
     let driverMotion=createDriverMotion();
     let suspensionPitch = 0;
@@ -723,11 +727,19 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     let lastMiniMapUpdateAt = 0;
     let lastSkidPosition: Vector2 | null = null;
     const skidMarks: THREE.Mesh[] = [];
-    const skidMarkGeo = new THREE.PlaneGeometry(1.4, 4.5);
+    const skidMarkGeo = new THREE.PlaneGeometry(1.8, 1);
+    const skidCanvas=document.createElement('canvas');skidCanvas.width=64;skidCanvas.height=8;
+    const skidContext=skidCanvas.getContext('2d')!;
+    const skidGradient=skidContext.createLinearGradient(0,0,64,0);
+    skidGradient.addColorStop(0,'rgba(255,255,255,0)');skidGradient.addColorStop(.2,'rgba(255,255,255,.65)');
+    skidGradient.addColorStop(.5,'rgba(255,255,255,.85)');skidGradient.addColorStop(.8,'rgba(255,255,255,.65)');skidGradient.addColorStop(1,'rgba(255,255,255,0)');
+    skidContext.fillStyle=skidGradient;skidContext.fillRect(0,0,64,8);
+    const skidTexture=new THREE.CanvasTexture(skidCanvas);
     const skidMarkMat = new THREE.MeshBasicMaterial({
-      color: 0x171717,
+      color: 0x4a4743,
+      map: skidTexture,
       transparent: true,
-      opacity: 0.48,
+      opacity: 0.25,
       depthWrite: false,
       polygonOffset: true,
       polygonOffsetFactor: -6,
@@ -1495,7 +1507,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       const ctx = audioContextRef.current;
       if (ctx.state === 'closed') return;
       if (getRecordingAudioStatus().ready) {
-        playRecordingImpact(Math.min(0.85, Math.sqrt(force / 6)) * s.volume);
+        playRecordingImpact(Math.min(0.85, Math.sqrt(force / 6)) * (cameraViewRef.current==='HOOD'?(raw.cabinVolume??.7):(raw.exteriorVolume??.85)),cameraViewRef.current==='HOOD');
         return;
       }
       const intensity = Math.min(0.85, Math.sqrt(force / 6));
@@ -2007,10 +2019,27 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         carSpeedRef.current = car.speed;
         if (frameDelta > 0) {
         simulationClockMs += frameDelta;
-        const currentInputReal = (destroyed || rollover) ? {...inputRef.current,throttle:0,gasPressed:false,brake:1,handbrake:true,engineStarted:false} : inputRef.current;
-        if(destroyed || rollover){car.speed=0;throttleState.current=0;}
+        // Only impacted parked cars are stepped. Their body, four tyres,
+        // shadow and collision hull share the same updated pose.
+        let parkedSettled=false;
+        for(const [id,velocity] of movingParked){
+          const obs=obstacleById.get(id);if(!obs){movingParked.delete(id);continue;}
+          const dt=frameDelta/1000,x=obs.x+velocity.x*dt*10,y=obs.y+velocity.y*dt*10;
+          const carBody={x,y,rotation:obs.rotation,width:obs.width,length:obs.height,footprint:obs.collisionFootprint,elevation:obs.elevation,verticalHeight:obs.verticalHeight};
+          const blocked=x<obs.height/2||y<obs.height/2||x>ldCur.mapWidth-obs.height/2||y>ldCur.mapHeight-obs.height/2||
+            [...nearbyCollisionObstacles(x,y,120)].some(other=>other.id!==id&&vehicleLayersCompatible(carBody,other)&&
+              (other.type==='car'?checkVehicleCollision(carBody,{x:other.x,y:other.y,width:other.width,length:other.height,rotation:other.rotation,footprint:other.collisionFootprint,elevation:other.elevation}):
+                other.type==='wall'&&checkVehicleRectCollision(carBody,other)));
+          if(blocked){velocity.x*=-.12;velocity.y*=-.12;}
+          else {obs.x=x;obs.y=y;built?.parkedVisuals.get(id)?.(obs);}
+          const damping=Math.exp(-1.6*dt);velocity.x*=damping;velocity.y*=damping;
+          if(Math.hypot(velocity.x,velocity.y)<.035){movingParked.delete(id);parkedSettled=true;}
+        }
+        if(parkedSettled)indexCollisionObstacles();
+        const currentInputReal = (destroyed || rollover || fires.length>0) ? {...inputRef.current,throttle:0,gasPressed:false,brake:1,handbrake:true,engineStarted:false} : inputRef.current;
+        if(destroyed || rollover || fires.length>0){car.speed=0;throttleState.current=0;}
         if(lastSuspensionReset!==suspensionResetRef.current){
-          damageModel?.reset();looseDebris.splice(0).forEach(d=>d.dispose());setDamageTier('none');
+          damageModel?.reset();looseDebris.splice(0).forEach(d=>d.dispose());fires.splice(0).forEach(f=>f.dispose());setDamageTier('none');
           impactMotion.time=0;directionChangeActive=false;Object.assign(lateralState,createLateralState());damage=0;setDamagePercent(0);impactReadout={closing:0,yaw:0,speedAfter:0,obstacle:'—'};
           if(wreck){wreck.dispose();wreck=null;}destroyed=false;setWrecked(false);
           rollover?.dispose();rollover=null;setOverturned(false);chassisState=createChassisState();
@@ -2387,6 +2416,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           built?.trafficObstacles.forEach(obs => {
             if (Math.abs(obs.x - x) < 180 && Math.abs(obs.y - y) < 180) candidates.set(obs.id, obs);
           });
+          movingParked.forEach((_,id)=>{const obs=obstacleById.get(id);if(obs&&Math.abs(obs.x-x)<180&&Math.abs(obs.y-y)<180)candidates.set(id,obs);});
           candidates.forEach(obs => {
             // Height layers are explicit; direction/angle is never used to
             // guess whether an overpass barrier belongs to this layer.
@@ -2463,6 +2493,12 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           const incoming={x:motionX/dt/10,y:motionY/dt/10};
           const arm=impactContactArm(boundaryPoints,{x:car.x,y:car.y},contactNormal);
           const response=solveVehicleImpact(incoming,contactNormal,arm,cc.length/10,cc.width/10,impactMotion.yaw);
+          const parked=newHitIds.map(id=>obstacleById.get(id)).find(obs=>obs?.type==='car'&&!obs.ai);
+          if(parked){
+            const before=movingParked.get(parked.id)??{x:0,y:0};
+            const pair=parkedCarImpact(incoming,before,contactNormal,cc.weight,parked.weight);
+            if(pair.closing>.05){movingParked.set(parked.id,pair.parked);response.velocity=pair.player;response.yawRate*=.35;}
+          }
           if(response.closing>.15) impactReadout={closing:response.closing*3.6,yaw:response.yawRate,speedAfter:Math.hypot(response.velocity.x,response.velocity.y)*3.6,obstacle:newHitIds[0]??'boundary'};
           // Return to the last accepted pose and separate outwards. Subsequent
           // frames carry the reflected world velocity, not just a reduced speed.
@@ -2488,13 +2524,18 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
                 looseDebris.push(debris);scene.add(debris.group);
                 if(looseDebris.length>6)looseDebris.shift()!.dispose();
               }
+              if(response.closing>10&&fires.length===0){
+                const fire=new AccidentFire(new THREE.Vector3(car.x,car.roadHeight??0,car.y),car.rotation,false);fires.push(fire);scene.add(fire.group);
+                car.speed=0;impactMotion.time=0;setWrecked(true);
+              }
             }
             if(response.catastrophic){
               // Capture the complete exterior even when impact occurs in the cabin.
               setFirstPersonBody(false);playerParts.wheels.forEach(w=>w.visible=true);playerParts.wheelMounts.forEach(w=>w.visible=true);
               wreck=new CrashDebris(playerParts.group,{x:incoming.x*10,y:incoming.y*10},car.rotation,ldCur.obstacles,
-                (x,z,height)=>sampleTerrainSurface(ldCur,x,z,height).height,contactNormal,{yawRate:impactMotion.yaw,mass:cc.weight,bounds:{width:ldCur.mapWidth,height:ldCur.mapHeight}});
+                (x,z,height)=>sampleTerrainSurface(ldCur,x,z,height).height,contactNormal,{yawRate:impactMotion.yaw,mass:cc.weight,bounds:{width:ldCur.mapWidth,height:ldCur.mapHeight},spawnDriver:false});
               scene.add(wreck.group);destroyed=true;setWrecked(true);damage=1;setDamagePercent(100);
+              const fire=new AccidentFire(new THREE.Vector3(car.x,car.roadHeight??0,car.y),car.rotation,true);fires.push(fire);scene.add(fire.group);
               car.speed=0;impactMotion.time=0;playerParts.group.visible=false;
             }
           }
@@ -2515,7 +2556,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         // 结果。旧顺序先写当前位姿再 step，碰撞体会比主车多前进一帧并在下
         // 一帧被拉回，锥桶/交通接触时会出现位置双写。这里只调整顺序。
         physics.step(frameDelta / 1000);
-        wreck?.step(frameDelta/1000);looseDebris.forEach(d=>d.step(frameDelta/1000));
+        wreck?.step(frameDelta/1000);looseDebris.forEach(d=>d.step(frameDelta/1000));fires.forEach(f=>f.step(frameDelta/1000));
         const playerRotY3D = toMeshRotY(car.rotation);
         physics.updatePlayerKinematics(car.x, car.y, playerRotY3D, car.speed, car.rotation,
           airborneActive ? suspensionBodyHeight ?? car.roadHeight : car.roadHeight);
@@ -2842,13 +2883,14 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           const travelled = lastSkidPosition
             ? Math.hypot(car.x - lastSkidPosition.x, car.y - lastSkidPosition.y)
             : Infinity;
-          if (travelled > 2.8) {
+          if (lastSkidPosition && travelled > 0.35 && travelled < 60) {
             const forwardX = Math.cos(car.rotation);
             const forwardY = Math.sin(car.rotation);
             const sideX = -forwardY;
             const sideY = forwardX;
-            const rearX = car.x - forwardX * rigWheelbase * 0.46;
-            const rearY = car.y - forwardY * rigWheelbase * 0.46;
+            const rearX = (car.x+lastSkidPosition.x)/2 - forwardX * rigWheelbase * 0.46;
+            const rearY = (car.y+lastSkidPosition.y)/2 - forwardY * rigWheelbase * 0.46;
+            const motionX=car.x-lastSkidPosition.x,motionY=car.y-lastSkidPosition.y;
             const halfTrack = cc.width * 0.34;
             for (const side of [-1, 1]) {
               const markMaterial = skidMarkMat.clone();
@@ -2860,14 +2902,14 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
               // on its edge instead of flat on the ground.
               mark.rotation.order = 'YXZ';
               mark.rotation.x = -Math.PI / 2;
-              mark.rotation.y = -car.rotation;
+              mark.rotation.y = Math.atan2(-motionX,-motionY);
+              mark.scale.y = travelled + .06;
               mark.position.set(rearX + sideX * halfTrack * side, 0.195, rearY + sideY * halfTrack * side);
               mark.renderOrder = 5;
               mark.userData.createdAt = simulationClockMs;
               skidMarkGroup.add(mark);
               skidMarks.push(mark);
             }
-            lastSkidPosition = { x: car.x, y: car.y };
             while (skidMarks.length > 320) {
               const oldest = skidMarks.shift();
               if (oldest) {
@@ -2876,6 +2918,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
               }
             }
           }
+          if(!lastSkidPosition || travelled > .35)lastSkidPosition = { x: car.x, y: car.y };
         } else {
           lastSkidPosition = null;
         }
@@ -2892,7 +2935,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
             material.dispose();
             skidMarks.splice(index, 1);
           } else if (age > SKID_HOLD_MS) {
-            material.opacity = 0.48 * (1 - (age - SKID_HOLD_MS) / SKID_FADE_MS);
+            material.opacity = 0.25 * (1 - (age - SKID_HOLD_MS) / SKID_FADE_MS);
           }
         }
 
@@ -3387,6 +3430,10 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
                   // 尊界 V8：长车头、镜位高且靠后
                   : cc.id === CarType.ZUNJIE
                     ? { height: 0.9, outward: 0.08, forward: 0.015, zoom: 1.4, distance: 2.5 }
+                    : [CarType.MIDIBUS,CarType.COACH,CarType.VAN,CarType.LIGHT_TRUCK].includes(cc.id)
+                      // Commercial mirrors sit next to the front glazing,
+                      // considerably farther forward and higher than a car's.
+                      ? { height: cc.height*.47+4-11.75, outward: 0, forward: .36, zoom: 0, distance: 0 }
                     : { height: 0, outward: 0, forward: 0, zoom: 0, distance: 0 };
         // Cameras are children of the sprung-body pivot. Their local pose is
         // recalibrated here, while the parent supplies the complete vehicle
@@ -3614,7 +3661,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       window.removeEventListener('vehicle-recover',recoverInPlace);
       dom.removeEventListener('wheel', onWheel);
       // 物理引擎释放
-      wreck?.dispose();looseDebris.forEach(d=>d.dispose());damageModel?.dispose();rollover?.dispose();
+      wreck?.dispose();looseDebris.forEach(d=>d.dispose());fires.forEach(f=>f.dispose());damageModel?.dispose();rollover?.dispose();
       physics.dispose();
       // 模型缓存释放
       disposeModelCache();
@@ -3622,6 +3669,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       skidMarks.forEach(mark => (mark.material as THREE.Material).dispose());
       skidMarks.length = 0;
       skidMarkMat.dispose();
+      skidTexture.dispose();
       disposeMaterials();
       vehicleEnvironment?.dispose();
       mirrorTarget.dispose(); sideMirrorTarget.dispose(); mirrorQuadGeo.dispose(); mirrorQuadMat.dispose();

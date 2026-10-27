@@ -165,9 +165,8 @@ export class SteeringInputSmoother {
  * of throttle/gear: holding W must not count as "hands on the wheel".
  *
  * `autoCenteringSpeed` is the user setting (0 disables the assist, 1 is the
- * calibrated rate). The rate ramps from 48 °/s at a crawl to 96 °/s from
- * ~20 km/h, so a 180° correction takes ~3.7 s at walking pace and ~1.9 s at
- * road speed. The final sub-degree snap guarantees an exact zero.
+ * calibrated rate). The rate increases with speed, while stationary assist
+ * returns more gently. The final sub-degree snap guarantees an exact zero.
  */
 export function autoCenterWheelAngle(
   angleDeg: number,
@@ -185,7 +184,7 @@ export function autoCenterWheelAngle(
   if (speed < 0.02 && !stationaryAssist) return angleDeg;
   const speedT = Math.max(0, Math.min(1, (speed - 0.02) / 1.48));
   const eased = speedT * speedT * (3 - 2 * speedT);
-  const rateDegPerSec = Math.min(1.8,autoCenteringSpeed) * (speed < .02 ? 44 : 52 + 66 * eased);
+  const rateDegPerSec = Math.min(4,autoCenteringSpeed) * (speed < .02 ? 70 : 86 + 94 * eased);
   const dtSeconds = Math.max(0, tickMs) / 1000;
   // Slightly firmer away from centre, gentler in the last few degrees; the
   // motion remains monotonic and never reverses.

@@ -1129,4 +1129,13 @@ export const generateLegacyLevel = (level: number): LevelData => {
   return { levelId: level, mapWidth: mapSizeW, mapHeight: mapSizeH, spots, obstacles, markings, startPos, roadSurfaces, curvedRoads, slopeZones, training };
 };
 
-export const GENERATE_LEVEL=(id:number):LevelData=>id>=8&&id<=12?buildChallengeMap(id):[2,3,4,5].includes(id)?buildTrainingCampus(generateLegacyLevel):generateLegacyLevel(id===7?1:id);
+export const GENERATE_LEVEL=(id:number):LevelData=>{
+ const level=id>=8&&id<=12?buildChallengeMap(id):[2,3,4,5].includes(id)?buildTrainingCampus(generateLegacyLevel):generateLegacyLevel(id===7?1:id);
+ // Old parking layouts used 80/100 as arbitrary weights, or marked cars
+ // immovable. Give every parked car a plausible simulation mass in kg.
+ for(const obstacle of level.obstacles)if(obstacle.type==='car'){
+  obstacle.movable=true;
+  if(obstacle.weight<500)obstacle.weight=obstacle.weight>=140?2200:1600;
+ }
+ return level;
+};

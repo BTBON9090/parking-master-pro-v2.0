@@ -160,9 +160,15 @@ const CarPreview3D: React.FC<CarPreview3DProps> = ({ carType, accentColor = '#f5
       applyShowroomPose(parts.extras, 0.55);
       const model = parts.group;
       current = model;
+      // The fixed showroom camera was sized for cars and cropped long buses.
+      // Scale the preview uniformly; the actual driving model is untouched.
+      const bounds = new THREE.Box3().setFromObject(model, true);
+      const size = bounds.getSize(new THREE.Vector3());
+      model.scale.multiplyScalar(Math.min(1, 60 / Math.max(size.x,size.y,size.z)));
+      model.updateMatrixWorld(true);
       // 重新实测包围盒后落地 + 居中：个别车源（如海豹 08）的原点不在地面，
       // 直接写死 position.y 会覆盖归一化偏移、让轮胎沉进展台。
-      const box = new THREE.Box3().setFromObject(model);
+      const box = new THREE.Box3().setFromObject(model, true);
       const center = box.getCenter(new THREE.Vector3());
       model.position.x -= center.x;
       model.position.z -= center.z;

@@ -45,6 +45,7 @@ export interface BuiltScene {
   spotMeshes: Map<string, THREE.Group>;        // 车位 mesh 引用（用于更新颜色）
   /** 可移动物体 mesh 引用（锥桶/箱子，供物理同步） */
   movableMeshes: Map<string, THREE.Group>;
+  parkedVisuals: Map<string, (pose: {x:number;y:number;rotation:number;elevation?:number})=>void>;
   /** 可释放的几何体列表（清理用） */
   geometries: THREE.BufferGeometry[];
   /** Level 6 render chunks; detached chunks do not upload GPU resources. */
@@ -622,7 +623,8 @@ export async function buildScene(
       obstacle,
       modelName: TRAFFIC_CAR_MODELS[index % (levelData.garage ? 2 : TRAFFIC_CAR_MODELS.length)],
     }));
-  const instancedParkedCarIds = await addParkedCarInstances(scene, levelData, parkedAssignments);
+  const parkedVisuals = new Map<string, (pose: {x:number;y:number;rotation:number;elevation?:number})=>void>();
+  const instancedParkedCarIds = await addParkedCarInstances(scene, levelData, parkedAssignments, parkedVisuals);
 
   // 预加载建筑模型
   const buildingGroups: THREE.Group[] = [];
@@ -693,6 +695,10 @@ export async function buildScene(
       parts.group.position.set(obs.x, (obs.elevation ?? terrainHeightAt(levelData, obs.x, obs.y)) + (obs.layer ?? 0) * 0.5, obs.y);
       parts.group.rotation.y = Math.PI / 2 - obs.rotation;
       scene.add(parts.group);
+      if (!obs.ai) parkedVisuals.set(obs.id,pose=>{
+        parts.group.position.set(pose.x,pose.elevation??0,pose.y);
+        parts.group.rotation.y=Math.PI/2-pose.rotation;
+      });
       {
         const shadow = new THREE.Mesh(
           new THREE.PlaneGeometry(1, 1),
@@ -973,13 +979,14 @@ export async function buildScene(
     if (spawnChunk && !spawnChunk.parent) scene.add(spawnChunk);
   }
 
-  return { scene, playerCarParts, trafficCarParts, trafficObstacles, spotMeshes, movableMeshes, geometries, streamingChunks, ceilingGroup, staticCarCount: levelData.obstacles.filter(obs => obs.type === 'car' && !obs.ai).length };
+  return { scene, playerCarParts, trafficCarParts, trafficObstacles, spotMeshes, movableMeshes, parkedVisuals, geometries, streamingChunks, ceilingGroup, staticCarCount: levelData.obstacles.filter(obs => obs.type === 'car' && !obs.ai).length };
 }
 
 async function addParkedCarInstances(
   scene: THREE.Scene,
   levelData: LevelData,
   assignments: Array<{ obstacle: Obstacle; modelName: string }>,
+  visuals: Map<string, (pose: {x:number;y:number;rotation:number;elevation?:number})=>void>,
 ) {
   const instancedIds = new Set<string>();
   const byModel = new Map<string, { modelName: string; obstacles: Obstacle[] }>();
@@ -1161,6 +1168,27 @@ async function addParkedCarInstances(
         shadowMesh.instanceMatrix.needsUpdate = true;
         shadowMesh.renderOrder = 2;
         scene.add(shadowMesh);
+        // Keep the instanced representation, but retain the local matrices of
+        // each car so an impact can move its body, wheels and shadow together.
+        obstacles.forEach((obstacle,index)=>{
+          const initial=new THREE.Matrix4().compose(
+            new THREE.Vector3(obstacle.x,obstacle.elevation??terrainHeightAt(levelData,obstacle.x,obstacle.y),obstacle.y),
+            new THREE.Quaternion().setFromEuler(new THREE.Euler(0,Math.PI/2-obstacle.rotation,0)),
+            new THREE.Vector3(1,1,1));
+          const inverse=initial.clone().invert();
+          const items:Array<{mesh:THREE.InstancedMesh;index:number;local:THREE.Matrix4}>=[];
+          const save=(mesh:THREE.InstancedMesh,i:number)=>{const m=new THREE.Matrix4();mesh.getMatrixAt(i,m);items.push({mesh,index:i,local:inverse.clone().multiply(m)});};
+          instances.forEach(({mesh})=>save(mesh,index));
+          wheelInstances.forEach(({wheelMesh})=>{for(let w=0;w<4;w++)save(wheelMesh,index*4+w);});
+          save(shadowMesh,index);
+          visuals.set(obstacle.id,pose=>{
+            const placement=new THREE.Matrix4().compose(new THREE.Vector3(pose.x,pose.elevation??0,pose.y),
+              new THREE.Quaternion().setFromEuler(new THREE.Euler(0,Math.PI/2-pose.rotation,0)),new THREE.Vector3(1,1,1));
+            const changed=new Set<THREE.InstancedMesh>();
+            items.forEach(item=>{item.mesh.setMatrixAt(item.index,placement.clone().multiply(item.local));changed.add(item.mesh);});
+            changed.forEach(mesh=>{mesh.instanceMatrix.needsUpdate=true;mesh.computeBoundingSphere();});
+          });
+        });
       }
       template.scale.copy(sourceScale);
     } catch {

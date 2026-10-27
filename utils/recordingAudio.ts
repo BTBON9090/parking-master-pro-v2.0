@@ -256,21 +256,25 @@ export function setRecordingAudioVisibility(hidden: boolean): void {
   if (ctx) applyMasterGain(ctx);
 }
 
-export function playRecordingImpact(strength = 1): void {
+export function playRecordingImpact(strength = 1, cabin = false): void {
   if (!status.ready || !ctx || !master) return;
-  const key: AssetKey = Math.random() < 0.5 ? 'metal1' : 'metal2';
-  const buffer = buffers.get(key);
-  if (!buffer) return;
-  const source = ctx.createBufferSource();
-  source.buffer = buffer;
-  const gain = ctx.createGain();
+  const first:AssetKey=Math.random()<.5?'metal1':'metal2',second:AssetKey=first==='metal1'?'metal2':'metal1';
   const now = ctx.currentTime;
-  gain.gain.setValueAtTime(clamp(strength, 0.05, 0.85), now);
-  gain.gain.exponentialRampToValueAtTime(0.001, now + Math.min(0.8, buffer.duration));
-  source.connect(gain);
-  gain.connect(master);
-  source.start(now);
-  source.stop(now + buffer.duration + 0.02);
+  const layer=(key:AssetKey,delay:number,level:number,cutoff:number)=>{
+    const buffer=buffers.get(key);if(!buffer||!ctx||!master)return;
+    const source=ctx.createBufferSource(),gain=ctx.createGain(),filter=ctx.createBiquadFilter();
+    source.buffer=buffer;source.playbackRate.value=.94+Math.random()*.12;
+    filter.type='lowpass';filter.frequency.value=cabin?Math.min(cutoff,900):cutoff;
+    const start=now+delay,end=start+Math.min(.8,buffer.duration);
+    gain.gain.setValueAtTime(Math.max(.001,level),start);gain.gain.exponentialRampToValueAtTime(.001,end);
+    source.connect(filter);filter.connect(gain);gain.connect(master);
+    source.onended=()=>{source.disconnect();filter.disconnect();gain.disconnect();};source.start(start);source.stop(end+.02);
+  };
+  const energy=clamp(strength,0,1);
+  // Two short CC0 metal recordings with a muffled body layer, rather than a
+  // single repeated tinny hit. Master gain already includes user volume.
+  layer(first,0,.12+energy*.4,3800);layer(first,0,.12+energy*.25,300);
+  if(energy>.28)layer(second,.045,.08+energy*.15,2200);
 }
 
 export function disposeRecordingAudio(): void {

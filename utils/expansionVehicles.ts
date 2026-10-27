@@ -33,7 +33,7 @@ export const EXPANSION_CARS={
  [CarType.N90]:suv(CarType.N90,'小米澎程 N90 Max',[5.285,1.998,1.825,3.080],310,540,190,5.9,2650,5.95,.3837,'#447f80'),
  [CarType.JEEP]:manual(CarType.JEEP,'山地吉普 · 手动四驱',4.66,1.89,1.91,2.8,2050,140,350,160,.40,'AWD','#536c48'),
  [CarType.MIDIBUS]:manual(CarType.MIDIBUS,'远行中巴 · 手动',6.4,2.18,2.65,3.65,4500,110,430,110,.43,'RWD','#b6b39d'),
- [CarType.COACH]:manual(CarType.COACH,'长途大巴 · 手动',10.2,2.42,3.15,5.8,10500,220,1100,105,.51,'RWD','#55727b'),
+ [CarType.COACH]:manual(CarType.COACH,'长途大巴 · 手动',10.2,2.42,3.15,5.8,10500,220,1100,105,.52175,'RWD','#55727b'),
  [CarType.VAN]:manual(CarType.VAN,'短轴接驳车 · 手动',5.6,2.05,2.38,3.25,2650,105,320,140,.37,'RWD','#c4c0ac'),
  [CarType.LIGHT_TRUCK]:manual(CarType.LIGHT_TRUCK,'长轴接驳车 · 手动',7.2,2.28,2.85,4.1,6200,135,520,105,.46,'RWD','#61734f'),
 };

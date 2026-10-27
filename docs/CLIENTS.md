@@ -1,4 +1,4 @@
-# 独立客户端 · 0.23.0
+# 独立客户端 · 0.23.1
 
 同一份 Three.js 游戏由 Electron（Mac / Windows）与 Capacitor（Android / iOS）承载。资源随安装包分发，驾驶无需联网；作者链接和检查更新需要联网。
 

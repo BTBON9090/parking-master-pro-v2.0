@@ -17,7 +17,7 @@ export function DrivingGuide({done,settings}:{done:()=>void;settings:UserSetting
  ];if(isTouchDevice()){
  lessons[0].desc='右侧按住油门起步，松开滑行；踏板上滑越多，力度越大，右侧红条为油门、绿条为刹车。可以同时操作方向盘与踏板。';
  lessons[1].desc='右侧 R / N / D 选择倒挡、空挡和前进挡，− / ＋控制手动挡。按住手刹临时制动，驻车 P 点按开关。';
- lessons[2].desc='用右侧转向条定位方向：中点回正，两端分别打满。手指滑出边缘仍保持打满，可同时操作踏板；松手后辅助回正。';
+ lessons[2].desc='左侧区域按手指的横向位置转向：中间回正，两端打满，上方刻度显示方向；可同时操作踏板，松手后辅助回正。';
  lessons[3].desc='拖动转向区域以外的空白处观察四周；车内转头范围有限，双击可回正。顶部“视角”切换机位。';
  lessons[4].desc='右上角可启停动力、切换灯光与驻车。顶部打开设置、地图或事故重置。设置中可换车、换图和降低渲染清晰度。';
  }const lesson=lessons[step];

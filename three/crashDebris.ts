@@ -21,7 +21,7 @@ export class CrashDebris {
   const p=new THREE.Vector3();for(const item of shell)p.add(item.mesh.position);
   return shell.length?p.divideScalar(shell.length):this.group.position.clone();
  }
- constructor(source:THREE.Group,velocity:{x:number;y:number},heading:number,obstacles:Obstacle[],private surface:(x:number,z:number,height:number)=>number,normal={x:-Math.cos(heading),y:-Math.sin(heading)}, options:{looseParts?:THREE.Object3D[];yawRate?:number;mass?:number;bounds?:{width:number;height:number}}={}) {
+ constructor(source:THREE.Group,velocity:{x:number;y:number},heading:number,obstacles:Obstacle[],private surface:(x:number,z:number,height:number)=>number,normal={x:-Math.cos(heading),y:-Math.sin(heading)}, options:{looseParts?:THREE.Object3D[];yawRate?:number;mass?:number;bounds?:{width:number;height:number};spawnDriver?:boolean}={}) {
   this.bounds=options.bounds;
   this.group.name=options.looseParts?'impact-loose-parts':'vehicle-wreck-and-driver';this.world.allowSleep=true;this.world.broadphase=new CANNON.SAPBroadphase(this.world);this.world.defaultContactMaterial.friction=.55;this.world.defaultContactMaterial.restitution=.22;
   source.updateWorldMatrix(true,true);
@@ -112,6 +112,7 @@ export class CrashDebris {
   });
   // A small clothed crash-test driver, connected by ball joints. All parts
   // leave the seat together and articulate as inertia and gravity act.
+  if(options.spawnDriver!==false){
   const suit=new THREE.MeshStandardMaterial({color:'#d98036',roughness:1});
   const dark=new THREE.MeshStandardMaterial({color:'#345d7b',roughness:1});this.materials.push(suit,dark);
   const forward=new THREE.Vector3(Math.cos(heading),0,Math.sin(heading));
@@ -132,6 +133,7 @@ export class CrashDebris {
   }
   const joints=[{i:1,a:[0,3.1,0],b:[0,-1.4,0]},{i:2,a:[-2,2,0],b:[1.3,2,0]},{i:3,a:[2,2,0],b:[-1.3,2,0]},{i:4,a:[-1.2,-3,0],b:[0,3,0]},{i:5,a:[1.2,-3,0],b:[0,3,0]}];
   joints.forEach(j=>{const c=new CANNON.PointToPointConstraint(bodies[0],new CANNON.Vec3(...j.a as [number,number,number]),bodies[j.i],new CANNON.Vec3(...j.b as [number,number,number]),1e5);c.collideConnected=false;this.world.addConstraint(c);});
+  }
   }
   obstacles.filter(o=>(o.type==='wall'||o.type==='car'||o.type==='box')&&Math.hypot(o.x-origin.x,o.y-origin.z)<900).sort((a,b)=>Math.hypot(a.x-origin.x,a.y-origin.z)-Math.hypot(b.x-origin.x,b.y-origin.z)).slice(0,100).forEach(o=>{
    const h=o.verticalHeight??(o.type==='car'?17:30),b=new CANNON.Body({mass:0,shape:new CANNON.Box(new CANNON.Vec3(o.width/2,h/2,o.height/2)),position:new CANNON.Vec3(o.x,(o.elevation??0)+h/2,o.y)});

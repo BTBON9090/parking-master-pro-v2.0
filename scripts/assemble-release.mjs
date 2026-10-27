@@ -4,7 +4,7 @@ import {renderDownloadPage} from './render-download-links.mjs';
 const {version}=JSON.parse(fs.readFileSync('package.json','utf8'));
 const platforms=[['mac-arm64',`Parking-Master-Pro-${version}-mac-arm64.dmg`],['mac-x64',`Parking-Master-Pro-${version}-mac-x64.dmg`],['windows-x64',`Parking-Master-Pro-${version}-win-x64.exe`],['android',`Parking-Master-Pro-${version}-android.apk`],['ios-source',`Parking-Master-Pro-${version}-iOS-Project.zip`]];
 const assets=platforms.map(([platform,name])=>{const bytes=fs.readFileSync('release/'+name);return {platform,name,size:bytes.length,sha256:crypto.createHash('sha256').update(bytes).digest('hex'),url:`https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/${version}/${name}`};});
-const manifest={version,date:new Date().toISOString().slice(0,10),githubRelease:`https://github.com/BTBON9090/parking-master-pro-v2.0/releases/tag/v${version}`,notes:'测试版：驾校考试计分与完整考点尚未完成；低速闪屏及操控须在安卓真机复验。Mac / Windows 安装包未签名；iOS 提供工程，暂无 IPA。',assets};
+const manifest={version,date:new Date().toISOString().slice(0,10),githubRelease:`https://github.com/BTBON9090/parking-master-pro-v2.0/releases/tag/v${version}`,notes:'体验测试版：修复客车视野、后视镜和移动端转向；驾校考试计分与完整考点尚未完成。Mac / Windows 安装包未签名；iOS 提供工程，暂无 IPA。',assets};
 fs.writeFileSync('distribution/site/latest.json',JSON.stringify(manifest,null,2)+'\n');
 renderDownloadPage();
 fs.writeFileSync('release/SHA256SUMS.txt',assets.map(x=>`${x.sha256}  ${x.name}`).join('\n')+'\n');
