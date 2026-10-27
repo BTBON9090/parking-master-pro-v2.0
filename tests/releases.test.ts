@@ -42,12 +42,13 @@ const html=fs.readFileSync('distribution/site/index.html','utf8');
 const release=JSON.parse(fs.readFileSync('distribution/site/latest.json','utf8'));
 const rendered=renderDownloadHtml(html,release);
 assert.equal(renderDownloadHtml(rendered,release),rendered,'release assembly is idempotent');
+assert(rendered.includes(`src="downloads.js?v=${release.version}"`),'old cached scripts cannot overwrite new static links');
 const tags=rendered.match(/<a\b[^>]*data-(?:backup-)?platform="[^"]+"[^>]*>/g)!;
 assert.equal(tags.length,6);
 for(const tag of tags){
  assert(tag.includes('href="https://'));assert(tag.includes('referrerpolicy="no-referrer"'));
  assert(!tag.includes('aria-disabled'));assert(!/class="[^"]*\bdisabled\b/.test(tag));
- assert(tag.includes(tag.includes('data-backup-platform')?COS_ORIGIN:DOWNLOAD_ORIGIN));
+ assert(tag.includes(tag.includes('data-backup-platform')?'https://github.com/BTBON9090/parking-master-pro-v2.0/releases/download/':DOWNLOAD_ORIGIN));
 }
 
 // Run the real website script without AbortController or AbortSignal, as an

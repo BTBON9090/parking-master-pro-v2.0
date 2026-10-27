@@ -1,0 +1,9 @@
+{
+  "page": "https://btbon.cn/parking-master/index.html#download",
+  "version": "0.22.4",
+  "asset": "Parking-Master-Pro-0.22.4-android.apk",
+  "bytes": 21093847,
+  "sha256": "ec59c7b59cf9610332f890aba433d4b9ed0cb3f37514d491a7794dab6a1a62f6",
+  "action": "Clicked Android APK link in browser; full download completed",
+  "signedUpdateCompatible": true
+}

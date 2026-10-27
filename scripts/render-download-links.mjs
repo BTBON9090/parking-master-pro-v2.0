@@ -9,10 +9,11 @@ export function renderDownloadHtml(html,release){
  }
  html=html.replace(/<a\b[^>]*data-(backup-)?platform="([\w-]+)"[^>]*>/g,(tag,backup,platform)=>{
   const asset=release.assets.find(a=>a.platform===platform);if(!asset)throw Error('Missing platform '+platform);
-  const u=new URL(asset.url),href=(backup?COS:CDN)+u.pathname;
+  const u=new URL(asset.url),href=backup?`https://github.com/BTBON9090/parking-master-pro-v2.0/releases/download/v${release.version}/${asset.name}`:CDN+u.pathname;
   return tag.replace(/\s(?:href|aria-disabled|download|referrerpolicy)="[^"]*"/gi,'').replace(/\bdisabled\b/g,'').replace(/>$/,` href="${href}" referrerpolicy="no-referrer">`);
  });
- return html.replace(/(<span[^>]*id="version"[^>]*>)[^<]*(<\/span>)/,`$1v${release.version} · ${release.date}$2`);
+ return html.replace(/(<span[^>]*id="version"[^>]*>)[^<]*(<\/span>)/,`$1v${release.version} · ${release.date}$2`)
+  .replace(/src="downloads\.js(?:\?[^"]*)?"/,`src="downloads.js?v=${release.version}"`);
 }
 export function renderDownloadPage(){
  const file='distribution/site/index.html',release=JSON.parse(fs.readFileSync('distribution/site/latest.json','utf8'));

@@ -1,43 +1,43 @@
 {
-  "version": "0.22.3",
+  "version": "0.22.4",
   "date": "2026-10-27",
-  "githubRelease": "https://github.com/BTBON9090/parking-master-pro-v2.0/releases/tag/v0.22.3",
+  "githubRelease": "https://github.com/BTBON9090/parking-master-pro-v2.0/releases/tag/v0.22.4",
   "notes": "Mac / Windows 安装包尚未代码签名；iOS 提供工程，暂无 IPA。",
   "assets": [
     {
       "platform": "mac-arm64",
-      "name": "Parking-Master-Pro-0.22.3-mac-arm64.dmg",
-      "size": 154855060,
-      "sha256": "51a2efeecbc37e5bfb77c14c597bbf665bcf8f5dd472575c14305ca8409f9a98",
-      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.22.3/Parking-Master-Pro-0.22.3-mac-arm64.dmg"
+      "name": "Parking-Master-Pro-0.22.4-mac-arm64.dmg",
+      "size": 155756235,
+      "sha256": "77d01c240cc503add300a166fca9577ae219750851ca3def13f5c04fa48e4210",
+      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.22.4/Parking-Master-Pro-0.22.4-mac-arm64.dmg"
     },
     {
       "platform": "mac-x64",
-      "name": "Parking-Master-Pro-0.22.3-mac-x64.dmg",
-      "size": 159055136,
-      "sha256": "6cbb2c2b39933b4fa9c1c9d5bb3bf5140f3214e1a6fe9a968060921d5c1662d3",
-      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.22.3/Parking-Master-Pro-0.22.3-mac-x64.dmg"
+      "name": "Parking-Master-Pro-0.22.4-mac-x64.dmg",
+      "size": 160064649,
+      "sha256": "79e7bc977fbb84ef27220036b898b064b63710b3fe5f9d59760a537e6e8da277",
+      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.22.4/Parking-Master-Pro-0.22.4-mac-x64.dmg"
     },
     {
       "platform": "windows-x64",
-      "name": "Parking-Master-Pro-0.22.3-win-x64.exe",
-      "size": 141259029,
-      "sha256": "9db454638322947090c53f0c0fb45daacaf42deb1b6d294bee0d01c179d597ec",
-      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.22.3/Parking-Master-Pro-0.22.3-win-x64.exe"
+      "name": "Parking-Master-Pro-0.22.4-win-x64.exe",
+      "size": 141263120,
+      "sha256": "a3d88e177be9a21bbb5835b5cf373b111ec975e2d35dab34d160a23049e04e91",
+      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.22.4/Parking-Master-Pro-0.22.4-win-x64.exe"
     },
     {
       "platform": "android",
-      "name": "Parking-Master-Pro-0.22.3-android.apk",
-      "size": 21088501,
-      "sha256": "e9a11ab72ded39e96181b25d2a2423c303e1c851405f72146ec73ff2ebdb6524",
-      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.22.3/Parking-Master-Pro-0.22.3-android.apk"
+      "name": "Parking-Master-Pro-0.22.4-android.apk",
+      "size": 21093847,
+      "sha256": "ec59c7b59cf9610332f890aba433d4b9ed0cb3f37514d491a7794dab6a1a62f6",
+      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.22.4/Parking-Master-Pro-0.22.4-android.apk"
     },
     {
       "platform": "ios-source",
-      "name": "Parking-Master-Pro-0.22.3-iOS-Project.zip",
-      "size": 18775271,
-      "sha256": "9570025d5b8a53a84d9b733d8d9aa1557a84051682c63dfb13b594cf32f81242",
-      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.22.3/Parking-Master-Pro-0.22.3-iOS-Project.zip"
+      "name": "Parking-Master-Pro-0.22.4-iOS-Project.zip",
+      "size": 18848851,
+      "sha256": "283cf5b4578f9a519ff66655566acc9d1f1102e65d03291348f0f1fdb4e3ab49",
+      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.22.4/Parking-Master-Pro-0.22.4-iOS-Project.zip"
     }
   ]
 }

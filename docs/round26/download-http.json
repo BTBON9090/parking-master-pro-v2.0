@@ -1,0 +1,20 @@
+[
+  {
+    "origin": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com",
+    "referer": "https://btbon.cn/parking-master/index.html",
+    "status": 403
+  },
+  {
+    "origin": "https://cdn.btbon.cn",
+    "referer": "https://btbon.cn/parking-master/index.html",
+    "status": 206,
+    "range": "bytes 0-1023/21093847",
+    "contentType": "application/vnd.android.package-archive",
+    "zipSignature": "504b0304"
+  },
+  {
+    "origin": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com",
+    "referer": null,
+    "status": 403
+  }
+]

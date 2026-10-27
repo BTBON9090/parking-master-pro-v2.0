@@ -11,7 +11,7 @@ with ZipFile(output, 'w', ZIP_DEFLATED) as archive:
         if source.is_file() and not excluded.intersection(source.relative_to(root/'ios').parts):
             archive.write(source, source.relative_to(root))
     archive.write(root/'docs/CLIENTS.md', 'README.md')
-    # Capacitor plugins in CapApp-SPM refer to ../../../../node_modules.
+    # Capacitor plugins in CapApp-SPM refer to ../../../node_modules.
     # Include the lockfile so npm ci recreates those exact native dependencies.
     for name in ('package.json', 'package-lock.json', 'capacitor.config.ts'):
         archive.write(root/name, name)
