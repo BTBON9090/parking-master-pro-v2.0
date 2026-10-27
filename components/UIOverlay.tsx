@@ -1,3 +1,5 @@
+import {HudLayoutEditor} from './HudLayoutEditor';
+import {HudId,HudLayout,resolveHudLayout,hudStyle,isBus} from '../utils/mobileLayout';
 import {pedalFeedback} from '../utils/mobileInput';
 import {MobileControls} from './MobileControls';
 import {useTouchControls} from '../utils/device';
@@ -241,6 +243,13 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
   const [portrait,setPortrait]=useState(()=>window.innerHeight>window.innerWidth);
   useEffect(()=>{const resize=()=>setPortrait(window.innerHeight>window.innerWidth);window.addEventListener('resize',resize);return()=>window.removeEventListener('resize',resize);},[]);
   const [showSettings, setShowSettings] = useState(false);
+  const [layoutDraft,setLayoutDraft]=useState<HudLayout|null>(null);
+  const [hudViewport,setHudViewport]=useState(()=>({w:window.innerWidth,h:window.innerHeight}));
+  useEffect(()=>{const resize=()=>setHudViewport({w:window.innerWidth,h:window.innerHeight});window.addEventListener('resize',resize);return()=>window.removeEventListener('resize',resize);},[]);
+  const hudRects=resolveHudLayout(hudViewport.w,hudViewport.h,isBus(currentCarId),layoutDraft??settings.mobileHudLayout);
+  const layoutStyle=(id:HudId)=>hudStyle(hudRects[id],hudViewport.w,hudViewport.h);
+  const editLayout=()=>{setLayoutDraft(settings.mobileHudLayout??{});setShowSettings(false);};
+  const closeLayout=()=>{setLayoutDraft(null);setShowSettings(true);};
   const [showGuide,setShowGuide]=useState(()=>localStorage.getItem(GUIDE_VERSION)!=="done");
   // 按键绑定：点击某一行后捕获下一个按键
   const [captureBinding, setCaptureBinding] = useState<keyof typeof DEFAULT_KEY_BINDINGS | null>(null);
@@ -272,6 +281,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
   useEffect(() => {
     const onEscape = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return;
+      if(layoutDraft!==null){closeLayout();return;}
       if (captureBinding) return;               // 绑定捕获自己处理 Esc
       if (showSettings) { setShowSettings(false); return; }
       if (showTuning) { setShowTuning(false); return; }
@@ -281,7 +291,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
     };
     window.addEventListener('keydown', onEscape);
     return () => window.removeEventListener('keydown', onEscape);
-  }, [captureBinding, showSettings, showTuning, globalOverviewOpen, keyGuideOpen, setGlobalOverviewOpen]);
+  }, [captureBinding, showSettings, showTuning, globalOverviewOpen, keyGuideOpen, setGlobalOverviewOpen, layoutDraft]);
 
 
   const [physicsReadout, setPhysicsReadout] = useState<{ yawRate: number; slipAngle: number; turnRadius: number; steeringAngleDeg: number; speed: number; rpm:number } | null>(null);
@@ -451,7 +461,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
   }, [settings.rearviewMirrors, settings.mirrorSwapSides, settings.cockpitPackId,
       settings.mirrorAdjustments.left.screenX, settings.mirrorAdjustments.left.screenY,
       settings.mirrorAdjustments.right.screenX, settings.mirrorAdjustments.right.screenY,
-      settings.mirrorAdjustments.centre.screenX, settings.mirrorAdjustments.centre.screenY]);
+      settings.mirrorAdjustments.centre.screenX, settings.mirrorAdjustments.centre.screenY, layoutDraft, settings.mobileHudLayout, currentCarId]);
   useEffect(() => () => publishMirrorGlassLayout(null), []);
 
   useEffect(() => {
@@ -807,8 +817,8 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
   }, [inputState.engineStarted]);
 
   useEffect(() => {
-      onSettingsToggle(showSettings || showGuide || (touch&&portrait));
-  }, [showSettings, showGuide, onSettingsToggle,touch,portrait]);
+      onSettingsToggle(showSettings || layoutDraft!==null || showGuide || (touch&&portrait));
+  }, [showSettings, layoutDraft!==null, showGuide, onSettingsToggle,touch,portrait]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -1034,6 +1044,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                       <SideMirrorFrame
                           key={id}
                           id={id}
+                          layoutStyle={touch?layoutStyle(isLeftSlot?"mirrorLeft":"mirrorRight"):undefined}
                           pack={cockpitPack}
                           adjustment={settings.mirrorAdjustments[id]}
                           onAdjust={a=>updateSettings({mirrorAdjustments:{...settings.mirrorAdjustments,[id]:a}})}
@@ -1043,6 +1054,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                   );
               })}
               <CentreMirrorFrame
+                  layoutStyle={touch?layoutStyle("mirrorCentre"):undefined}
                   pack={cockpitPack}
                   adjustment={settings.mirrorAdjustments.centre}
                   onAdjust={a=>updateSettings({mirrorAdjustments:{...settings.mirrorAdjustments,centre:a}})}
@@ -1472,8 +1484,8 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
       )}
 
       {/* ===== 底部座舱总成：第一人称只显示仪表，实体方向盘承担转向 ===== */}
-      <div className="main-instruments absolute bottom-5 left-1/2 -translate-x-1/2 pointer-events-none z-40">
-          <div className="instrument-scale" style={cameraView === 'HOOD'
+      <div className={`main-instruments absolute bottom-5 left-1/2 -translate-x-1/2 pointer-events-none z-40 ${touch?"hud-positioned":""}`} style={touch?layoutStyle("dashboard"):undefined}>
+          <div className="instrument-scale" style={touch?{'--hud-scale-x':hudRects.dashboard.width*hudViewport.w/422,'--hud-scale-y':hudRects.dashboard.height*hudViewport.h/190,transformOrigin:'top left',position:'absolute',top:0,left:0,width:422} as React.CSSProperties:cameraView === 'HOOD'
               ? { transform: `scale(${firstPersonScale})`, transformOrigin: 'bottom center' }
               : undefined}>
               <CockpitCluster
@@ -1495,9 +1507,12 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
       </div>
 
       {/* ===== 设置抽屉（语言 + 按键指南 已迁移至此） ===== */}
-      {touch&&<MobileControls input={inputState} update={setInputState} car={currentCarId} disabled={showSettings||showGuide||portrait} settings={()=>setShowSettings(true)} camera={()=>{const views:CameraView[]=['HOOD','FOLLOW_NEAR','FOLLOW_FAR','TOP','REVERSE'];onCameraViewChange(views[(views.indexOf(cameraView)+1)%views.length]);}} map={()=>setGlobalOverviewOpen(!globalOverviewOpen)} reset={resetLevel}/>}
+      {touch&&<MobileControls input={inputState} update={setInputState} car={currentCarId} layout={layoutStyle} editing={layoutDraft!==null} disabled={showSettings||showGuide||portrait||layoutDraft!==null} settings={()=>setShowSettings(true)} camera={()=>{const views:CameraView[]=['HOOD','FOLLOW_NEAR','FOLLOW_FAR','TOP','REVERSE'];onCameraViewChange(views[(views.indexOf(cameraView)+1)%views.length]);}} map={()=>setGlobalOverviewOpen(!globalOverviewOpen)} reset={resetLevel}/>}
       {touch&&portrait&&!showSettings&&<div className="rotate-device" role="status"><strong>请横屏驾驶</strong><p>转动手机，展开方向盘和踏板。</p><button onClick={()=>setShowSettings(true)}>打开设置</button></div>}
-      {showSettings && <SettingsPage settings={settings} update={updateSettings} car={currentCarId} level={level} openWorld={!!levelData?.openWorld} onCar={onChangeCar} onMap={onChangeMap} onTravel={onTravel} close={()=>setShowSettings(false)} reset={resetLevel} exit={exitGame} lang={lang} setLang={setLang} capture={captureBinding} bind={setCaptureBinding} guide={()=>{setShowSettings(false);setShowGuide(true);}}/>}
+      {showSettings && <SettingsPage onLayout={editLayout} settings={settings} update={updateSettings} car={currentCarId} level={level} openWorld={!!levelData?.openWorld} onCar={onChangeCar} onMap={onChangeMap} onTravel={onTravel} close={()=>setShowSettings(false)} reset={resetLevel} exit={exitGame} lang={lang} setLang={setLang} capture={captureBinding} bind={setCaptureBinding} guide={()=>{setShowSettings(false);setShowGuide(true);}}/>}
+      {layoutDraft!==null && <HudLayoutEditor rects={hudRects} width={hudViewport.w} height={hudViewport.h}
+        change={patch=>setLayoutDraft(v=>({...v,...patch}))} reset={()=>setLayoutDraft({})} cancel={closeLayout}
+        save={()=>{updateSettings({mobileHudLayout:layoutDraft});closeLayout();}}/>}
       {showGuide && <DrivingGuide settings={settings} done={()=>setShowGuide(false)}/>}
 
       {/* 首次进入：操控提示（车辆一动或 20 秒后自动收起） */}

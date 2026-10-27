@@ -1,5 +1,6 @@
 import {Capacitor,CapacitorHttp} from '@capacitor/core';
-export const APP_VERSION='0.23.1';
+import {version} from '../package.json';
+export const APP_VERSION=version;
 export const RELEASE_PAGE='https://btbon.cn/parking-master/index.html#download';
 export const DOWNLOAD_ORIGIN='https://cdn.btbon.cn';
 export const COS_ORIGIN='https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com';

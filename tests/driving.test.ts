@@ -47,7 +47,7 @@ for (const car of Object.values(CAR_MODELS)) {
 
   const angles=ackermannAngles(steer,car.wheelbase,car.width*.46);
   assert(angles.right>angles.left && angles.left>0);
-  assert(Math.abs(steeringWheelMaxDeg(car) - Math.min(540, car.dynamics.steeringRatio * steer * 180 / Math.PI)) < 1e-7);
+  assert(Math.abs(steeringWheelMaxDeg(car) - (car.dynamics.steeringRatio * steer * 180 / Math.PI)) < 1e-7);
   const pt=getPowertrain(car.id);
   assert(pt.gearTops.every(v=>Number.isFinite(v)&&v>0));
   assert(pt.peakAccel.every(v=>Number.isFinite(v)&&v>0));

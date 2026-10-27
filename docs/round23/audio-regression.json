@@ -34,5 +34,35 @@
     "cabinRoadAmplitudeRatio": 0.28600000000000003,
     "driveToneHz": 85.5,
     "cabinMotorGain": 0.010965405601253425
+  },
+  {
+    "id": "JEEP",
+    "cabinRoadAmplitudeRatio": 0.28600000000000003,
+    "driveToneHz": 85.5,
+    "cabinMotorGain": 0.010965405601253425
+  },
+  {
+    "id": "MIDIBUS",
+    "cabinRoadAmplitudeRatio": 0.28600000000000003,
+    "driveToneHz": 85.5,
+    "cabinMotorGain": 0.010965405601253425
+  },
+  {
+    "id": "COACH",
+    "cabinRoadAmplitudeRatio": 0.28600000000000003,
+    "driveToneHz": 85.5,
+    "cabinMotorGain": 0.010965405601253425
+  },
+  {
+    "id": "VAN",
+    "cabinRoadAmplitudeRatio": 0.28600000000000003,
+    "driveToneHz": 85.5,
+    "cabinMotorGain": 0.010965405601253425
+  },
+  {
+    "id": "LIGHT_TRUCK",
+    "cabinRoadAmplitudeRatio": 0.28600000000000003,
+    "driveToneHz": 85.5,
+    "cabinMotorGain": 0.010965405601253425
   }
 ]

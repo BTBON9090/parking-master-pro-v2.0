@@ -11,6 +11,7 @@ import { garageFloorAt, GARAGE_LEVELS } from '../utils/garage';
 // The scene and audio own native resources and long-lived frame closures.
 // Remount on development edits so a new mixer cannot use an older graph.
 import { CrashDebris } from '../three/crashDebris';
+import {createSkidRibbon} from '../three/skidRibbon';
 import {AccidentFire} from '../three/accidentFire';
 import {VehicleDamage} from '../three/vehicleDamage';
 import type {DamageTier} from '../utils/impactResponse';
@@ -49,6 +50,7 @@ import { computeRpm, getPowertrain, isElectricVehicle, steeringWheelMaxDeg, SPEE
 import { stepLongitudinal } from '../utils/longitudinal';
 import { approachExponential, elapsedFramesFromMs, simulationDeltaMs } from '../utils/timeStep';
 import { resolveHoodCameraLocalPose } from '../utils/hoodCamera';
+import { measuredMirrorMounts } from '../three/mirrorMounts';
 import { getMirrorGlassLayout } from '../utils/mirrorLayout';
 import { driverWheelRotationZ, rearSteerAngleForSpeed } from '../utils/steering';
 import { stepHeadLook } from '../utils/headLook';
@@ -669,6 +671,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     let hoodRearEdgeCount = 0;
     let lastGhostBody = false;
     let playerBodyTiltPivot: THREE.Group | null = null;
+    let nativeMirrors:[THREE.Vector3,THREE.Vector3]|null=null;
     let firstPersonBodyFrame: THREE.Group | null = null;
     let playerPaintBodyMeshes: THREE.Object3D[] = [];
     let playerGlassMeshes: THREE.Object3D[] = [];
@@ -725,9 +728,8 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     let longitudinalStallTimer = 0;
     let lastLaneWarningAt = 0;
     let lastMiniMapUpdateAt = 0;
-    let lastSkidPosition: Vector2 | null = null;
+    let lastSkidPosition: {x:number;y:number;rotation:number;height:number} | null = null;
     const skidMarks: THREE.Mesh[] = [];
-    const skidMarkGeo = new THREE.PlaneGeometry(1.8, 1);
     const skidCanvas=document.createElement('canvas');skidCanvas.width=64;skidCanvas.height=8;
     const skidContext=skidCanvas.getContext('2d')!;
     const skidGradient=skidContext.createLinearGradient(0,0,64,0);
@@ -1009,6 +1011,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       });
       playerBodyRigRoots.forEach(root => playerBodyTiltPivot!.attach(root));
       playerBodyTiltPivot.rotation.order = 'YXZ';
+      nativeMirrors=measuredMirrorMounts(built.playerCarParts.group);
 
       const nativeCockpit = built.playerCarParts.nativeCockpit;
       if (nativeCockpit) {
@@ -1502,12 +1505,12 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
 
     // ===== 音效辅助函数 =====
     const playCrashSound = (force: number) => {
-      const raw=settingsRef.current; const s={...raw,volume:raw.volume*(cameraViewRef.current==='HOOD'?(raw.cabinVolume??.7):(raw.exteriorVolume??.85))};
+      const raw=settingsRef.current; const s={...raw,volume:raw.volume*(cameraViewRef.current==='HOOD'?2*(raw.cabinVolume??.7):(raw.exteriorVolume??.85))};
       if (!s.soundEnabled || !audioContextRef.current) return;
       const ctx = audioContextRef.current;
       if (ctx.state === 'closed') return;
       if (getRecordingAudioStatus().ready) {
-        playRecordingImpact(Math.min(0.85, Math.sqrt(force / 6)) * (cameraViewRef.current==='HOOD'?(raw.cabinVolume??.7):(raw.exteriorVolume??.85)),cameraViewRef.current==='HOOD');
+        playRecordingImpact(Math.min(0.85, Math.sqrt(force / 6)),cameraViewRef.current==='HOOD');
         return;
       }
       const intensity = Math.min(0.85, Math.sqrt(force / 6));
@@ -1545,7 +1548,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
 
     // 转向指示器咔哒声：1→2 半圈过渡（打入）/ 3→2 半圈过渡（回正）
     const playSteeringClick = () => {
-      const raw=settingsRef.current; const s={...raw,volume:raw.volume*(cameraViewRef.current==='HOOD'?(raw.cabinVolume??.7):(raw.exteriorVolume??.85))};
+      const raw=settingsRef.current; const s={...raw,volume:raw.volume*(cameraViewRef.current==='HOOD'?2*(raw.cabinVolume??.7):(raw.exteriorVolume??.85))};
       if (!s.soundEnabled || !s.steeringSoundEnabled || !inputRef.current.engineStarted || !audioContextRef.current) return;
       const ctx = audioContextRef.current;
       if (ctx.state === 'closed') return;
@@ -1561,7 +1564,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
 
     // 转向指示器滴滴声：2→3 半圈过渡（打入深打）
     const playSteeringBeep = () => {
-      const raw=settingsRef.current; const s={...raw,volume:raw.volume*(cameraViewRef.current==='HOOD'?(raw.cabinVolume??.7):(raw.exteriorVolume??.85))};
+      const raw=settingsRef.current; const s={...raw,volume:raw.volume*(cameraViewRef.current==='HOOD'?2*(raw.cabinVolume??.7):(raw.exteriorVolume??.85))};
       if (!s.soundEnabled || !s.steeringSoundEnabled || !inputRef.current.engineStarted || !audioContextRef.current) return;
       const ctx = audioContextRef.current;
       if (ctx.state === 'closed') return;
@@ -1579,7 +1582,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
 
     // 转向呲呲声：2→1 半圈过渡（回正放松）
     const playSteeringHiss = () => {
-      const raw=settingsRef.current; const s={...raw,volume:raw.volume*(cameraViewRef.current==='HOOD'?(raw.cabinVolume??.7):(raw.exteriorVolume??.85))};
+      const raw=settingsRef.current; const s={...raw,volume:raw.volume*(cameraViewRef.current==='HOOD'?2*(raw.cabinVolume??.7):(raw.exteriorVolume??.85))};
       if (!s.soundEnabled || !s.steeringSoundEnabled || !inputRef.current.engineStarted || !audioContextRef.current) return;
       const ctx = audioContextRef.current;
       if (ctx.state === 'closed') return;
@@ -1599,7 +1602,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
 
     // 障碍物距离检测嘟嘟声（模拟真实倒车雷达蜂鸣器）
     const playProximityBeep = (urgency: number) => {
-      const raw=settingsRef.current; const s={...raw,volume:raw.volume*(cameraViewRef.current==='HOOD'?(raw.cabinVolume??.7):(raw.exteriorVolume??.85))};
+      const raw=settingsRef.current; const s={...raw,volume:raw.volume*(cameraViewRef.current==='HOOD'?2*(raw.cabinVolume??.7):(raw.exteriorVolume??.85))};
       if (!s.soundEnabled || !s.radarSoundEnabled || !inputRef.current.engineStarted || !audioContextRef.current) return;
       const ctx = audioContextRef.current;
       if (ctx.state === 'closed') return;
@@ -1623,7 +1626,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     let radarStationaryMs = 0;
 
     const playBrakeSound = (force: number) => {
-      const raw=settingsRef.current; const s={...raw,volume:raw.volume*(cameraViewRef.current==='HOOD'?(raw.cabinVolume??.7):(raw.exteriorVolume??.85))};
+      const raw=settingsRef.current; const s={...raw,volume:raw.volume*(cameraViewRef.current==='HOOD'?2*(raw.cabinVolume??.7):(raw.exteriorVolume??.85))};
       if (!s.soundEnabled || !s.engineSoundEnabled || !audioContextRef.current) return;
       const ctx = audioContextRef.current;
       if (ctx.state === 'closed') return;
@@ -1640,7 +1643,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     };
 
     const playHornSound = () => {
-      const raw=settingsRef.current; const s={...raw,volume:raw.volume*(cameraViewRef.current==='HOOD'?(raw.cabinVolume??.7):(raw.exteriorVolume??.85))};
+      const raw=settingsRef.current; const s={...raw,volume:raw.volume*(cameraViewRef.current==='HOOD'?2*(raw.cabinVolume??.7):(raw.exteriorVolume??.85))};
       if (!s.soundEnabled || !audioContextRef.current) return;
       const ctx = audioContextRef.current;
       if (ctx.state === 'closed') return;
@@ -1661,7 +1664,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     };
 
     const playSuccessSound = (isPenalty: boolean) => {
-      const raw=settingsRef.current; const s={...raw,volume:raw.volume*(cameraViewRef.current==='HOOD'?(raw.cabinVolume??.7):(raw.exteriorVolume??.85))};
+      const raw=settingsRef.current; const s={...raw,volume:raw.volume*(cameraViewRef.current==='HOOD'?2*(raw.cabinVolume??.7):(raw.exteriorVolume??.85))};
       const ctx = audioContextRef.current;
       if (!s.soundEnabled || !ctx || ctx.state === 'closed') return;
       // The context starts suspended until a user gesture and is also
@@ -1879,7 +1882,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
 
       const cc = CAR_MODELS[currentCarIdRef.current];
       const baseSettings=settingsRef.current;
-      const sCur={...baseSettings,volume:baseSettings.volume*(cameraViewRef.current==='HOOD'?(baseSettings.cabinVolume??.7):(baseSettings.exteriorVolume??.85))};
+      const sCur={...baseSettings,volume:baseSettings.volume*(cameraViewRef.current==='HOOD'?2*(baseSettings.cabinVolume??.7):(baseSettings.exteriorVolume??.85))};
       const ldCur = levelDataRef.current;
       const playerParts = built.playerCarParts;
       damageModel ??= new VehicleDamage(playerParts.group);
@@ -2187,7 +2190,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         // drivetrain layout changes how throttle affects it. At parking speed
         // the factor tends to 1, preserving exact Ackermann manoeuvring.
         const speedMs = Math.abs(car.speed) * SPEED_UNIT_KMH / 3.6;
-        const requestedRearSteer = rearSteerAngleForSpeed(cc.dynamics.rearSteerMaxDeg, car.speed, car.steeringAngle, carMaxSteer);
+        const requestedRearSteer = rearSteerAngleForSpeed(cc.dynamics.rearSteerMaxDeg, car.speed, car.steeringAngle, carMaxSteer, cc.dynamics.rearSteerFadeStartKmh, cc.dynamics.rearSteerFadeEndKmh, cc.dynamics.rearSteerHighSpeedDeg);
         const rearSteerAngle = limitRearAxleSteer(car.steeringAngle, requestedRearSteer, rigWheelbase, halfTrack,
           (cc.dynamics.rearSteerMaxDeg ?? 0) * Math.PI / 180);
         // All four knuckles point at one common ICR. Rear steering therefore
@@ -2515,28 +2518,24 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
             accidentRecoveryPose={...recoveryPose};
             damage=Math.min(1,damage+response.damage);lastDamageAt=simulationClockMs;setDamagePercent(Math.round(damage*100));
             setDamageTier(previous=>previous==='moderate'&&response.tier==='light'?previous:response.tier);
-            if(!response.catastrophic){
-              const contact=new THREE.Vector3(car.x+arm.x*10,playerParts.group.position.y+cc.height*.42,car.y+arm.y*10);
-              const pieces=damageModel!.apply(response.tier,contact,new THREE.Vector3(contactNormal.x,0,contactNormal.y),response.closing);
-              if(pieces.length){
-                const debris=new CrashDebris(playerParts.group,{x:incoming.x*10,y:incoming.y*10},car.rotation,ldCur.obstacles,
-                  (x,z,height)=>sampleTerrainSurface(ldCur,x,z,height).height,contactNormal,{looseParts:pieces,yawRate:impactMotion.yaw,bounds:{width:ldCur.mapWidth,height:ldCur.mapHeight}});
-                looseDebris.push(debris);scene.add(debris.group);
-                if(looseDebris.length>6)looseDebris.shift()!.dispose();
-              }
-              if(response.closing>10&&fires.length===0){
-                const fire=new AccidentFire(new THREE.Vector3(car.x,car.roadHeight??0,car.y),car.rotation,false);fires.push(fire);scene.add(fire.group);
-                car.speed=0;impactMotion.time=0;setWrecked(true);
-              }
+            const contact=new THREE.Vector3(car.x+arm.x*10,playerParts.group.position.y+cc.height*.42,car.y+arm.y*10);
+            // The load-bearing shell remains intact even in the explosion mode.
+            const pieces=damageModel!.apply(response.catastrophic?'moderate':response.tier,contact,
+              new THREE.Vector3(contactNormal.x,0,contactNormal.y),response.closing);
+            if(pieces.length){
+              const debris=new CrashDebris(playerParts.group,{x:incoming.x*10,y:incoming.y*10},car.rotation,ldCur.obstacles,
+                (x,z,height)=>sampleTerrainSurface(ldCur,x,z,height).height,contactNormal,
+                {looseParts:pieces,yawRate:impactMotion.yaw,bounds:{width:ldCur.mapWidth,height:ldCur.mapHeight},spawnDriver:false});
+              looseDebris.push(debris);scene.add(debris.group);
+              if(looseDebris.length>6)looseDebris.shift()!.dispose();
             }
-            if(response.catastrophic){
-              // Capture the complete exterior even when impact occurs in the cabin.
-              setFirstPersonBody(false);playerParts.wheels.forEach(w=>w.visible=true);playerParts.wheelMounts.forEach(w=>w.visible=true);
-              wreck=new CrashDebris(playerParts.group,{x:incoming.x*10,y:incoming.y*10},car.rotation,ldCur.obstacles,
-                (x,z,height)=>sampleTerrainSurface(ldCur,x,z,height).height,contactNormal,{yawRate:impactMotion.yaw,mass:cc.weight,bounds:{width:ldCur.mapWidth,height:ldCur.mapHeight},spawnDriver:false});
-              scene.add(wreck.group);destroyed=true;setWrecked(true);damage=1;setDamagePercent(100);
-              const fire=new AccidentFire(new THREE.Vector3(car.x,car.roadHeight??0,car.y),car.rotation,true);fires.push(fire);scene.add(fire.group);
-              car.speed=0;impactMotion.time=0;playerParts.group.visible=false;
+            if(response.closing>14&&fires.length===0){
+              const explosion=response.closing>=24;
+              const fire=new AccidentFire(new THREE.Vector3(car.x,car.roadHeight??0,car.y),car.rotation,explosion,
+                {vehicle:playerParts.group,width:cc.width,length:cc.length,height:cc.height,surface:(x,z)=>sampleTerrainSurface(ldCur,x,z,car.roadHeight).height});
+              fires.push(fire);scene.add(fire.group);setWrecked(true);
+              damage=explosion?1:Math.max(.75,damage);setDamagePercent(Math.round(damage*100));
+              car.speed=0;impactMotion.time=0;
             }
           }
 
@@ -2879,49 +2878,24 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           suspensionTelemetryRef.current.wheelGrounded=[false,false,false,false];
         }
         const effectiveRoadPitch=chassisState.pitch-suspensionPitch;
-        if (isSkiddingNow && renderSlope.height < 0.4) {
-          const travelled = lastSkidPosition
-            ? Math.hypot(car.x - lastSkidPosition.x, car.y - lastSkidPosition.y)
-            : Infinity;
-          if (lastSkidPosition && travelled > 0.35 && travelled < 60) {
-            const forwardX = Math.cos(car.rotation);
-            const forwardY = Math.sin(car.rotation);
-            const sideX = -forwardY;
-            const sideY = forwardX;
-            const rearX = (car.x+lastSkidPosition.x)/2 - forwardX * rigWheelbase * 0.46;
-            const rearY = (car.y+lastSkidPosition.y)/2 - forwardY * rigWheelbase * 0.46;
-            const motionX=car.x-lastSkidPosition.x,motionY=car.y-lastSkidPosition.y;
-            const halfTrack = cc.width * 0.34;
-            for (const side of [-1, 1]) {
-              const markMaterial = skidMarkMat.clone();
-              const mark = new THREE.Mesh(skidMarkGeo, markMaterial);
-              // Default PlaneGeometry lies in the XY plane. Use the same YXZ
-              // Euler order as the turn-assist dashes so the heading (Y) is
-              // applied first in world space, then the plane is laid flat by
-              // the X tilt. Without setting the order the mark ends up pinned
-              // on its edge instead of flat on the ground.
-              mark.rotation.order = 'YXZ';
-              mark.rotation.x = -Math.PI / 2;
-              mark.rotation.y = Math.atan2(-motionX,-motionY);
-              mark.scale.y = travelled + .06;
-              mark.position.set(rearX + sideX * halfTrack * side, 0.195, rearY + sideY * halfTrack * side);
-              mark.renderOrder = 5;
-              mark.userData.createdAt = simulationClockMs;
-              skidMarkGroup.add(mark);
-              skidMarks.push(mark);
+        if (isSkiddingNow && !destroyed && !rollover && suspensionTelemetryRef.current.wheelGrounded.some(Boolean)) {
+          const travelled=lastSkidPosition?Math.hypot(car.x-lastSkidPosition.x,car.y-lastSkidPosition.y):Infinity;
+          if(lastSkidPosition && travelled>.35 && travelled<30){
+            for(const side of [-1,1]){
+              if(!suspensionTelemetryRef.current.wheelGrounded[side===1?2:3])continue;
+              const point=(pose:{x:number;y:number;rotation:number})=>({
+                x:pose.x-Math.cos(pose.rotation)*rigWheelbase*.46-Math.sin(pose.rotation)*cc.width*.34*side,
+                z:pose.y-Math.sin(pose.rotation)*rigWheelbase*.46+Math.cos(pose.rotation)*cc.width*.34*side});
+              const geometry=createSkidRibbon(point(lastSkidPosition),point(car),1.8,
+                (x,z)=>sampleTerrainSurface(ldCur,x,z,car.roadHeight??lastSkidPosition!.height).height);
+              const mark=new THREE.Mesh(geometry,skidMarkMat.clone());
+              mark.renderOrder=5;mark.userData.createdAt=simulationClockMs;
+              skidMarkGroup.add(mark);skidMarks.push(mark);
             }
-            while (skidMarks.length > 320) {
-              const oldest = skidMarks.shift();
-              if (oldest) {
-                skidMarkGroup.remove(oldest);
-                (oldest.material as THREE.Material).dispose();
-              }
-            }
+            while(skidMarks.length>320){const old=skidMarks.shift()!;old.removeFromParent();old.geometry.dispose();(old.material as THREE.Material).dispose();}
           }
-          if(!lastSkidPosition || travelled > .35)lastSkidPosition = { x: car.x, y: car.y };
-        } else {
-          lastSkidPosition = null;
-        }
+          if(!lastSkidPosition||travelled>.35)lastSkidPosition={x:car.x,y:car.y,rotation:car.rotation,height:car.roadHeight??0};
+        }else lastSkidPosition=null;
 
         // Tyre rubber first remains readable, then fades progressively rather
         // than accumulating forever across a lesson.
@@ -2932,7 +2906,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           const material = mark.material as THREE.MeshBasicMaterial;
           if (age >= SKID_HOLD_MS + SKID_FADE_MS) {
             skidMarkGroup.remove(mark);
-            material.dispose();
+            material.dispose();mark.geometry.dispose();
             skidMarks.splice(index, 1);
           } else if (age > SKID_HOLD_MS) {
             material.opacity = 0.25 * (1 - (age - SKID_HOLD_MS) / SKID_FADE_MS);
@@ -3454,9 +3428,11 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           const tuning = mirrorSettings.mirrorAdjustments[id];
           const distance = tuning.targetDistance + mirrorCalibration.distance;
           const outward = Math.tan(THREE.MathUtils.degToRad(tuning.yaw)) * distance;
-          const mountForward = cc.length * (0.18 + tuning.mountForward * 0.16 + mirrorCalibration.forward);
-          const mountSide = Math.max(cc.width * 0.52, cc.width * (0.96 + tuning.mountOutward * 0.16 + mirrorCalibration.outward));
-          const mountHeight = 7.5 + tuning.mountHeight + mirrorCalibration.height;
+          const commercial=[CarType.MIDIBUS,CarType.COACH,CarType.VAN,CarType.LIGHT_TRUCK].includes(cc.id);
+          const mount=nativeMirrors?.[side===1?0:1];
+          const mountForward = commercial?(mount?.z??cc.length*.5-.3)+(tuning.mountForward+.6)*cc.length*.16:cc.length*(.18+tuning.mountForward*.16+mirrorCalibration.forward);
+          const mountSide = commercial?Math.abs(mount?.x??cc.width*.5+2.3)+(tuning.mountOutward+2.5)*cc.width*.16:Math.max(cc.width*.52,cc.width*(.96+tuning.mountOutward*.16+mirrorCalibration.outward));
+          const mountHeight = commercial?(mount?.y??cc.height-5.6)+(tuning.mountHeight-4.25):7.5+tuning.mountHeight+mirrorCalibration.height;
           const leftSlot = mirrorSettings.mirrorSwapSides ? id === 'right' : id === 'left';
           const viewportX = THREE.MathUtils.clamp((leftSlot ? 24 : window.innerWidth - 24 - mirrorWidth) + tuning.screenX, 8, window.innerWidth - mirrorWidth - 8);
           const viewportY = THREE.MathUtils.clamp(18 - tuning.screenY, 8, window.innerHeight - mirrorHeight - 8);
@@ -3502,7 +3478,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
 
         const centreTuning = mirrorSettings.mirrorAdjustments.centre;
         const centreX = THREE.MathUtils.clamp((window.innerWidth - centreWidth) / 2 + centreTuning.screenX, 8, window.innerWidth - centreWidth - 8);
-        const centreTop = THREE.MathUtils.clamp(76 + centreTuning.screenY, 8, window.innerHeight - centreHeight - 8);
+        const centreTop = THREE.MathUtils.clamp(centreTuning.screenY, 0, window.innerHeight - centreHeight - 8);
         const centreViewportY = window.innerHeight - centreTop - centreHeight;
         const centreGlass = resolveGlassRect('centre', {
           x: centreX,

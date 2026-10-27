@@ -52,5 +52,50 @@
     "minTreadGapCm": -5.696815863487359e-7,
     "maxTravelCm": 6.7754524646882865,
     "fastestGapCm": 1.1368683772161603e-12
+  },
+  {
+    "id": "JEEP",
+    "cases": 45,
+    "maxGapCm": 5.3290705182007514e-14,
+    "maxAxleDriftMm": 3.552713678800501e-13,
+    "minTreadGapCm": -5.911785638801348e-7,
+    "maxTravelCm": 6.3782230191327915,
+    "fastestGapCm": 1.1368683772161603e-12
+  },
+  {
+    "id": "MIDIBUS",
+    "cases": 45,
+    "maxGapCm": 7.105427357601002e-14,
+    "maxAxleDriftMm": 7.105427357601002e-13,
+    "minTreadGapCm": -6.2342524032033e-7,
+    "maxTravelCm": 6.830223026024797,
+    "fastestGapCm": 1.7053025658242404e-12
+  },
+  {
+    "id": "COACH",
+    "cases": 45,
+    "maxGapCm": 7.105427357601002e-14,
+    "maxAxleDriftMm": 1.0658141036401503e-12,
+    "minTreadGapCm": -6.341741709547932e-7,
+    "maxTravelCm": 6.886690212788151,
+    "fastestGapCm": 1.1368683772161603e-12
+  },
+  {
+    "id": "VAN",
+    "cases": 45,
+    "maxGapCm": 5.3290705182007514e-14,
+    "maxAxleDriftMm": 3.552713678800501e-13,
+    "minTreadGapCm": -6.234251825887327e-7,
+    "maxTravelCm": 7.196364185380549,
+    "fastestGapCm": 1.1368683772161603e-12
+  },
+  {
+    "id": "LIGHT_TRUCK",
+    "cases": 45,
+    "maxGapCm": 5.3290705182007514e-14,
+    "maxAxleDriftMm": 7.105427357601002e-13,
+    "minTreadGapCm": -6.234252314385458e-7,
+    "maxTravelCm": 7.832570003317255,
+    "fastestGapCm": 1.1368683772161603e-12
   }
 ]

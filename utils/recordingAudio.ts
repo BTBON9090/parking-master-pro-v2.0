@@ -107,7 +107,7 @@ const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(ma
 function applyMasterGain(context: AudioContext): void {
   if (!master) return;
   const audible = currentParams ? isRecordingAudible(currentParams) : false;
-  const volume = currentParams ? clamp(currentParams.volume, 0, 1) : 0;
+  const volume = currentParams ? clamp(currentParams.volume, 0, 2) : 0;
   master.gain.setTargetAtTime(audible ? volume * 0.95 : 0, context.currentTime, 0.08);
 }
 
@@ -210,7 +210,7 @@ export function updateRecordingAudio(params: RecordingAudioParams): void {
     if(params.engineOn||ignitionOn!==null)playIgnition(params);
     ignitionOn=params.engineOn;
   }
-  master.gain.setTargetAtTime(audible ? clamp(params.volume, 0, 1) * 0.95 : 0, now, 0.08);
+  master.gain.setTargetAtTime(audible ? clamp(params.volume, 0, 2) * 0.95 : 0, now, 0.08);
   const rpmNorm = clamp((params.rpm - 700) / Math.max(1, params.redlineRpm - 700), 0, 1);
   const engineActive = audible && params.engineOn && !params.electric && params.engineSoundEnabled!==false;
   const cabinScale=params.cabin?(params.insulation??.12):1;

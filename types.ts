@@ -154,6 +154,8 @@ export interface CarConfig {
   rearSteerMaxDeg?: number;
   rearSteerFadeStartKmh?: number;
   rearSteerFadeEndKmh?: number;
+  /** Calibrated same-phase assist at motorway speed, not an OEM numeric specification. */
+  rearSteerHighSpeedDeg?: number;
   };
 }
 
@@ -421,6 +423,7 @@ export interface KeyBindings {
 }
 
 export interface UserSettings {
+  mobileHudLayout?: import("./utils/mobileLayout").HudLayout;
   renderQuality?: import("./utils/renderQuality").RenderQuality;
   soundEnabled: boolean;
   /** 雷达/碰撞检测声音（接近嘟嘟 + 撞击嘟嘟） */

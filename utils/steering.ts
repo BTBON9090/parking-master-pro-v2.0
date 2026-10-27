@@ -224,13 +224,15 @@ export class SteeringActivityClock {
 }
 
 /** Low-speed counter-phase rear steering, fading to zero with speed. */
-export function rearSteerAngleForSpeed(maxDeg: number | undefined, signedSpeed: number, frontSteer: number, maxFrontSteer = 0.60): number {
+export function rearSteerAngleForSpeed(maxDeg: number | undefined, signedSpeed: number, frontSteer: number, maxFrontSteer = 0.60,fadeStart=20,fadeEnd=55,highSpeedDeg=0): number {
   if (!maxDeg || Math.abs(frontSteer) < 1e-6) return 0;
   const ratio = Math.max(-1, Math.min(1, frontSteer / Math.max(1e-4, maxFrontSteer)));
   const kmh = Math.abs(signedSpeed) * 15;
-  const start = 20;
-  const end = 55;
+  const start = fadeStart;
+  const end = fadeEnd;
   const t = Math.max(0, Math.min(1, (kmh - start) / Math.max(1, end - start)));
   const fade = 1 - t * t * (3 - 2 * t);
-  return -ratio * Math.abs(maxDeg) * Math.PI / 180 * fade;
+  const phaseT=Math.max(0,Math.min(1,(kmh-end)/45));
+  const samePhase=phaseT*phaseT*(3-2*phaseT)*Math.abs(highSpeedDeg);
+  return ratio * (-Math.abs(maxDeg)*fade+samePhase) * Math.PI / 180;
 }

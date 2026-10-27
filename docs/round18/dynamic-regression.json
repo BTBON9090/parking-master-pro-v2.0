@@ -67,6 +67,36 @@
       "trackM": 1.6799999475479126,
       "maxRollDeg": 3.8046989833755633,
       "minBodyClearanceCm": 18.36786300961597
+    },
+    {
+      "id": "JEEP",
+      "trackM": 1.600000023841858,
+      "maxRollDeg": 4.580874906970327,
+      "minBodyClearanceCm": 20.915685079552688
+    },
+    {
+      "id": "MIDIBUS",
+      "trackM": 1.8747999668121338,
+      "maxRollDeg": 3.29744775737288,
+      "minBodyClearanceCm": 16.487497785108367
+    },
+    {
+      "id": "COACH",
+      "trackM": 2.081199884414673,
+      "maxRollDeg": 3.2897991605817474,
+      "minBodyClearanceCm": 3.9481066766419914
+    },
+    {
+      "id": "VAN",
+      "trackM": 1.7630000114440918,
+      "maxRollDeg": 4.090318658569622,
+      "minBodyClearanceCm": 21.31671524178998
+    },
+    {
+      "id": "LIGHT_TRUCK",
+      "trackM": 1.960800051689148,
+      "maxRollDeg": 4.237995962308338,
+      "minBodyClearanceCm": 10.426244408814433
     }
   ]
 }

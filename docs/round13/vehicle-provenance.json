@@ -52,7 +52,8 @@
       "sources": [
         "https://www.lixiang.com/configuration.html?carModel=i9",
         "https://www.lixiang.com/i9",
-        "https://ir.lixiang.com/zh-hant/news-releases/news-release-details/li-auto-inc-launches-li-i9-pioneering-flagship-family-suv"
+        "https://ir.lixiang.com/zh-hant/news-releases/news-release-details/li-auto-inc-launches-li-i9-pioneering-flagship-family-suv",
+        "https://manuals.lixiang.com/zh-cn/W052026/20260914180925/67b4931f3-004.html"
       ],
       "official": {
         "dimensions_mm": [
@@ -67,14 +68,16 @@
         "vmax_kmh": 200,
         "tyres": "265/45 R21",
         "turning_radius_m": 5.3,
-        "steering_wheel_total_deg": 360,
+        "steering_wheel_total_deg": 720,
         "suspension": "front double wishbone / rear five-link, dual-chamber air, dual-valve CDC"
       },
       "simulation": {
         "mass_kg": 2745,
         "rear_steer_deg": 6,
         "reduction": 10.2,
-        "note": "Rear steering angle unpublished: 6 degrees is a simulation choice combined with front lock to fit the published 5.3 m radius. OEM radius convention not specified; treated as outer front tyre radius."
+        "note": "Rear steering angle unpublished: 6 degrees is a simulation choice combined with front lock to fit the published 5.3 m radius. OEM radius convention not specified; treated as outer front tyre radius.",
+        "rear_same_phase_deg": 2,
+        "phase_change_kmh": 65
       },
       "requested_model_year": 2026,
       "year_selection_note": "用户补充：使用最新 2026 款。车型继续采用已核对的当前官方配置；年款要求不代表新增或已证实的悬架标定数据。"

@@ -1,3 +1,4 @@
+import {fourWheelSteeringGeometry,limitRearAxleSteer} from '../utils/driving';
 import assert from 'node:assert/strict';
 import {CAR_MODELS,GARAGE_CARS,DEFAULT_VEHICLE_TUNING,DEFAULT_STEERING_CURVES} from '../constants';
 import {CarType} from '../types';
@@ -9,8 +10,9 @@ for(const id of GARAGE_CARS){assert(DEFAULT_VEHICLE_TUNING[id]);assert(DEFAULT_S
 for(const id of [CarType.TAI7,CarType.LI_I9,CarType.N90]){
  const cc=CAR_MODELS[id],pt=getPowertrain(id),actual=simulatedAccelerationSeconds(id);
  assert(Math.abs(actual-cc.dynamics.zeroTo100Seconds)<.2,`${id}: full-pedal acceleration matches reference target`);
- const centre=cc.wheelbase/10/(Math.tan(cc.dynamics.maxSteerAngle)+Math.tan((cc.dynamics.rearSteerMaxDeg||0)*Math.PI/180));
- const outer=Math.hypot(centre+cc.trackWidth/20,cc.wheelbase/10);
+ const rearLimit=(cc.dynamics.rearSteerMaxDeg||0)*Math.PI/180;
+ const rear=limitRearAxleSteer(cc.dynamics.maxSteerAngle,-rearLimit,cc.wheelbase,cc.trackWidth/2,rearLimit);
+ const outer=fourWheelSteeringGeometry(cc.wheelbase,cc.trackWidth/2,cc.dynamics.maxSteerAngle,rear).outerFrontRadius/10;
  assert(Math.abs(outer-cc.turningRadiusTargetM!)<.01,`${id}: low-speed outer turning radius`);
  let finalSpeed=0;
  for(const fps of [30,60,120]){

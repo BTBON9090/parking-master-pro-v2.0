@@ -43,14 +43,15 @@ interface SideMirrorFrameProps {
   slot: 'left' | 'right';
   label: string;
   onAdjust?: (a:MirrorAdjustment)=>void;
+  layoutStyle?: React.CSSProperties;
 }
 
-export const SideMirrorFrame: React.FC<SideMirrorFrameProps> = ({ id, pack, adjustment, slot, label, onAdjust }) => {
+export const SideMirrorFrame: React.FC<SideMirrorFrameProps> = ({ id, pack, adjustment, slot, label, onAdjust, layoutStyle }) => {
  const drag=useMirrorDrag(id,adjustment,onAdjust);
  return (
   <div
     {...drag} aria-label={label+"，拖动调整镜面"} title="拖动调整镜面角度"
-    className="side-mirror-frame absolute z-[46] w-[30vw] min-w-[300px] max-w-[475px] aspect-[2.65/1] rounded-[16px] overflow-hidden pointer-events-auto"
+    className={`side-mirror-frame absolute z-[46] w-[30vw] min-w-[300px] max-w-[475px] aspect-[2.65/1] rounded-[16px] overflow-hidden pointer-events-auto ${layoutStyle?"hud-positioned":""}`}
     style={{
       touchAction:'none',
       // —— 几何：与渲染层 viewport 严格一致，禁止随样式包改变 ——
@@ -58,7 +59,7 @@ export const SideMirrorFrame: React.FC<SideMirrorFrameProps> = ({ id, pack, adju
       left: slot === 'left' ? 24 + adjustment.screenX : undefined,
       right: slot === 'right' ? 24 - adjustment.screenX : undefined,
       // —— 视觉：样式包 ——
-      ...pack.mirrors.frame,
+      ...pack.mirrors.frame, ...layoutStyle,
     }}
   >
     {/* 玻璃反光层 */}
@@ -78,24 +79,25 @@ interface CentreMirrorFrameProps {
   adjustment: MirrorAdjustment;
   label: string;
   onAdjust?: (a:MirrorAdjustment)=>void;
+  layoutStyle?: React.CSSProperties;
   /** 贴在镜框正下方、与镜同宽的组件（转向指示条）。 */
   signals?: React.ReactNode;
 }
 
-export const CentreMirrorFrame: React.FC<CentreMirrorFrameProps> = ({ pack, adjustment, label, signals, onAdjust }) => {
+export const CentreMirrorFrame: React.FC<CentreMirrorFrameProps> = ({ pack, adjustment, label, signals, onAdjust, layoutStyle }) => {
  const drag=useMirrorDrag('centre',adjustment,onAdjust);
  return (
   <div
     {...drag} aria-label={label+"，拖动调整镜面"} title="拖动调整镜面角度"
-    className="centre-mirror-frame absolute left-1/2 -translate-x-1/2 z-[46] w-[26.5vw] min-w-[272px] max-w-[430px] pointer-events-auto"
+    className={`centre-mirror-frame absolute left-1/2 -translate-x-1/2 z-[46] w-[26.5vw] min-w-[272px] max-w-[430px] pointer-events-auto ${layoutStyle?"hud-positioned":""}`}
     style={{
       touchAction:'none',
       // —— 几何：与渲染层 viewport 严格一致 ——
-      top: Math.max(8, 76 + adjustment.screenY),
-      marginLeft: adjustment.screenX,
+      top: Math.max(0, adjustment.screenY),
+      marginLeft: adjustment.screenX, ...layoutStyle,
     }}
   >
-    <div className="relative w-full aspect-[3.7/1] rounded-[15px] overflow-hidden" style={pack.mirrors.frame}>
+    <div className="relative w-full aspect-[3.7/1] rounded-[15px] overflow-hidden" style={{...pack.mirrors.frame,...(layoutStyle?{height:"100%"}: {})}}>
       <div data-mirror-glass="centre" className="absolute inset-0 rounded-[13px] pointer-events-none" style={pack.mirrors.glassOverlay} />
       <div
         className="absolute top-0 left-4 right-4 h-px pointer-events-none"

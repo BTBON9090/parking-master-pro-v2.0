@@ -1,3 +1,4 @@
+import {frontSteerForTurningRadius} from './utils/driving';
 import {buildTrainingCampus} from './utils/trainingCampus';
 import {buildChallengeMap,CHALLENGE_MAPS} from './utils/challengeMaps';
 import { buildGarageLevel } from './utils/garage';
@@ -267,8 +268,8 @@ export const CAR_MODELS: Record<CarType, CarConfig> = {
       steerSpeedSensitivity: 0.88, steerResponse: 0.98,
       // 3.110m wheelbase, 1.720/1.717m tracks, 5.7m official minimum radius
       // (definition not stated by ONVO). Outer-front-wheel calibration gives
-      // 37.62°. No rear steer: the official L80 config has no such item.
-      maxSteerAngle: 37.62 * Math.PI / 180,
+      // the virtual axle angle. No rear steer: the official L80 config has no such item.
+      maxSteerAngle: frontSteerForTurningRadius(3.11,1.7185,5.7),
       understeerGradient: 0.16,
       yawResponse: 0.94,
       // Official air suspension: 100mm total height range. This constrains
@@ -335,8 +336,8 @@ export const CAR_MODELS: Record<CarType, CarConfig> = {
       },
       steerSpeedSensitivity: 1.20, steerResponse: 0.74,
       // Original fictional pickup: wheelbase 3.26 m, target radius 6.75 m
-      // δ = atan(3.26 / 6.75) ≈ 25.8°
-      maxSteerAngle: 32.53 * Math.PI / 180,
+      // Use the outer front tyre radius, including half the front track.
+      maxSteerAngle: frontSteerForTurningRadius(3.26,1.68,6.75),
       understeerGradient: 0.28,
       yawResponse: 0.70,
     },

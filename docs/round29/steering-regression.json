@@ -1,0 +1,68 @@
+[
+  {
+    "id": "SUV",
+    "virtualFrontDeg": 38.44471751289176,
+    "rearInnerLimitDeg": 0,
+    "outerFrontRadiusM": 5.699999999999286
+  },
+  {
+    "id": "SEAL08",
+    "virtualFrontDeg": 39.95425999999999,
+    "rearInnerLimitDeg": 7,
+    "outerFrontRadiusM": 4.949999959310004
+  },
+  {
+    "id": "TAI7",
+    "virtualFrontDeg": 35.122021975623795,
+    "rearInnerLimitDeg": 0,
+    "outerFrontRadiusM": 5.799999999999771
+  },
+  {
+    "id": "LI_I9",
+    "virtualFrontDeg": 38.623029201105034,
+    "rearInnerLimitDeg": 6,
+    "outerFrontRadiusM": 5.299999999999871
+  },
+  {
+    "id": "N90",
+    "virtualFrontDeg": 36.064179453853846,
+    "rearInnerLimitDeg": 0,
+    "outerFrontRadiusM": 5.949999999998603
+  },
+  {
+    "id": "TRUCK",
+    "virtualFrontDeg": 32.737980375962486,
+    "rearInnerLimitDeg": 0,
+    "outerFrontRadiusM": 6.750000000003259
+  },
+  {
+    "id": "JEEP",
+    "virtualFrontDeg": 35.5292445004378,
+    "rearInnerLimitDeg": 0,
+    "outerFrontRadiusM": 5.500000000000002
+  },
+  {
+    "id": "MIDIBUS",
+    "virtualFrontDeg": 39.416155040045076,
+    "rearInnerLimitDeg": 0,
+    "outerFrontRadiusM": 6.5
+  },
+  {
+    "id": "COACH",
+    "virtualFrontDeg": 42.378061666915784,
+    "rearInnerLimitDeg": 0,
+    "outerFrontRadiusM": 9.400000000000002
+  },
+  {
+    "id": "VAN",
+    "virtualFrontDeg": 37.984970330109796,
+    "rearInnerLimitDeg": 0,
+    "outerFrontRadiusM": 6.000000000000001
+  },
+  {
+    "id": "LIGHT_TRUCK",
+    "virtualFrontDeg": 41.14046422945424,
+    "rearInnerLimitDeg": 0,
+    "outerFrontRadiusM": 6.999999999999998
+  }
+]

@@ -1,3 +1,4 @@
+import {sanitizeHudLayout} from './mobileLayout';
 import type {UserSettings} from '../types';
 export const SETTINGS_KEY='parking-master-settings-v1';
 // Copy only known keys and matching primitive types. New settings keep their defaults.
@@ -9,7 +10,9 @@ function mergeKnown(defaults:any,saved:any):any {
 }
 export function restoreSettings(defaults:UserSettings,raw:string|null):UserSettings {
  try {
-  const result=mergeKnown(defaults,JSON.parse(raw??'null')) as UserSettings;
+  const saved=JSON.parse(raw??'null');
+  const result=mergeKnown(defaults,saved) as UserSettings;
+  result.mobileHudLayout=sanitizeHudLayout(saved?.mobileHudLayout);
   if(!['auto','low','medium','high','ultra'].includes(result.renderQuality??''))result.renderQuality='auto';
   for(const key of ['volume','cabinVolume','exteriorVolume'] as const)result[key]=Math.max(0,Math.min(1,result[key]??1));
   result.steeringSensitivity=Math.max(0,Math.min(3,result.steeringSensitivity));

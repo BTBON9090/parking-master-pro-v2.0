@@ -40,5 +40,40 @@
     "minSillClearanceCm": 4.925483749759003,
     "maxAxleDriftMm": 7.105427357601002e-13,
     "minSlopeTreadGapCm": 0.0007826678740390614
+  },
+  {
+    "id": "JEEP",
+    "cases": 21,
+    "minSillClearanceCm": 4.279731444306147,
+    "maxAxleDriftMm": 3.552713678800501e-13,
+    "minSlopeTreadGapCm": 0.0008033902848908985
+  },
+  {
+    "id": "MIDIBUS",
+    "cases": 21,
+    "minSillClearanceCm": 6.203356475129489,
+    "maxAxleDriftMm": 3.552713678800501e-13,
+    "minSlopeTreadGapCm": 0.000863838169502853
+  },
+  {
+    "id": "COACH",
+    "cases": 21,
+    "minSillClearanceCm": 6.581020552410486,
+    "maxAxleDriftMm": 7.105427357601002e-13,
+    "minSlopeTreadGapCm": 0.0010469883737548136
+  },
+  {
+    "id": "VAN",
+    "cases": 21,
+    "minSillClearanceCm": 5.836237662531811,
+    "maxAxleDriftMm": 7.105427357601002e-13,
+    "minSlopeTreadGapCm": 0.0007429709571886797
+  },
+  {
+    "id": "LIGHT_TRUCK",
+    "cases": 21,
+    "minSillClearanceCm": 6.359892432463923,
+    "maxAxleDriftMm": 1.0658141036401503e-12,
+    "minSlopeTreadGapCm": 0.0009242717756098627
   }
 ]

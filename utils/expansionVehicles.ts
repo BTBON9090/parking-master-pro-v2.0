@@ -1,26 +1,30 @@
+import {frontSteerForTurningRadius} from './driving';
 import { CarType, CarConfig, VehicleTuning, SteeringCurve } from '../types';
 /** Official dimensions / power / torque / limiter / acceleration targets are
  * transcribed in docs/round13/vehicle-provenance.json. Mass, tyre grip, spring
  * rates, drag area and the i9 rear-steer angle are simulation calibrations. */
 function suv(id:CarType,name:string,dim:number[],power:number,torque:number,vmax:number,seconds:number,mass:number,radius:number,tire:number,color:string,rearSteer=0):CarConfig {
  const [length,width,height,wb]=dim,track=width-.275;
- const centerRadius=Math.sqrt(radius*radius-wb*wb)-track/2;
- const steer=Math.atan(wb/centerRadius-Math.tan(rearSteer*Math.PI/180));
+ const steer=frontSteerForTurningRadius(wb,track,radius,rearSteer);
  return {id,name,price:0,color,length:length*10,width:width*10,height:height*10,wheelbase:wb*10,trackWidth:track*10,
   maxSpeed:vmax/15,acceleration:.026,turnSpeed:.03,weight:mass,turningRadiusTargetM:radius,turningRadiusDefinition:'outer-front-wheel',
   dynamics:{driveLayout:'AWD',enginePosition:'MID',powerKw:power,torqueNm:torque,zeroTo100Seconds:seconds,
    frontWeightBias:.51,cgHeightM:id===CarType.TAI7?.67:.61,dragAreaM2:id===CarType.TAI7?.92:id===CarType.LI_I9?.61:.82,
-   grip:1.04,steeringRatio:id===CarType.LI_I9?Math.PI/steer:15.2,throttleResponse:.05,
+   grip:1.04,steeringRatio:id===CarType.LI_I9?Math.PI*2/steer:15.2,throttleResponse:.05,
    transmission:{gearRatios:[1],reverseRatio:1,finalDrive:id===CarType.TAI7?11.4:id===CarType.LI_I9?10.2:9.9,wheelRadiusM:tire,idleRpm:0,redlineRpm:18000},
    steerSpeedSensitivity:.9,steerResponse:.96,maxSteerAngle:steer,understeerGradient:.17,yawResponse:.94,
-   rearSteerMaxDeg:rearSteer,rearSteerFadeStartKmh:15,rearSteerFadeEndKmh:65}
+   rearSteerMaxDeg:rearSteer,rearSteerFadeStartKmh:15,rearSteerFadeEndKmh:65,rearSteerHighSpeedDeg:id===CarType.LI_I9?2:0}
  };
 }
 /** Fictional training vehicles: dimensions, gearbox and suspension are game
  * calibrations rather than specifications of a commercial manufacturer's car. */
 function manual(id:CarType,name:string,L:number,W:number,H:number,wb:number,mass:number,power:number,torque:number,maxKmh:number,tire:number,layout:'AWD'|'RWD',color:string):CarConfig {
- const long=wb>=3.6,steer=Math.atan(wb/(long?wb*1.75:5.0));
- return {id,name,price:0,color,length:L*10,width:W*10,height:H*10,wheelbase:wb*10,trackWidth:W*.86*10,
+ const long=wb>=3.6;
+ // Outer front tyre path, not the bumper/body turning circle. These are
+ // training-vehicle targets informed by Coaster / Yutong geometry, not OEM claims.
+ const radius=id===CarType.COACH?9.4:id===CarType.MIDIBUS?6.5:id===CarType.LIGHT_TRUCK?7.0:id===CarType.VAN?6.0:5.5;
+ const steer=Math.atan(wb/(Math.sqrt(radius*radius-wb*wb)-W*.86/2));
+ return {id,name,price:0,color,length:L*10,width:W*10,height:H*10,wheelbase:wb*10,trackWidth:W*.86*10,turningRadiusTargetM:radius,turningRadiusDefinition:'outer-front-wheel',
   maxSpeed:maxKmh/15,acceleration:.02,turnSpeed:.02,weight:mass,
   dynamics:{driveLayout:layout,enginePosition:'FRONT',powerKw:power,torqueNm:torque,zeroTo100Seconds:long?32:15,
    frontWeightBias:.53,cgHeightM:H*.37,dragAreaM2:W*H*.5,grip:id===CarType.JEEP?.94:id===CarType.VAN?.80:.76,steeringRatio:long?19:16,

@@ -1,8 +1,15 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
-import {COS_ORIGIN,DOWNLOAD_ORIGIN,RELEASE_SOURCES,fetchLatestRelease,fetchReleaseJson,parseRelease,isNewerVersion} from '../utils/releases';
+import {APP_VERSION,COS_ORIGIN,DOWNLOAD_ORIGIN,RELEASE_SOURCES,fetchLatestRelease,fetchReleaseJson,parseRelease,isNewerVersion} from '../utils/releases';
 import {renderDownloadHtml} from '../scripts/render-download-links.mjs';
+
+const packageVersion=JSON.parse(fs.readFileSync('package.json','utf8')).version;
+assert.equal(APP_VERSION,packageVersion,'update UI must use the packaged version');
+const androidBuild=fs.readFileSync('android/app/build.gradle','utf8');
+const iosBuild=fs.readFileSync('ios/App/App.xcodeproj/project.pbxproj','utf8');
+assert.equal(androidBuild.match(/versionName\s+"([^"]+)"/)?.[1],APP_VERSION);
+assert(iosBuild.includes(`MARKETING_VERSION = ${APP_VERSION};`),'iOS project version matches release');
 
 const name='Parking-Master-Pro-0.22.4-android.apk';
 const path=`/parking-master/releases/0.22.4/${name}`;

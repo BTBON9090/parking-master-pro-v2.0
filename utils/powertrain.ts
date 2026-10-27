@@ -1,5 +1,5 @@
 import { CarConfig, CarType } from '../types';
-import { CAR_MODELS, STEERING_WHEEL_MAX_ROTATION } from '../constants';
+import { CAR_MODELS } from '../constants';
 
 /**
  * 真实动力总成模型
@@ -369,7 +369,9 @@ export function computeRpm(
  *  road-wheel lock remain in the physical front-wheel mapping instead of
  *  shortening the usable input range. */
 export function steeringWheelMaxDeg(cc: CarConfig): number {
-  return Math.min(STEERING_WHEEL_MAX_ROTATION, cc.dynamics.steeringRatio * cc.dynamics.maxSteerAngle * 180 / Math.PI);
+  // A global 540° cap previously prevented long-ratio buses from ever
+  // reaching their physical rack stops, even at parking speed.
+  return cc.dynamics.steeringRatio * cc.dynamics.maxSteerAngle * 180 / Math.PI;
 }
 
 export type GearRejectionReason =

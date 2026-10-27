@@ -114,3 +114,12 @@ export function advanceGripLimitedCenter(x:number,y:number,heading:number,distan
  const turn=distance*curvature,chord=Math.abs(curvature)<1e-9?distance:2*Math.sin(turn/2)/curvature;
  return {x:x+chord*Math.cos(heading+beta+turn/2),y:y+chord*Math.sin(heading+beta+turn/2),rotation:heading+turn};
 }
+
+/** Solve against the same four-wheel ICR and individual rear-wheel limits used while driving. */
+export function frontSteerForTurningRadius(wheelbase:number,track:number,radius:number,rearLimitDeg=0):number{
+ const limit=rearLimitDeg*Math.PI/180;let low=.05,high=1.1;
+ for(let i=0;i<40;i++){
+  const front=(low+high)/2,rear=limitRearAxleSteer(front,-limit,wheelbase,track/2,limit);
+  if(fourWheelSteeringGeometry(wheelbase,track/2,front,rear).outerFrontRadius>radius)low=front;else high=front;
+ }return (low+high)/2;
+}

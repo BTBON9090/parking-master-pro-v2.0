@@ -4,7 +4,7 @@ import os,sys,math
 sys.path.insert(0,os.path.dirname(__file__))
 import build_round9_vehicles as b
 import bpy
-b.OUT_DOCS=os.path.join(b.ROOT,'docs','round27','commercial');os.makedirs(b.OUT_DOCS,exist_ok=True)
+b.OUT_DOCS=os.path.join(b.ROOT,'docs','round29','commercial');os.makedirs(b.OUT_DOCS,exist_ok=True)
 loft=b.loft_body
 b.loft_body=lambda name,stations,mat,step=.085:loft(name,stations,mat,step=.17)
 base_build=b.build_car
@@ -48,10 +48,13 @@ def build(spec):
     # Mount the left/right housings beside the front glazing instead.
     dark=bpy.data.materials.get('BlackTrim');glass=bpy.data.materials.get('MirrorGlass')
     for side in (-1,1):
-        y=-spec['length']/2+.48; z=spec['beltline']+.40; x=side*(spec['width']/2+.17)
-        b.beam('BusMirrorArm',(side*(spec['width']/2-.03),y+.12,z-.14),(x,y,z-.08),.035,.035,dark,parent=root)
-        b.box('BusMirrorPod',(0.15,.16,.30),(x,y,z),dark,bevel=.012,parent=root)
-        b.box('BusMirrorGlass',(0.12,.008,.26),(x,y+.084,z),glass,bevel=.002,parent=root)
+        y=-spec['length']/2-.34; z=spec['roof']-.52; x=side*(spec['width']/2+.23)
+        anchor=(side*(spec['width']/2-.06),-spec['length']/2+.23,spec['roof']-.14)
+        elbow=(x,y,spec['roof']-.14)
+        b.beam('BusMirrorArm',anchor,elbow,.035,.035,dark,parent=root)
+        b.beam('BusMirrorDrop',elbow,(x,y,z+.12),.035,.035,dark,parent=root)
+        b.box('BusMirrorPod',(.20,.16,.48),(x,y,z),dark,bevel=.012,parent=root)
+        b.box('BusMirrorGlass',(.17,.008,.42),(x,y+.084,z),glass,bevel=.002,parent=root)
     root['liner_rear_m']=-spec['length']*.40
     root['liner_belt_m']=spec['beltline']
     return root,wheels

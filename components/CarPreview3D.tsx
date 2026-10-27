@@ -49,7 +49,9 @@ const CarPreview3D: React.FC<CarPreview3DProps> = ({ carType, accentColor = '#f5
     key.shadow.mapSize.set(1024, 1024);
     key.shadow.camera.left = -70; key.shadow.camera.right = 70;
     key.shadow.camera.top = 70; key.shadow.camera.bottom = -70;
-    key.shadow.radius = 6;
+    key.shadow.camera.near = 1; key.shadow.camera.far = 240;
+    key.shadow.normalBias = .35; key.shadow.bias = -.0002;
+    key.shadow.radius = 2;
     scene.add(key);
     const rim = new THREE.DirectionalLight(0x8fb4ff, 1.5);
     rim.position.set(-70, 40, -60);
@@ -58,7 +60,7 @@ const CarPreview3D: React.FC<CarPreview3DProps> = ({ carType, accentColor = '#f5
     // 展台：深色圆盘 + 发光外环 + 网格纹理
     const stage = new THREE.Group();
     const disc = new THREE.Mesh(
-      new THREE.CircleGeometry(66, 64),
+      new THREE.CircleGeometry(54, 64),
       new THREE.MeshStandardMaterial({ color: 0x101116, roughness: 0.85, metalness: 0.35 }),
     );
     disc.rotation.x = -Math.PI / 2;
@@ -67,14 +69,14 @@ const CarPreview3D: React.FC<CarPreview3DProps> = ({ carType, accentColor = '#f5
 
     const ringColor = new THREE.Color(accentColor);
     const ring = new THREE.Mesh(
-      new THREE.RingGeometry(64.2, 66, 96),
+      new THREE.RingGeometry(52.8, 54, 96),
       new THREE.MeshBasicMaterial({ color: ringColor, transparent: true, opacity: 0.85, side: THREE.DoubleSide }),
     );
     ring.rotation.x = -Math.PI / 2;
     ring.position.y = 0.06;
     stage.add(ring);
 
-    const gridHelper = new THREE.PolarGridHelper(52, 12, 5, 64, 0x3a3d46, 0x23252c);
+    const gridHelper = new THREE.PolarGridHelper(49, 12, 5, 64, 0x3a3d46, 0x23252c);
     (gridHelper.material as THREE.Material).transparent = true;
     (gridHelper.material as THREE.Material).opacity = 0.5;
     gridHelper.position.y = 0.04;
@@ -107,20 +109,21 @@ const CarPreview3D: React.FC<CarPreview3DProps> = ({ carType, accentColor = '#f5
     observer.observe(mount);
 
     // 拖拽环视
-    let lastX = 0;
-    const dom = renderer.domElement;
-    const down = (e: PointerEvent) => { spinRef.current.dragging = true; lastX = e.clientX; dom.setPointerCapture(e.pointerId); };
-    const move = (e: PointerEvent) => {
-      if (!spinRef.current.dragging) return;
-      stage.rotation.y += (e.clientX - lastX) * 0.012;
-      lastX = e.clientX;
-      spinRef.current.idleAt = performance.now() + 2600;
+    const pointers=new Map<number,{x:number;y:number}>();
+    let elevation=.27,radius=90;
+    const orbit=()=>{camera.position.set(radius*Math.cos(elevation)*.707,6+radius*Math.sin(elevation),radius*Math.cos(elevation)*.707);camera.lookAt(0,6,0);};
+    const dom=renderer.domElement;
+    const down=(e:PointerEvent)=>{e.preventDefault();pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});spinRef.current.dragging=true;dom.setPointerCapture(e.pointerId);};
+    const move=(e:PointerEvent)=>{
+      const old=pointers.get(e.pointerId);if(!old)return;
+      const other=[...pointers.entries()].find(([id])=>id!==e.pointerId)?.[1];
+      if(other){const before=Math.hypot(old.x-other.x,old.y-other.y),after=Math.hypot(e.clientX-other.x,e.clientY-other.y);radius=Math.max(52,Math.min(180,radius*before/Math.max(1,after)));}
+      else{stage.rotation.y+=(e.clientX-old.x)*.012;elevation=Math.max(.08,Math.min(1.28,elevation+(e.clientY-old.y)*.006));}
+      pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});spinRef.current.idleAt=performance.now()+2600;orbit();
     };
-    const up = () => { spinRef.current.dragging = false; spinRef.current.idleAt = performance.now() + 2600; };
-    dom.addEventListener('pointerdown', down);
-    dom.addEventListener('pointermove', move);
-    dom.addEventListener('pointerup', up);
-    dom.addEventListener('pointercancel', up);
+    const up=(e:PointerEvent)=>{pointers.delete(e.pointerId);spinRef.current.dragging=pointers.size>0;spinRef.current.idleAt=performance.now()+2600;};
+    const wheel=(e:WheelEvent)=>{e.preventDefault();radius=Math.max(52,Math.min(180,radius*Math.exp(e.deltaY*.001)));orbit();};
+    dom.addEventListener('pointerdown',down);dom.addEventListener('pointermove',move);dom.addEventListener('pointerup',up);dom.addEventListener('pointercancel',up);dom.addEventListener('lostpointercapture',up);dom.addEventListener('wheel',wheel,{passive:false});orbit();
 
     let raf = 0;
     const tick = () => {
@@ -139,8 +142,9 @@ const CarPreview3D: React.FC<CarPreview3DProps> = ({ carType, accentColor = '#f5
       dom.removeEventListener('pointermove', move);
       dom.removeEventListener('pointerup', up);
       dom.removeEventListener('pointercancel', up);
+      dom.removeEventListener('lostpointercapture',up);dom.removeEventListener('wheel',wheel);
       stageRef.current = null;
-      scene.traverse(obj => { if (obj instanceof THREE.Mesh) obj.geometry.dispose(); });
+      disposeResources([scene]);
       renderer.dispose();renderer.forceContextLoss();
       if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
     };
@@ -164,7 +168,7 @@ const CarPreview3D: React.FC<CarPreview3DProps> = ({ carType, accentColor = '#f5
       // Scale the preview uniformly; the actual driving model is untouched.
       const bounds = new THREE.Box3().setFromObject(model, true);
       const size = bounds.getSize(new THREE.Vector3());
-      model.scale.multiplyScalar(Math.min(1, 60 / Math.max(size.x,size.y,size.z)));
+      model.scale.multiplyScalar(72 / Math.max(size.x,size.y,size.z));
       model.updateMatrixWorld(true);
       // 重新实测包围盒后落地 + 居中：个别车源（如海豹 08）的原点不在地面，
       // 直接写死 position.y 会覆盖归一化偏移、让轮胎沉进展台。
