@@ -30,13 +30,13 @@ for(const id of GARAGE_CARS)for(const hz of [30,60,120]){
  }
  assert(n<hz*5,`${id} recovery state must respect full service braking`);
  assert(meters<65,`${id} stop distance ${meters}`);report.braking.push({id,hz,startKmh:start,meters,seconds:n/hz});
- const lat=createLateralState();s={...createLongitudinalState(),ignitionBlend:1};let yaw=0;
+ const lat=createLateralState();s={...createLongitudinalState(),ignitionBlend:1};let yaw=0, launchDistance=0;
  for(let k=0;k<hz*15;k++){
   s=stepLongitudinal(s,{gear:1,engineStarted:true,gasPressed:false,shiftPressed:false,throttle:1,brake:0,handbrake:false},{...ctx,driveGripBudget:cornerDriveBudget(s.speed*15/3.6,c.dynamics.maxSteerAngle,c.wheelbase/10,c.dynamics.grip)});
   const l=stepLateral(lat,{speed:s.speed*15/3.6,steer:c.dynamics.maxSteerAngle,rearSteer:0,wheelbase:c.wheelbase/10,rearOffset:c.wheelbase/20,frontBias:c.dynamics.frontWeightBias,grip:c.dynamics.grip,layout:c.dynamics.driveLayout,throttle:1,handbrake:false,frontLocked:false,dt:1/hz,understeer:c.dynamics.understeerGradient});
-  s.speed=Math.max(0,s.speed-l.scrubAccel/hz/(15/3.6));yaw+=l.yawRate/hz;
+  s.speed=Math.max(0,s.speed-l.scrubAccel/hz/(15/3.6));yaw+=l.yawRate/hz;launchDistance+=s.speed*15/3.6/hz;
  }
- assert(s.speed*15<36,`${id} full-lock launch ran away`);assert(Math.abs(yaw)>2,`${id} must turn instead of driving straight`);
+ assert(s.speed*15<36,`${id} full-lock launch ran away`);assert(Math.abs(yaw)>launchDistance*Math.tan(c.dynamics.maxSteerAngle)/(c.wheelbase/10)*.62,`${id} must follow a tight curve proportional to its wheelbase and distance travelled`);
  if(hz===60)report.launch.push({id,kmh:s.speed*15,headingChange:yaw});
 }
 // Gentle inputs remain stable; a violent high-speed SUV flick can unload the
@@ -77,4 +77,4 @@ for(const id of FLEET30_IDS){
  report.assets.push({id,triangles,wheelMounts:parts.wheelMounts.length});
 }
 fs.writeFileSync('docs/round30/regression.json',JSON.stringify(report,null,2)+'\n');
-console.log('Round30 PASS: 19-car braking after impact at 30/60/120 Hz, full-lock launch, gentle/flick rollover, multitouch zoom ruler, exam scoring, highway and 8 Blender rigs.');
+console.log('Round30 PASS: 22-car braking after impact at 30/60/120 Hz, full-lock launch, gentle/flick rollover, multitouch zoom ruler, exam scoring, highway and 8 Blender rigs.');

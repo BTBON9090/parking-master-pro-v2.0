@@ -7,7 +7,10 @@ import * as CANNON from 'cannon-es';
 export class VehicleRollover {
  readonly world=new CANNON.World({gravity:new CANNON.Vec3(0,-98.0665,0)});
  readonly body:CANNON.Body;
- private ground:CANNON.Body;
+ private ground!:CANNON.Body;
+ private groundCenter=new THREE.Vector3();
+ private surface!:(x:number,z:number)=>number;
+ private corners:THREE.Vector3[]=[];
  private cg=new THREE.Vector3();
  elapsed=0;
  constructor(private source:THREE.Group,options:{mass:number;width:number;length:number;height:number;cgHeight:number;
@@ -35,15 +38,29 @@ export class VehicleRollover {
   this.world.defaultContactMaterial.friction=.75;this.world.defaultContactMaterial.restitution=.06;
   (this.world.solver as CANNON.GSSolver).iterations=20;
   this.world.addBody(this.body);
-  const spacing=20,half=600,count=half*2/spacing+1;
-  const x0=Math.floor((source.position.x-half)/spacing)*spacing,zTop=Math.ceil((source.position.z+half)/spacing)*spacing;
-  const heights=Array.from({length:count},(_,x)=>Array.from({length:count},(_,z)=>options.surface(x0+x*spacing,zTop-z*spacing)));
+  this.surface=options.surface;
+  for(const x of [-1,1])for(const z of [-1,1])for(const y of [bottom,options.height])this.corners.push(new THREE.Vector3(x*options.width*.47,y-options.cgHeight,z*options.length*.46));
+  this.rebuildGround(center.x,center.z);
+ }
+ private rebuildGround(x:number,z:number){
+  if(this.ground)this.world.removeBody(this.ground);
+  this.groundCenter.set(x,0,z);
+  const spacing=10,half=600,count=half*2/spacing+1;
+  const x0=Math.floor((x-half)/spacing)*spacing,zTop=Math.ceil((z+half)/spacing)*spacing;
+  const heights=Array.from({length:count},(_,i)=>Array.from({length:count},(_,j)=>this.surface(x0+i*spacing,zTop-j*spacing)));
   this.ground=new CANNON.Body({mass:0,shape:new CANNON.Heightfield(heights,{elementSize:spacing}),position:new CANNON.Vec3(x0,0,zTop)});
   this.ground.quaternion.setFromEuler(-Math.PI/2,0,0);this.world.addBody(this.ground);
  }
  step(dt:number){
+  if(Math.hypot(this.body.position.x-this.groundCenter.x,this.body.position.z-this.groundCenter.z)>350)this.rebuildGround(this.body.position.x,this.body.position.z);
   this.world.step(1/120,Math.min(.1,dt),12);this.elapsed+=dt;
-  const q=this.body.quaternion;this.source.quaternion.set(q.x,q.y,q.z,q.w);
+  // CCD safety net for long cliff falls: a corner cannot tunnel through the
+  // shared terrain heightfield between substeps. Preserve horizontal inertia.
+  const q0=this.body.quaternion,q=new THREE.Quaternion(q0.x,q0.y,q0.z,q0.w);
+  let penetration=0;
+  for(const corner of this.corners){const p=corner.clone().applyQuaternion(q).add(new THREE.Vector3(this.body.position.x,this.body.position.y,this.body.position.z));penetration=Math.max(penetration,this.surface(p.x,p.z)-p.y);}
+  if(penetration>.04){this.body.position.y+=penetration+.02;if(this.body.velocity.y<0)this.body.velocity.y*=-.06;this.body.aabbNeedsUpdate=true;}
+  const qb=this.body.quaternion;this.source.quaternion.set(qb.x,qb.y,qb.z,qb.w);
   this.source.position.set(this.body.position.x,this.body.position.y,this.body.position.z)
     .sub(this.cg.clone().applyQuaternion(this.source.quaternion));
   return {position:this.source.position.clone(),up:new THREE.Vector3(0,1,0).applyQuaternion(this.source.quaternion)};

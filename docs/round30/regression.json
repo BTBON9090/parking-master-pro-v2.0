@@ -1,6 +1,69 @@
 {
   "braking": [
     {
+      "id": "TYPE100",
+      "hz": 30,
+      "startKmh": 70,
+      "meters": 19.57458938109952,
+      "seconds": 2.033333333333333
+    },
+    {
+      "id": "TYPE100",
+      "hz": 60,
+      "startKmh": 70,
+      "meters": 19.86897317406242,
+      "seconds": 2.0166666666666666
+    },
+    {
+      "id": "TYPE100",
+      "hz": 120,
+      "startKmh": 70,
+      "meters": 20.120285844656834,
+      "seconds": 2.025
+    },
+    {
+      "id": "MINING",
+      "hz": 30,
+      "startKmh": 67,
+      "meters": 24.043618412839923,
+      "seconds": 2.6
+    },
+    {
+      "id": "MINING",
+      "hz": 60,
+      "startKmh": 67,
+      "meters": 24.338802424048996,
+      "seconds": 2.6
+    },
+    {
+      "id": "MINING",
+      "hz": 120,
+      "startKmh": 67,
+      "meters": 24.586524256971945,
+      "seconds": 2.6
+    },
+    {
+      "id": "US22",
+      "hz": 30,
+      "startKmh": 100,
+      "meters": 53.322674143501736,
+      "seconds": 3.8333333333333335
+    },
+    {
+      "id": "US22",
+      "hz": 60,
+      "startKmh": 100,
+      "meters": 53.802128013011625,
+      "seconds": 3.85
+    },
+    {
+      "id": "US22",
+      "hz": 120,
+      "startKmh": 100,
+      "meters": 54.19251619733254,
+      "seconds": 3.8583333333333334
+    },
+    {
       "id": "TRIKE",
       "hz": 30,
       "startKmh": 55,
@@ -402,6 +465,21 @@
   ],
   "launch": [
     {
+      "id": "TYPE100",
+      "kmh": 4.822605140645888,
+      "headingChange": 3.006551411989758
+    },
+    {
+      "id": "MINING",
+      "kmh": 6.243042734560167,
+      "headingChange": 1.7168490193190025
+    },
+    {
+      "id": "US22",
+      "kmh": 8.840190104333766,
+      "headingChange": 4.497681154524786
+    },
+    {
       "id": "TRIKE",
       "kmh": 13.462835543252785,
       "headingChange": 20.47431684665441
@@ -512,42 +590,42 @@
   "assets": [
     {
       "id": "TRIKE",
-      "triangles": 4167,
+      "triangles": 4147,
       "wheelMounts": 3
     },
     {
       "id": "TRACTOR",
-      "triangles": 5022,
+      "triangles": 5010,
       "wheelMounts": 4
     },
     {
       "id": "SEMI",
-      "triangles": 7091,
+      "triangles": 6900,
       "wheelMounts": 6
     },
     {
       "id": "CYBERTRUCK",
-      "triangles": 5716,
+      "triangles": 5696,
       "wheelMounts": 4
     },
     {
       "id": "REVUELTO",
-      "triangles": 5120,
+      "triangles": 5094,
       "wheelMounts": 4
     },
     {
       "id": "VEYRON",
-      "triangles": 5148,
+      "triangles": 5153,
       "wheelMounts": 4
     },
     {
       "id": "V800",
-      "triangles": 5798,
+      "triangles": 5740,
       "wheelMounts": 4
     },
     {
       "id": "MINI",
-      "triangles": 5370,
+      "triangles": 5318,
       "wheelMounts": 4
     }
   ]

@@ -2,7 +2,7 @@ import {sampleSlopeProfile} from './slopeProfile';
 import {CatmullRomCurve3,Vector3} from 'three';
 import type {LevelData,Vector2,Obstacle} from '../types';
 export function buildHighway():LevelData{
- const loop=[[2600,1800],[6000,1800],[14000,1800],[24000,1800],[27500,1800],[28500,2800],[28500,6000],[28500,9500],[28500,11000],[27500,12000],[24000,12000],[14000,12000],[6000,12000],[2600,12000],[1500,11000],[1500,8000],[1500,5000],[1500,2800]].map(([x,y])=>({x,y}));
+ const loop=[[2600,1800],[6000,1800],[14000,1800],[24000,1800],[27000,2400],[28100,4200],[27000,6400],[28000,8500],[26600,11400],[23600,12200],[21400,10800],[18400,11200],[15600,12500],[11500,12000],[8200,10800],[5300,11860],[2900,11500],[1700,9400],[2600,7500],[1400,4900],[1500,2800]].map(([x,y])=>({x,y}));
  const out:LevelData={levelId:13,highway:true,mapWidth:30000,mapHeight:14000,startPos:{x:4000,y:1856,rotation:0},spots:[],obstacles:[],markings:[],curvedRoads:[{points:loop,closed:true,width:320,color:'#3a3a3e',lanes:8,direction:'two-way'}],roadSurfaces:[],slopeZones:[],elevatedRoads:[],streetSigns:[],training:{title:'环线高速 · 双向八车道',tips:['每方向四条车道，主线限速 120 km/h；收费站、匝道降至 30','NPC 会跟车、让行、变道超车，保持安全车距','服务区可停车；互通支线、丘陵坡段与加速车道均可探索']}};
  const road=(p:number[][],width=76)=>out.curvedRoads!.push({points:p.map(([x,y])=>({x,y})),width,color:'#353539',lanes:width>100?4:2,direction:'one-way'});
  // Separate exit, service plaza and acceleration lane, each tangent to mainline.
@@ -32,6 +32,18 @@ export function buildHighway():LevelData{
   const elevation=Math.abs(y-1800)<180&&Math.abs(x-21000)<3250?sampleSlopeProfile(x-21000,6500,220).height:0;
   out.obstacles.push({id,x,y,elevation,width:d+.5,height:side===0?5:3,rotation:Math.atan2(dy,dx),type:'wall',movable:false,weight:0,color:side===0?'#9c9e99':'#a1a8a8',verticalHeight:side===0?7:8});
  }
+ // Mountain tunnel aligned to a sampled mainline segment. Side walls stay
+ // outside all eight lanes; the roof has an explicit clearance layer.
+ const tunnelIndex=path.reduce((best,p,i)=>Math.abs(p.x-27100)+Math.abs(p.z-6400)<Math.abs(path[best].x-27100)+Math.abs(path[best].z-6400)?i:best,0);
+ for(let j=-2;j<=2;j++){
+  const p=path[(tunnelIndex+j+path.length)%path.length],q=path[(tunnelIndex+j+1+path.length)%path.length],dx=q.x-p.x,dy=q.z-p.z,len=Math.hypot(dx,dy),rotation=Math.atan2(dy,dx),x=(p.x+q.x)/2,y=(p.z+q.z)/2;
+  for(const side of [-1,1])out.obstacles.push({id:`tunnel-wall-${j}-${side}`,x:x-dy/len*side*190,y:y+dx/len*side*190,width:len+2,height:25,rotation,type:'wall',weight:0,movable:false,color:'#66716b',verticalHeight:100});
+  out.obstacles.push({id:`tunnel-roof-${j}`,x,y,width:len+2,height:405,rotation,type:'wall',weight:0,movable:false,color:'#66716b',elevation:92,verticalHeight:20});
+ }
+ // An incident occupies only the outer lane; traffic can merge around it.
+ const incident=path[190],next=path[191],heading=Math.atan2(next.z-incident.z,next.x-incident.x);
+ for(let i=0;i<9;i++)out.obstacles.push({id:'incident-cone-'+i,x:incident.x+Math.cos(heading)*(i*13-130)-Math.sin(heading)*(135-i*2),y:incident.z+Math.sin(heading)*(i*13-130)+Math.cos(heading)*(135-i*2),width:3,height:3,rotation:0,type:'cone',weight:4,movable:true,color:'#ea8d38',verticalHeight:6});
+ out.obstacles.push({id:'incident-stopped-car',x:incident.x-Math.sin(heading)*131,y:incident.z+Math.cos(heading)*131,width:20,height:48,rotation:heading,type:'car',weight:1900,movable:true,color:'#a96042'});
  // Spawn on the authored lane, never a guessed straight-line coordinate.
  const spawn=path.reduce((a,b)=>Math.abs(a.x-4000)+Math.abs(a.z-1800)<Math.abs(b.x-4000)+Math.abs(b.z-1800)?a:b);
  const si=path.indexOf(spawn),sp=path[(si+1)%path.length].clone().sub(path[(si+path.length-1)%path.length]).normalize();

@@ -26,10 +26,10 @@ export interface OrbitPose {
 export function stepOrbitDrag(current: OrbitPose, dxPx: number, dyPx: number): OrbitPose {
   const dx = Number.isFinite(dxPx) ? dxPx : 0;
   const dy = Number.isFinite(dyPx) ? dyPx : 0;
-  const azimuth = current.azimuth + dx * ORBIT_AZIMUTH_PER_PX;
+  const azimuth = current.azimuth - dx * ORBIT_AZIMUTH_PER_PX;
   const polar = Math.max(
     ORBIT_POLAR_MIN,
-    Math.min(ORBIT_POLAR_MAX, current.polar + dy * ORBIT_POLAR_PER_PX),
+    Math.min(ORBIT_POLAR_MAX, current.polar - dy * ORBIT_POLAR_PER_PX),
   );
   return { azimuth, polar };
 }

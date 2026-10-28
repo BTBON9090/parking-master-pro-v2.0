@@ -31,6 +31,9 @@ export interface ModelDef {
 }
 
 export const MODEL_REGISTRY: Record<string, ModelDef> = {
+ type100:{file:'cars/fleet-type100.glb',uniformScale:10},
+ mining:{file:'cars/fleet-mining.glb',uniformScale:10},
+ us22:{file:'cars/fleet-us22.glb',uniformScale:10},
  trike:{file:'cars/fleet-trike.glb',uniformScale:10},
  tractor:{file:'cars/fleet-tractor.glb',uniformScale:10},
  semi:{file:'cars/fleet-semi.glb',uniformScale:10},
@@ -80,6 +83,9 @@ export const MODEL_REGISTRY: Record<string, ModelDef> = {
 
 // CarType → 模型注册名映射
 export const CAR_TYPE_TO_MODEL: Record<CarType, string> = {
+ [CarType.TYPE100]:'type100',
+ [CarType.MINING]:'mining',
+ [CarType.US22]:'us22',
  [CarType.TRIKE]:'trike',
  [CarType.TRACTOR]:'tractor',
  [CarType.SEMI]:'semi',

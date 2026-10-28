@@ -1,4 +1,5 @@
 export enum CarType {
+  TYPE100='TYPE100', MINING='MINING', US22='US22',
   TRIKE='TRIKE',
   TRACTOR='TRACTOR',
   SEMI='SEMI',
@@ -207,6 +208,8 @@ export interface AiConfig {
 }
 
 export interface Obstacle {
+  carType?: CarType;
+  crushed?: number; // 0..1, mass-qualified heavy-wheel body deformation
   id: string;
   x: number;
   y: number;

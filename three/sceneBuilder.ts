@@ -1,3 +1,5 @@
+import {clearRoadBuildings} from '../utils/roadClearance';
+import {assignParkedFleet} from '../utils/fleetParking';
 import {addExamSignals} from './examSignals';
 import {CITY_OFFSET} from '../utils/openWorld';
 import { garageFloorAt } from '../utils/garage';
@@ -13,7 +15,7 @@ import {
   buildStreetLightMesh, buildPowerPoleMesh, buildConeMesh, buildBoxMesh,
   buildWheelAssembly, CarMeshParts
 } from './geometries';
-import { loadModel, TRAFFIC_CAR_MODELS, BUILDING_MODELS, extractWheels } from './modelLoader';
+import { loadModel, TRAFFIC_CAR_MODELS, BUILDING_MODELS, CAR_TYPE_TO_MODEL, extractWheels } from './modelLoader';
 import { buildVehicleParts, hasProceduralCarModel, validateVehicleBindings } from './vehicleModels';
 import { sampleSlopeProfile } from '../utils/slopeProfile';
 import { buildJunctionPolygon, roundedPolygonPoints } from '../utils/polyline';
@@ -167,6 +169,8 @@ export async function buildScene(
   carConfig: CarConfig,
   carType: CarType,
 ): Promise<BuiltScene> {
+  clearRoadBuildings(levelData);
+  assignParkedFleet(levelData);
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(levelData.garage ? '#2c343c' : 0x87ceeb);
 
@@ -432,9 +436,9 @@ export async function buildScene(
     const local: [number, number][] = [[-h, -h], [h, -h], [h, h], [-h, h]];
     const cornerXZ = local.map(([lx, lz]) => ({ x: it.x + lx * cosR - lz * sinR, z: it.y + lx * sinR + lz * cosR }));
     // 自适应路口多边形（与 2D 共用同一序列）：≥3 臂且几何有效时启用，否则回退旋转方块
-    const _poly = (it.arms && it.arms.length >= 3) ? buildJunctionPolygon(it.arms) : null;
+    const _poly = (it.arms && it.arms.length >= 2) ? buildJunctionPolygon(it.arms) : null;
     const _minW = (it.arms && it.arms.length) ? Math.min(...it.arms.map(a => a.width)) : 0;
-    const rpoly = _poly ? roundedPolygonPoints(_poly, Math.min(20, _minW * 0.42)) : null;
+    const rpoly = _poly;
     const worldXZ = rpoly ? rpoly.map(p => ({ x: it.x + p.x, z: it.y + p.y })) : null;
     if (worldXZ && worldXZ.length >= 3) {
       const n = worldXZ.length;
@@ -637,10 +641,7 @@ export async function buildScene(
 
   const parkedAssignments = levelData.obstacles
     .filter(obstacle => obstacle.type === 'car' && !obstacle.ai)
-    .map((obstacle, index) => ({
-      obstacle,
-      modelName: TRAFFIC_CAR_MODELS[index % (levelData.garage ? 2 : TRAFFIC_CAR_MODELS.length)],
-    }));
+    .map(obstacle => ({obstacle,modelName:CAR_TYPE_TO_MODEL[obstacle.carType!]}));
   const parkedVisuals = new Map<string, (pose: {x:number;y:number;rotation:number;elevation?:number})=>void>();
   const instancedParkedCarIds = await addParkedCarInstances(scene, levelData, parkedAssignments, parkedVisuals);
 
@@ -1003,219 +1004,67 @@ export async function buildScene(
 }
 
 async function addParkedCarInstances(
-  scene: THREE.Scene,
-  levelData: LevelData,
-  assignments: Array<{ obstacle: Obstacle; modelName: string }>,
-  visuals: Map<string, (pose: {x:number;y:number;rotation:number;elevation?:number})=>void>,
-) {
-  const instancedIds = new Set<string>();
-  const byModel = new Map<string, { modelName: string; obstacles: Obstacle[] }>();
-  assignments.forEach(({ obstacle, modelName }) => {
-    const floor = levelData.levelId === 6
-      ? garageFloorAt(obstacle.elevation ?? -48)
-      : 0;
-    const key = `${modelName}:${floor}`;
-    const bucket = byModel.get(key);
-    if (bucket) bucket.obstacles.push(obstacle);
-    else byModel.set(key, { modelName, obstacles: [obstacle] });
+ scene:THREE.Scene,levelData:LevelData,
+ assignments:Array<{obstacle:Obstacle;modelName:string}>,
+ visuals:Map<string,(pose:{x:number;y:number;rotation:number;elevation?:number;crushed?:number})=>void>,
+){
+ const ids=new Set<string>(),buckets=new Map<string,typeof assignments>();
+ for(const a of assignments){const key=a.modelName+':'+(levelData.garage?garageFloorAt(a.obstacle.elevation??-48):0);if(!buckets.has(key))buckets.set(key,[]);buckets.get(key)!.push(a);}
+ const hull=(points:Vector2[])=>{
+  const list=[...new Map(points.map(p=>[p.x.toFixed(3)+','+p.y.toFixed(3),p])).values()].sort((a,b)=>a.x-b.x||a.y-b.y);
+  const half=(v:Vector2[])=>{const h:Vector2[]=[];for(const p of v){while(h.length>1){const a=h[h.length-2],b=h[h.length-1];if((b.x-a.x)*(p.y-a.y)-(b.y-a.y)*(p.x-a.x)>0)break;h.pop();}h.push(p);}return h.slice(0,-1);};
+  return [...half(list),...half([...list].reverse())];
+ };
+ for(const group of buckets.values()){
+  const template=await loadModel(group[0].modelName);template.updateMatrixWorld(true);
+  const box=new THREE.Box3().setFromObject(template,true),center=box.getCenter(new THREE.Vector3());
+  const batches=new Map<THREE.Material,THREE.BufferGeometry[]>(),points:Vector2[]=[];
+  const vertex=new THREE.Vector3();
+  // Bake the original uniform transform once. Preserve all 3/6/18/22 wheels,
+  // spokes and tracks; merge each material into a single instanced draw call.
+  template.traverse(node=>{
+   if(!(node instanceof THREE.Mesh)||node instanceof THREE.SkinnedMesh)return;
+   const input=node.geometry.index?node.geometry.toNonIndexed():node.geometry.clone();input.applyMatrix4(node.matrixWorld);input.translate(-center.x,-box.min.y,-center.z);
+   const pos=input.getAttribute('position');
+   for(let i=0;i<pos.count;i++){vertex.fromBufferAttribute(pos,i);points.push({x:vertex.z,y:-vertex.x});}
+   // GLTFLoader normally splits material primitives; handle grouped inputs too.
+   const mats=Array.isArray(node.material)?node.material:[node.material];
+   const parts=input.groups.length?input.groups:[{start:0,count:pos.count,materialIndex:0}];
+   for(const part of parts){
+    const mat=mats[part.materialIndex??0];if(!mat)continue;
+    const g=new THREE.BufferGeometry();
+    for(const key of ['position','normal','uv']){const attr=input.getAttribute(key);if(attr)g.setAttribute(key,new THREE.Float32BufferAttribute(Array.from(attr.array as ArrayLike<number>).slice(part.start*attr.itemSize,(part.start+part.count)*attr.itemSize),attr.itemSize));}
+    if(!g.getAttribute('normal'))g.computeVertexNormals();if(!g.getAttribute('uv'))g.setAttribute('uv',new THREE.Float32BufferAttribute(new Float32Array(part.count*2),2));
+    if(!batches.has(mat))batches.set(mat,[]);batches.get(mat)!.push(g);
+   }
+   input.dispose();
   });
-
-  for (const { modelName, obstacles } of byModel.values()) {
-    try {
-      const template = await loadModel(modelName);
-      const sourceBox = new THREE.Box3().setFromObject(template);
-      const sourceSize = sourceBox.getSize(new THREE.Vector3());
-      const sourceScale = template.scale.clone();
-      const sourceMeshes: THREE.Mesh[] = [];
-      const wheelMeshes = new Set<THREE.Object3D>();
-      // Hide the source GLB wheel meshes. Static parked cars otherwise keep
-      // their low-poly/oval tyres even though moving cars use the round rig.
-      const wheelRoots = extractWheels(template);
-      wheelRoots.frontWheels.concat(wheelRoots.rearWheels).forEach(root => {
-        root.traverse(node => { if (node instanceof THREE.Mesh) wheelMeshes.add(node); });
-      });
-      // Fallback for assets whose wheel nodes aren't in the extractor's name
-      // convention: remove obviously wheel-named child meshes too.
-      template.traverse(child => {
-        if (child instanceof THREE.Mesh && /wheel|tyre|tire/i.test(child.name)) wheelMeshes.add(child);
-      });
-      template.traverse(child => {
-        if (child instanceof THREE.Mesh && !(child instanceof THREE.SkinnedMesh) && !wheelMeshes.has(child)) {
-          sourceMeshes.push(child);
-        }
-      });
-      if (sourceMeshes.length === 0) continue;
-
-      // Static round-wheel instances, one InstancedMesh per wheel part per
-      // model/floor bucket. No per-frame updates and no per-car drawables.
-      const wheelPrototype = buildWheelAssembly(1, 1);
-      wheelPrototype.updateMatrixWorld(true);
-      const wheelPrototypeMeshes: THREE.Mesh[] = [];
-      wheelPrototype.traverse(child => { if (child instanceof THREE.Mesh) wheelPrototypeMeshes.push(child); });
-      const wheelInstances = wheelPrototypeMeshes.map(protoMesh => {
-        const wheelMesh = new THREE.InstancedMesh(
-          protoMesh.geometry,
-          protoMesh.material,
-          obstacles.length * 4,
-        );
-        wheelMesh.name = `parked-wheel-${modelName}-${protoMesh.name || protoMesh.uuid}`;
-        wheelMesh.castShadow = true;
-        wheelMesh.receiveShadow = true;
-        scene.add(wheelMesh);
-        return { protoMesh, wheelMesh };
-      });
-
-      const instances = sourceMeshes.map(source => {
-        // Each floor owns its GPU geometry so the streaming LRU can dispose
-        // an evicted floor without invalidating a still-visible floor.
-        const mesh = new THREE.InstancedMesh(source.geometry.clone(), source.material, obstacles.length);
-        mesh.name = `parked-${modelName}-${source.name || source.uuid}`;
-        mesh.castShadow = source.castShadow;
-        mesh.receiveShadow = source.receiveShadow;
-        scene.add(mesh);
-        return { source, mesh };
-      });
-      const placement = new THREE.Matrix4();
-      const combined = new THREE.Matrix4();
-      const quaternion = new THREE.Quaternion();
-      const footprintHull = (points: Array<{ x: number; y: number }>) => {
-        const sorted = [...new Map(points.map(p => [`${p.x.toFixed(4)},${p.y.toFixed(4)}`, p])).values()]
-          .sort((a, b) => a.x - b.x || a.y - b.y);
-        const cross = (o: {x:number;y:number}, a: {x:number;y:number}, b: {x:number;y:number}) =>
-          (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
-        const half = (list: Array<{x:number;y:number}>) => {
-          const hull: Array<{x:number;y:number}> = [];
-          for (const point of list) {
-            while (hull.length > 1 && cross(hull[hull.length - 2], hull[hull.length - 1], point) <= 0) hull.pop();
-            hull.push(point);
-          }
-          return hull.slice(0, -1);
-        };
-        return sorted.length >= 3 ? [...half(sorted), ...half([...sorted].reverse())] : [];
-      };
-      obstacles.forEach((obstacle, index) => {
-        const scaleX = obstacle.width / Math.max(1, sourceSize.x);
-        const scaleZ = obstacle.height / Math.max(1, sourceSize.z);
-        const scaleY = Math.min(scaleX, scaleZ);
-        template.scale.set(sourceScale.x * scaleX, sourceScale.y * scaleY, sourceScale.z * scaleZ);
-        template.updateMatrixWorld(true);
-        quaternion.setFromEuler(new THREE.Euler(0, Math.PI / 2 - obstacle.rotation, 0));
-        placement.compose(
-          new THREE.Vector3(obstacle.x, (obstacle.elevation ?? terrainHeightAt(levelData, obstacle.x, obstacle.y)), obstacle.y),
-          quaternion,
-          new THREE.Vector3(1, 1, 1),
-        );
-        const actualWorldPoints: Array<{ x: number; y: number }> = [];
-        const addWorldPoint = (worldX: number, worldZ: number) => {
-          const dx = worldX - obstacle.x;
-          const dz = worldZ - obstacle.y;
-          const cos = Math.cos(obstacle.rotation);
-          const sin = Math.sin(obstacle.rotation);
-          actualWorldPoints.push({ x: dx * cos + dz * sin, y: -dx * sin + dz * cos });
-        };
-        instances.forEach(({ source, mesh }) => {
-          combined.multiplyMatrices(placement, source.matrixWorld);
-          mesh.setMatrixAt(index, combined);
-          // source is already wheel-filtered; keep this guard explicit so the
-          // hull never uses the hidden original GLB tyres.
-          if (wheelMeshes.has(source)) return;
-          const positions = source.geometry.getAttribute('position');
-          const vertex = new THREE.Vector3();
-          for (let i = 0; i < positions.count; i++) {
-            vertex.fromBufferAttribute(positions, i).applyMatrix4(combined);
-            addWorldPoint(vertex.x, vertex.z);
-          }
-        });
-        // Four round tyre assemblies per parked car, placed inside the body
-        // envelope. These are static matrices, not a per-frame animation.
-        const wheelRadius = Math.max(1.6, Math.min(obstacle.width, obstacle.height) * 0.16);
-        const wheelWidth = Math.max(1.0, Math.min(obstacle.width, obstacle.height) * 0.14);
-        const sideX = obstacle.width * 0.38;
-        const axleZ = obstacle.height * 0.30;
-        for (let wheelIndex = 0; wheelIndex < 4; wheelIndex++) {
-          const x = wheelIndex % 2 === 0 ? -sideX : sideX;
-          const z = wheelIndex < 2 ? -axleZ : axleZ;
-          const wheelLocal = new THREE.Matrix4().compose(
-            new THREE.Vector3(x, wheelRadius, z),
-            new THREE.Quaternion(),
-            new THREE.Vector3(wheelWidth, wheelRadius, wheelRadius),
-          );
-          const wheelWorld = new THREE.Matrix4().multiplyMatrices(placement, wheelLocal);
-          wheelInstances.forEach(({ protoMesh, wheelMesh }) => {
-            const wheelMatrix = new THREE.Matrix4().multiplyMatrices(wheelWorld, protoMesh.matrix);
-            wheelMesh.setMatrixAt(index * 4 + wheelIndex, wheelMatrix);
-            const wheelPositions = protoMesh.geometry.getAttribute('position');
-            const wheelVertex = new THREE.Vector3();
-            for (let i = 0; i < wheelPositions.count; i++) {
-              wheelVertex.fromBufferAttribute(wheelPositions, i).applyMatrix4(wheelMatrix);
-              addWorldPoint(wheelVertex.x, wheelVertex.z);
-            }
-          });
-        }
-        const actualHull = footprintHull(actualWorldPoints);
-        if (actualHull.length >= 3) obstacle.collisionFootprint = actualHull;
-        instancedIds.add(obstacle.id);
-      });
-      instances.forEach(({ mesh }) => {
-        mesh.instanceMatrix.needsUpdate = true;
-        mesh.computeBoundingSphere();
-      });
-      wheelInstances.forEach(({ wheelMesh }) => {
-        wheelMesh.instanceMatrix.needsUpdate = true;
-        wheelMesh.computeBoundingSphere();
-      });
-      {
-        const shadowMesh = new THREE.InstancedMesh(
-          new THREE.PlaneGeometry(1, 1),
-          new THREE.MeshBasicMaterial({
-            map: contactShadowTexture(), transparent: true, opacity: 0.26,
-            depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2,
-          }),
-          obstacles.length,
-        );
-        shadowMesh.name = `parked-shadows-${modelName}`;
-        const shadowMatrix = new THREE.Matrix4();
-        const shadowQuat = new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2, 0, 0));
-        obstacles.forEach((obstacle, index) => {
-          const size = Math.max(obstacle.width, obstacle.height) * 1.10;
-          shadowMatrix.compose(
-            new THREE.Vector3(obstacle.x, (obstacle.elevation ?? terrainHeightAt(levelData, obstacle.x, obstacle.y)) + 0.16, obstacle.y),
-            shadowQuat,
-            new THREE.Vector3(size, size * 0.94, 1),
-          );
-          shadowMesh.setMatrixAt(index, shadowMatrix);
-        });
-        shadowMesh.instanceMatrix.needsUpdate = true;
-        shadowMesh.renderOrder = 2;
-        scene.add(shadowMesh);
-        // Keep the instanced representation, but retain the local matrices of
-        // each car so an impact can move its body, wheels and shadow together.
-        obstacles.forEach((obstacle,index)=>{
-          const initial=new THREE.Matrix4().compose(
-            new THREE.Vector3(obstacle.x,obstacle.elevation??terrainHeightAt(levelData,obstacle.x,obstacle.y),obstacle.y),
-            new THREE.Quaternion().setFromEuler(new THREE.Euler(0,Math.PI/2-obstacle.rotation,0)),
-            new THREE.Vector3(1,1,1));
-          const inverse=initial.clone().invert();
-          const items:Array<{mesh:THREE.InstancedMesh;index:number;local:THREE.Matrix4}>=[];
-          const save=(mesh:THREE.InstancedMesh,i:number)=>{const m=new THREE.Matrix4();mesh.getMatrixAt(i,m);items.push({mesh,index:i,local:inverse.clone().multiply(m)});};
-          instances.forEach(({mesh})=>save(mesh,index));
-          wheelInstances.forEach(({wheelMesh})=>{for(let w=0;w<4;w++)save(wheelMesh,index*4+w);});
-          save(shadowMesh,index);
-          visuals.set(obstacle.id,pose=>{
-            const placement=new THREE.Matrix4().compose(new THREE.Vector3(pose.x,pose.elevation??0,pose.y),
-              new THREE.Quaternion().setFromEuler(new THREE.Euler(0,Math.PI/2-pose.rotation,0)),new THREE.Vector3(1,1,1));
-            const changed=new Set<THREE.InstancedMesh>();
-            items.forEach(item=>{item.mesh.setMatrixAt(item.index,placement.clone().multiply(item.local));changed.add(item.mesh);});
-            changed.forEach(mesh=>{mesh.instanceMatrix.needsUpdate=true;mesh.computeBoundingSphere();});
-          });
-        });
-      }
-      template.scale.copy(sourceScale);
-    } catch {
-      // Keep the original individual-car fallback below for a missing asset.
-    }
+  const meshes:Array<{mesh:THREE.InstancedMesh;shadow?:boolean}>=[];
+  for(const [material,geos] of batches){
+   const merged=mergeGeometries(geos,false)!;geos.forEach(g=>g.dispose());
+   const mesh=new THREE.InstancedMesh(merged,material,group.length);mesh.name='parked-'+group[0].modelName;
+   mesh.castShadow=!material.transparent;mesh.receiveShadow=true;scene.add(mesh);meshes.push({mesh});
   }
-  return instancedIds;
+  const shadow=new THREE.InstancedMesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({map:contactShadowTexture(),transparent:true,opacity:.22,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}),group.length);
+  shadow.name='parked-contact-shadows';scene.add(shadow);meshes.push({mesh:shadow,shadow:true});
+  const actualHull=hull(points),size=box.getSize(new THREE.Vector3());
+  group.forEach(({obstacle:o},i)=>{
+   o.collisionFootprint=actualHull;o.width=size.x;o.height=size.z;o.verticalHeight=size.y;
+   o.elevation??=terrainHeightAt(levelData,o.x,o.y);ids.add(o.id);
+   const update=(pose:{x:number;y:number;rotation:number;elevation?:number;crushed?:number})=>{
+    const y=pose.elevation??terrainHeightAt(levelData,pose.x,pose.y),crush=1-(pose.crushed??0)*.62;
+    for(const item of meshes){
+     const matrix=new THREE.Matrix4().compose(new THREE.Vector3(pose.x,y+(item.shadow?.12:0),pose.y),new THREE.Quaternion().setFromEuler(item.shadow?new THREE.Euler(-Math.PI/2,0,-pose.rotation+Math.PI/2):new THREE.Euler(0,Math.PI/2-pose.rotation,0)),item.shadow?new THREE.Vector3(size.x*1.15,size.z*1.06,1):new THREE.Vector3(1,crush,1));
+     item.mesh.setMatrixAt(i,matrix);item.mesh.instanceMatrix.needsUpdate=true;
+     if(item.mesh.boundingSphere){const b=item.mesh.boundingSphere,v=new THREE.Vector3(pose.x,y,pose.y);const required=b.center.distanceTo(v)+Math.max(size.x,size.z);if(required>b.radius)b.radius=required+20;}
+    }
+   };update(o);visuals.set(o.id,update);
+  });
+  // A stable map-sized bound accommodates impact movement without repeatedly
+  // rescanning every instance matrix on each collision frame.
+  for(const {mesh} of meshes)mesh.computeBoundingSphere();
+ }
+ return ids;
 }
 
 function createGarageVertexBox(kind: 'wall' | 'pillar' | 'boundary') {

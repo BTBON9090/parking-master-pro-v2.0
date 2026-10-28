@@ -1,0 +1,17 @@
+[
+  {
+    "archive": "release/mac/老司机是怎样炼成的.app/Contents/Resources/app.asar",
+    "version": "0.26.0",
+    "verifiedBundledFiles": 96
+  },
+  {
+    "archive": "release/mac-arm64/老司机是怎样炼成的.app/Contents/Resources/app.asar",
+    "version": "0.26.0",
+    "verifiedBundledFiles": 96
+  },
+  {
+    "archive": "release/win-unpacked/resources/app.asar",
+    "version": "0.26.0",
+    "verifiedBundledFiles": 96
+  }
+]

@@ -361,6 +361,7 @@ interface DashboardScreenProps {
   /** 平滑后的转速（rpm）。 */
   rpm: number;
   redlineRpm: number;
+  parkingBrake?:boolean;
   gear: number; // -1 R, 0 N, 1-5
   singleSpeed?: boolean;
   rpmCaption: string;
@@ -458,13 +459,13 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
   speedKmh,
   rpm,
   redlineRpm,
-  gear,
+  gear, parkingBrake,
   singleSpeed = false,
   rpmCaption,
   speedCaption,
 }) => {
   const d = pack.dashboard;
-  const gearLabel = gear === -1 ? 'R' : gear === 0 ? 'N' : singleSpeed ? 'D' : String(gear);
+  const gearLabel = parkingBrake ? 'P' : gear === -1 ? 'R' : gear === 0 ? 'N' : singleSpeed ? 'D' : String(gear);
   const gearColor = gear === -1 ? d.gearReverse : gear === 0 ? d.gearNeutral : d.gearDrive;
   const rpmMax = Math.max(6, Math.ceil(redlineRpm / 1000));
 
@@ -523,6 +524,7 @@ interface CockpitClusterProps {
   speedKmh: number;
   rpm: number;
   redlineRpm: number;
+  parkingBrake?:boolean;
   gear: number;
   singleSpeed?: boolean;
   rpmCaption: string;

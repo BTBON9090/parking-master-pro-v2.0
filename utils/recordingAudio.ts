@@ -1,9 +1,11 @@
+import {CarType} from '../types';
+import {EngineVoice} from './engineVoice';
 import {assetUrl} from './assetUrl';
 import {roadMix} from './motorAudio';
 /**
- * CC0 recording layers. No oscillator is used for the engine/road/gravel/skid
- * bed once these buffers decode; the old synth remains only as an explicit
- * fallback when loading fails. Radar beeps and UI clicks are still synth.
+ * CC0 road/gravel/skid and ignition recording layers. Special mechanical
+ * vehicles use low-frequency synthesized firing pulses for distinct character;
+ * these are game sounds, not recordings of the named manufacturer's engine.
  */
 export type RecordingSurface = 'asphalt' | 'gravel';
 
@@ -16,6 +18,7 @@ export interface RecordingAudioStatus {
 }
 
 export interface RecordingAudioParams {
+  carType?:CarType;
   enabled: boolean;
   paused: boolean;
   engineOn: boolean;
@@ -50,6 +53,7 @@ const ASSETS = [
 type AssetKey = typeof ASSETS[number]['key'];
 type LoopKey = 'engineIdle' | 'engineLoad' | 'road' | 'gravel' | 'skid';
 
+let voice:EngineVoice|null=null;
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
 let initPromise: Promise<RecordingAudioStatus> | null = null;
@@ -212,7 +216,10 @@ export function updateRecordingAudio(params: RecordingAudioParams): void {
   }
   master.gain.setTargetAtTime(audible ? clamp(params.volume, 0, 2) * 0.95 : 0, now, 0.08);
   const rpmNorm = clamp((params.rpm - 700) / Math.max(1, params.redlineRpm - 700), 0, 1);
-  const engineActive = audible && params.engineOn && !params.electric && params.engineSoundEnabled!==false;
+  const mechanical=params.carType===CarType.TRACTOR||params.carType===CarType.TRIKE||params.carType===CarType.MINING||params.carType===CarType.TYPE100;
+  if(!voice)voice=new EngineVoice(ctx,master);
+  voice.update(params.carType??CarType.TRUCK,params.rpm,params.throttle,mechanical&&audible&&params.engineOn&&params.engineSoundEnabled!==false,!!params.cabin);
+  const engineActive = !mechanical && audible && params.engineOn && !params.electric && params.engineSoundEnabled!==false;
   const cabinScale=params.cabin?(params.insulation??.12):1;
   const road=roadMix(params.speedAbs,!!params.cabin,params.distanceM,params.insulation);
   const idleGain = engineActive ? (params.cabin?.14:.22) * (0.45 + rpmNorm * 0.55) : 0;
@@ -293,6 +300,7 @@ export function disposeRecordingAudio(): void {
   buffers.clear();
   master?.disconnect();
   master = null;
+  voice?.dispose();voice=null;
   ctx = null;
   initPromise = null;
   status = { ready: false, loaded: 0, total: ASSETS.length, failed: [], active: false };

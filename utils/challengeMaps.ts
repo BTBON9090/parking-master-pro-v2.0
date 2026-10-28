@@ -3,11 +3,11 @@ import {CatmullRomCurve3,Vector3} from 'three';
 import type {LevelData,Vector2} from '../types';
 
 const specs = [
- {id:8,kind:'mud',name:'泥泞山谷',grip:.58,rolling:1.65,color:'#645646',seed:13,points:[[350,450],[850,480],[1220,850],[1680,650],[2120,1050],[1800,1510],[2360,1850],[3000,1520],[3530,1950],[3160,2500],[2500,2420],[1980,2750],[1250,2470],[760,2050],[420,2480]]},
- {id:9,kind:'snow',name:'雪岭冰路',grip:.34,rolling:1.2,color:'#9ca8a8',seed:29,points:[[350,500],[950,520],[1510,760],[2060,470],[2730,780],[3200,510],[3960,900],[3650,1450],[3050,1330],[2500,1760],[3100,2240],[3850,2450],[2900,2750],[1850,2400],[900,2640]]},
- {id:10,kind:'quarry',name:'矿场碎石路',grip:.70,rolling:1.4,color:'#877663',seed:37,points:[[400,450],[1000,440],[1500,820],[2100,650],[2450,1100],[1950,1350],[2500,1650],[3260,1300],[3830,1800],[3400,2350],[2700,2100],[2150,2600],[1200,2550],[500,2100]]},
- {id:11,kind:'forest',name:'林场窄路',grip:.78,rolling:1.2,color:'#665e4e',seed:53,points:[[350,500],[800,850],[1280,470],[1740,870],[1410,1300],[2070,1050],[2600,1450],[3180,850],[3850,1200],[3390,1650],[3790,2250],[3100,2600],[2410,2150],[1800,2620],[900,2250],[400,2750]]},
- {id:12,kind:'coast',name:'海崖盘山路',grip:.89,rolling:1.05,color:'#44484a',seed:71,points:[[360,450],[980,430],[1450,750],[2000,500],[2580,850],[3100,450],[3840,740],[3580,1250],[3070,1120],[2620,1600],[3150,1890],[3700,2300],[3100,2730],[2230,2350],[1600,2700],[850,2240],[400,2600]]},
+ {id:8,kind:'mud',name:'泥泞山谷',grip:.58,rolling:1.65,color:'#645646',seed:13,points:[[350,450],[950,450],[1350,700],[950,1000],[650,1400],[1250,1700],[2000,1500],[2500,1100],[3150,1150],[3600,1500],[3100,1850],[2500,2250],[1700,2200],[1100,2500],[1900,2800],[2900,2750],[3800,2600]]},
+ {id:9,kind:'snow',name:'雪岭冰路',grip:.34,rolling:1.2,color:'#9ca8a8',seed:29,points:[[350,500],[1100,500],[1800,700],[2750,500],[3650,850],[3850,1600],[3300,2350],[2300,2750],[1250,2600],[700,2000],[1150,1500],[1900,1300],[2600,1500],[2900,1900],[2300,2200]]},
+ {id:10,kind:'quarry',name:'矿场碎石路',grip:.70,rolling:1.4,color:'#877663',seed:37,points:[[400,450],[1600,400],[2850,400],[3750,850],[3900,1800],[3300,2700],[2000,2850],[850,2400],[600,1500],[1000,900],[2000,750],[2950,1000],[3300,1700],[2850,2300],[1850,2400],[1200,1900],[1400,1400],[2150,1250],[2650,1650],[2250,1950],[1850,1700]]},
+ {id:11,kind:'forest',name:'林场窄路',grip:.78,rolling:1.2,color:'#665e4e',seed:53,points:[[350,500],[950,520],[1500,1000],[1950,1400],[2650,1450],[3200,1000],[3850,1050],[3700,1700],[3100,1850],[3400,2500],[2700,2850],[2150,2550],[1900,2100],[1300,1900],[950,2300],[400,2700]]},
+ {id:12,kind:'coast',name:'海崖盘山路',grip:.89,rolling:1.05,color:'#44484a',seed:71,points:[[360,450],[1100,450],[1800,600],[2600,460],[3650,700],[3950,1100],[3400,1450],[2650,1250],[2300,1600],[2950,1950],[3650,1950],[3800,2400],[3100,2800],[2250,2650],[1450,2900],[800,2650],[1100,2250],[1550,2100],[1400,1750],[700,1700],[400,1400]]},
 ] as const;
 export const CHALLENGE_MAPS=specs.map(s=>({id:s.id,name:s.name,desc:s.kind==='snow'?'积雪路肩、冰滑斑块、260 米高差与回头弯。':s.kind==='mud'?'窄幅车辙、随机深坑、陡坡与泥泞山谷。':'长距离弯道、窄路与起伏地形。',locked:false,thumbnail:`/thumbnails/map-${s.id}.svg`}));
 
@@ -44,9 +44,10 @@ export function challengeHeight(level:LevelData,x:number,y:number):number {
  const mountain=320*terrainNoise(x,y,t.seed,800)+180*terrainNoise(x,y,t.seed+9,340);
  // A cut shelf on sea cliffs; uneven hills elsewhere. No periodic wave function.
  const land=t.kind==='coast'?-Math.min(height+200,650)*cliff:mountain*cliff;
- const rough=t.kind==='mud'?7.2:t.kind==='quarry'?5.0:t.kind==='forest'?3.8:t.kind==='snow'?1.8:.3;
+ const rough=t.kind==='mud'?10.5:t.kind==='quarry'?11.0:t.kind==='forest'?5.8:t.kind==='snow'?2.2:.3;
  const patch=.3+.7*smooth((terrainNoise(x,y,t.seed+22,170)+.3)/1.3);
- const detail=rough*patch*(terrainNoise(x,y,t.seed,54)+.4*terrainNoise(x,y,t.seed+7,29));
+ const pothole=t.kind==='quarry'? -18*Math.max(0,(-terrainNoise(x,y,t.seed+41,85)-.28)/.72)**2 + 9*Math.max(0,(terrainNoise(x,y,t.seed+51,135)-.30)/.70)**2:0;
+ const detail=pothole+rough*patch*(terrainNoise(x,y,t.seed,54)+.4*terrainNoise(x,y,t.seed+7,29));
  const bank=t.kind==='snow'?10*Math.exp(-(((distance-roadWidth*.65)/17)**2))*(1+.6*terrainNoise(x,y,41,90)):0;
  const result=height+land+detail+bank;cache.set(key,result);return result;
 }

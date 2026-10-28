@@ -1,5 +1,5 @@
 appId: cn.btbon.parkingmaster
-productName: Parking Master Pro
+productName: 老司机是怎样炼成的
 artifactName: Parking-Master-Pro-${version}-${os}-${arch}.${ext}
 directories:
   output: release

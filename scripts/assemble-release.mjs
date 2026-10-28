@@ -4,7 +4,7 @@ import {renderDownloadPage} from './render-download-links.mjs';
 const {version}=JSON.parse(fs.readFileSync('package.json','utf8'));
 const platforms=[['mac-arm64',`Parking-Master-Pro-${version}-mac-arm64.dmg`],['mac-x64',`Parking-Master-Pro-${version}-mac-x64.dmg`],['windows-x64',`Parking-Master-Pro-${version}-win-x64.exe`],['android',`Parking-Master-Pro-${version}-android.apk`],['ios-source',`Parking-Master-Pro-${version}-iOS-Project.zip`]];
 const assets=platforms.map(([platform,name])=>{const bytes=fs.readFileSync('release/'+name);return {platform,name,size:bytes.length,sha256:crypto.createHash('sha256').update(bytes).digest('hex'),url:`https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/${version}/${name}`};});
-const manifest={version,date:new Date().toISOString().slice(0,10),githubRelease:`https://github.com/BTBON9090/parking-master-pro-v2.0/releases/tag/v${version}`,notes:'0.25.0 体验测试版：修复制动与转向，48 格速度缩放转向尺；综合驾校 18 项计分、八车道高速 NPC、环城山脉与千米云顶、积雪和崎岖挑战；新增八款低模座驾及 18 轮铰接半挂。物理参数为游戏标定。Mac / Windows 安装包未签名；iOS 提供工程，暂无 IPA。',assets};
+const manifest={version,date:new Date().toISOString().slice(0,10),githubRelease:`https://github.com/BTBON9090/parking-master-pro-v2.0/releases/tag/v${version}`,notes:'0.26.0 体验测试版：更名《老司机是怎样炼成的》，新增履带驾驶演示、矿用自卸车和 22 轮长头半挂；改进半挂与 NPC 质量碰撞、加速转向、驾驶舱与轮辐、P 挡起步、车库试听、小地图缩放和 ABS 状态；重排五条挑战路线，扩展高速弯线、隧道与事故路段，优化场景资源复用。模型和物理参数为风格化游戏标定。Mac / Windows 未签名；iOS 提供工程，暂无 IPA。',assets};
 fs.writeFileSync('distribution/site/latest.json',JSON.stringify(manifest,null,2)+'\n');
 renderDownloadPage();
 fs.writeFileSync('release/SHA256SUMS.txt',assets.map(x=>`${x.sha256}  ${x.name}`).join('\n')+'\n');

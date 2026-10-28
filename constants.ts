@@ -1,3 +1,4 @@
+import {FLEET31_IDS,FLEET31_CARS,FLEET31_TUNING,FLEET31_STEERING} from './utils/fleet31';
 import {FLEET30_IDS} from './utils/fleet30';
 import {buildHighway} from './utils/highway';
 import {frontSteerForTurningRadius} from './utils/driving';
@@ -18,7 +19,7 @@ export const MAX_STEER_ANGLE = Math.PI / 3;
 export const STEERING_WHEEL_MAX_ROTATION = 540;
 
 export const DEFAULT_VEHICLE_TUNING: Record<CarType, VehicleTuning> = {
-  ...EXPANSION_TUNING,
+  ...EXPANSION_TUNING,...FLEET31_TUNING,
   [CarType.SEDAN]: { torqueScale: 1, throttleResponseScale: 1, shiftTimeScale: 1, engineBrakeScale: 1, steerLockScale: 1, steerResponseScale: 1, speedSteerScale: 1.16, understeerScale: 1 },
   [CarType.SEAL08]: { torqueScale: 1, throttleResponseScale: 1, shiftTimeScale: 1, engineBrakeScale: 1, steerLockScale: 1, steerResponseScale: 1, speedSteerScale: 1.16, understeerScale: 1 },
   [CarType.SUV]: { torqueScale: 1, throttleResponseScale: 1, shiftTimeScale: 1, engineBrakeScale: 1, steerLockScale: 1, steerResponseScale: 1, speedSteerScale: 1.16, understeerScale: 1 },
@@ -34,7 +35,7 @@ export const DEFAULT_VEHICLE_TUNING: Record<CarType, VehicleTuning> = {
  * 让每辆车都有自己独特的转向手感（海豹 08 为实测调校基准）。
  */
 export const DEFAULT_STEERING_CURVES: Record<CarType, SteeringCurve> = {
-  ...EXPANSION_STEERING,
+  ...EXPANSION_STEERING,...FLEET31_STEERING,
   // 海豹 08 EV：实车精调参数
   [CarType.SEDAN]: {
     firstHalfGain: 0.24,
@@ -161,7 +162,7 @@ export const hoodCameraDefaultForCar = (id: CarType): HoodCameraAdjustment => id
 
 // Dimensions
 export const CAR_MODELS: Record<CarType, CarConfig> = {
-  ...EXPANSION_CARS,
+  ...EXPANSION_CARS,...FLEET31_CARS,
   [CarType.SEDAN]: {
     id: CarType.SEDAN,
     name: "海豹 08 手动训练（模拟）",
@@ -532,7 +533,7 @@ export const TRANSLATIONS = {
     }
   },
   EN: {
-    title: "Parking Master Pro v2.0",
+    title: "老司机是怎样炼成的",
     start: "Enter Game",
     settings: "Settings",
     resume: "Resume",
@@ -608,7 +609,7 @@ export const TRANSLATIONS = {
   }
 };
 
-export const GARAGE_CARS: CarType[] = [...FLEET30_IDS,CarType.SUV, CarType.SEAL08, CarType.TAI7, CarType.LI_I9, CarType.N90, CarType.TRUCK,CarType.JEEP,CarType.MIDIBUS,CarType.COACH,CarType.VAN,CarType.LIGHT_TRUCK];
+export const GARAGE_CARS: CarType[] = [...FLEET31_IDS,...FLEET30_IDS,CarType.SUV, CarType.SEAL08, CarType.TAI7, CarType.LI_I9, CarType.N90, CarType.TRUCK,CarType.JEEP,CarType.MIDIBUS,CarType.COACH,CarType.VAN,CarType.LIGHT_TRUCK];
 
 export const LEVEL_LIST = [
  {id:1,name:'城市与青岚山',desc:'城市街区、盘山公路、林场窄路与溪谷浅水。',locked:false,thumbnail:'/thumbnails/map-1.svg'},

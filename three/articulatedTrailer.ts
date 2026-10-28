@@ -6,9 +6,11 @@ const wrap=(a:number)=>Math.atan2(Math.sin(a),Math.cos(a));
  * Pose is solved in world space and converted back through the tractor's tilt. */
 export class ArticulatedTrailer {
  readonly root=new THREE.Group(); readonly footprint:Vector2[];
+ private axleDistance=94.5;
  private heading:number|undefined;private last=new THREE.Vector3();
  private hitch:THREE.Vector3;private wheels:{node:THREE.Object3D;rest:THREE.Vector3;roll:THREE.Group}[]=[];
  constructor(private vehicle:THREE.Group,node:THREE.Object3D){
+  this.axleDistance=10*(node.userData.axle_from_hitch_m??9.45);
   vehicle.updateWorldMatrix(true,true);this.hitch=vehicle.worldToLocal(node.getWorldPosition(new THREE.Vector3()));
   this.root.name='articulated-semitrailer';this.root.userData.partRole='articulated-trailer';vehicle.add(this.root);this.root.attach(node);
   this.root.position.copy(this.hitch);node.position.set(0,0,0);
@@ -30,11 +32,11 @@ export class ArticulatedTrailer {
   if(this.heading===undefined||hitch.distanceTo(this.last)>250){this.heading=tractorYaw;this.last.copy(hitch);}
   const travel=hitch.clone().sub(this.last),angle=this.heading!;
   const side=travel.x*Math.cos(angle)-travel.z*Math.sin(angle);
-  this.heading=tractorYaw+THREE.MathUtils.clamp(wrap(angle+side/94.5-tractorYaw),-1.35,1.35);
+  this.heading=tractorYaw+THREE.MathUtils.clamp(wrap(angle+side/this.axleDistance-tractorYaw),-1.35,1.35);
   const qYaw=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),this.heading);
-  const axle=new THREE.Vector3(0,0,-94.5).applyQuaternion(qYaw).add(hitch);
+  const axle=new THREE.Vector3(0,0,-this.axleDistance).applyQuaternion(qYaw).add(hitch);
   const rearHeight=surface(axle.x,axle.z);
-  const pitch=Math.atan2(rearHeight-hitch.y,94.5);
+  const pitch=Math.atan2(rearHeight-hitch.y,this.axleDistance);
   const desiredQ=new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch,this.heading,0,'YXZ'));
   const parentQ=this.root.parent!.getWorldQuaternion(new THREE.Quaternion());
   this.root.quaternion.copy(parentQ.invert().multiply(desiredQ));

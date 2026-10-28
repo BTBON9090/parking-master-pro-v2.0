@@ -3,7 +3,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {execFileSync} from 'node:child_process';
 import sharp from 'sharp';
-const source='build/app-icon-source.png';
+const {version}=JSON.parse(fs.readFileSync('package.json','utf8'));
+const versions=version.split('.').map(Number);
+const variants=fs.readdirSync('build/icon-variants').filter(n=>n.endsWith('.png')).sort();
+const source='build/icon-variants/'+variants[(versions[0]*10000+versions[1]*100+versions[2])%variants.length];
+fs.copyFileSync(source,'build/app-icon-source.png');
+console.log('Release icon:',source);
 async function png(file,size){fs.mkdirSync(path.dirname(file),{recursive:true});await sharp(source).resize(size,size).removeAlpha().png().toFile(file);}
 await png('build/icon.png',1024);
 await png('public/app-icon.png',512);

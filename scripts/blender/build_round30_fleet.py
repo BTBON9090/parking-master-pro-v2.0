@@ -13,19 +13,38 @@ b.loft_body=lambda name,stations,mat,step=.085:original_loft(name,stations,mat,s
 
 def wheel(name,width,rim_radius,tyre_radius,spokes,rim,tyre,disc,hub,location,root,outboard=1):
  obj=bpy.data.objects.new(name,None);b.link_object(obj);obj.parent=root;obj.location=location
- segments=16 if active.get('name')=='SEMI' else 24
+ segments=12 if active.get('kind')=='semi' else 24
  b.wheel_revolve(name+'_Tyre',width,rim_radius,tyre_radius,tyre,segments,obj)
- b.disc_x(name+'_Rim',rim_radius,.055,outboard*width*.38,rim,obj,segments=segments)
- b.disc_x(name+'_Hub',rim_radius*.35,.075,outboard*width*.49,hub,obj,segments=8)
+ # Open annulus and actual radial spokes; the backing disc is inboard.
+ vertices=[]
+ for radius in [rim_radius*.90,rim_radius]:
+  for i in range(segments):
+   a=i*math.tau/segments;vertices.append((outboard*width*.46,radius*math.cos(a),radius*math.sin(a)))
+ b.mesh_object(name+'_RimLip',vertices,[(i,(i+1)%segments,(i+1)%segments+segments,i+segments) for i in range(segments)],rim,False,obj)
+ b.disc_x(name+'_BrakeDisc',rim_radius*.82,.02,0,disc,obj,segments=12)
+ b.disc_x(name+'_Hub',rim_radius*.23,.06,outboard*width*.46,hub,obj,segments=8)
  for i in range(6):
-  a=i*math.tau/6;r=rim_radius*.66
-  b.box(name+'_Vent',(.01,.045,rim_radius*.4),(outboard*width*.42,math.cos(a)*r,math.sin(a)*r),tyre,rotation=(a-math.pi/2,0,0),parent=obj)
+  a=i*math.tau/6;r=rim_radius*.58
+  b.box(name+'_Spoke',(.035,rim_radius*.13,rim_radius*.82),(outboard*width*.45,math.cos(a)*r,math.sin(a)*r),rim,rotation=(a-math.pi/2,0,0),parent=obj)
  if active.get('name')=='TRACTOR':
   for i in range(16):
    a=i*math.tau/16
    b.box(name+'_Lug',(width*.92,.08,.10),(0,math.sin(a)*(tyre_radius-.05),math.cos(a)*(tyre_radius-.05)),tyre,rotation=(-a,0,0),parent=obj)
  return obj
 b.build_wheel=wheel
+
+def trailer_shell(root,mat):
+ # Explicit bevelled sections preserve a rectangular freight body at low cost.
+ # A densely sampled smooth car loft decimated to this budget becomes a wedge.
+ verts=[]
+ for y,w,base,top in [(.25,1.12,1.08,3.73),(.5,1.25,1.02,3.85),(10.9,1.25,1.02,3.85),(11.3,1.20,1.05,3.80)]:
+  r=.045
+  section=[(-w+r,base),(w-r,base),(w,base+r),(w,top-r),(w-r,top),(-w+r,top),(-w,top-r),(-w,base+r)]
+  verts.extend((x,y,z) for x,z in section)
+ faces=[tuple(range(7,-1,-1)),tuple(range(24,32))]
+ for row in range(3):
+  for i in range(8):faces.append((row*8+i,row*8+(i+1)%8,(row+1)*8+(i+1)%8,(row+1)*8+i))
+ return b.mesh_object('TrailerShell',verts,faces,mat,False,root)
 # Window cuts follow each cab's plane instead of reusing an SUV's shallow rake.
 def cut_window(body,stations,s,corners,name,normal,glass,black):
  a,c,d=Vector(corners[0]),Vector(corners[1]),Vector(corners[3])
@@ -46,7 +65,7 @@ b.arch_cutter=arch
 def spec(name,L,W,H,wb,tire,color,kind='suv'):
  s=b.l80_spec();belt=H*(.65 if kind in ('mini','mpv') else .60 if kind=='sport' else .66)
  cabin_front=-L*.22;roof_front=-L*.10;cabin_rear=L*.40;roof_rear=L*.29
- if kind=='sport':cabin_front=-L*.19;roof_front=-L*.065;roof_rear=L*.13;cabin_rear=L*.29;belt=H*.68
+ if kind=='sport':cabin_front=-L*.19;roof_front=-L*.065;roof_rear=L*.13;cabin_rear=L*.29;belt=H*.54
  if kind=='cyber':cabin_front=-L*.25;roof_front=-L*.045;roof_rear=L*.09;cabin_rear=L*.20;belt=1.12
  if kind=='tractor':cabin_front=-.25;roof_front=.0;roof_rear=1.3;cabin_rear=1.52;belt=1.55
  if kind=='trike':cabin_front=-1.27;roof_front=-1.04;roof_rear=-.33;cabin_rear=-.20;belt=.97
@@ -64,7 +83,7 @@ def spec(name,L,W,H,wb,tire,color,kind='suv'):
  rows.sort(key=lambda r:r[0])
  fa=-wb/2;ra=wb/2
  eye_y=(roof_front+roof_rear)*.25;eye_z=H-.32
- if kind=='sport':eye_z=H-.23
+ if kind=='sport':eye_z=H-.18
  if kind=='semi':eye_z=2.70
  if kind in ('trike','semi'):eye_y=roof_front+.55
  windows=[(cabin_front+.08,(cabin_front+cabin_rear)/2-.06),((cabin_front+cabin_rear)/2+.06,cabin_rear-.10)]
@@ -128,6 +147,13 @@ def build(s):
   b.box('SideMirrorPod',(.16,.12,.085),(x,y+.02,z),paint,bevel=.02,parent=root)
   b.box('SideMirrorLens',(.13,.01,.06),(x,y+.085,z),mats.get('MirrorGlass') or dark,parent=root)
 
+ if kind=='semi':
+  for o in list(root.children_recursive):
+   if o.name.startswith('SideMirror'):bpy.data.objects.remove(o,do_unlink=True)
+  for side in [-1,1]:
+   b.beam('SideMirrorStem',(side*1.18,-L/2+.15,3.30),(side*1.53,-L/2-.45,3.20),.045,.045,dark,parent=root)
+   b.box('SideMirrorPod',(.20,.13,.56),(side*1.53,-L/2-.45,2.94),dark,bevel=.025,parent=root)
+   b.box('SideMirrorLens',(.16,.015,.49),(side*1.53,-L/2-.37,2.94),mats.get('MirrorGlass') or rim,parent=root)
  if kind in ('cyber','trike'):
   start=s['cabin_rear']+.12;end=L/2-.12
   b.apply_boolean(body,b.box('CargoOpening',(W*.75,end-start,1.5),(0,(start+end)/2,s['beltline']+.40),None))
@@ -171,10 +197,10 @@ def build(s):
   for side in [-1,1]:
    b.apply_boolean(body,b.box('CabSideWindowCut',(.65,2.55,1.25),(side*1.15,-1.72,2.56),None))
    cutter=arch(side,s['front_axle'],.53,.605,'front');b.apply_boolean(body,cutter)
-  b.apply_boolean(body,b.box('CabFrontWindowCut',(2.02,.60,1.25),(0,-L/2+.10,2.56),None))
+  b.apply_boolean(body,b.box('CabFrontWindowCut',(2.26,.75,1.25),(0,-L/2+.10,2.56),None))
   for o in list(root.children_recursive):
    if o.name.startswith(('GlassWindshield','GlassSide','GlassRear','InteriorDash','ArchTrim')):bpy.data.objects.remove(o,do_unlink=True)
-  b.quad('GlassWindshield',[(-1.01,-L/2-.005,1.935),(1.01,-L/2-.005,1.935),(1.01,-L/2-.005,3.185),(-1.01,-L/2-.005,3.185)],mats['Glass'],parent=root)
+  b.quad('GlassWindshield',[(-1.13,-L/2-.005,1.935),(1.13,-L/2-.005,1.935),(1.13,-L/2-.005,3.185),(-1.13,-L/2-.005,3.185)],mats['Glass'],parent=root)
   for side in [-1,1]:b.quad('GlassSide'+str(side),[(side*1.245,-2.995,1.935),(side*1.245,-.445,1.935),(side*1.16,-.445,3.185),(side*1.16,-2.995,3.185)],mats['Glass'],parent=root)
   b.box('InteriorDashTop',(2.1,.55,.15),(0,-2.95,2.05),mats['InteriorDark'],bevel=.04,parent=root)
   b.box('InteriorCabRaisedFloor',(2.18,2.70,.06),(0,-1.60,1.45),mats['InteriorDark'],parent=root)
@@ -190,7 +216,7 @@ def build(s):
   root['fixed_origin']=True
   trailer=bpy.data.objects.new('TrailerRoot',None);b.link_object(trailer);trailer.parent=root;trailer.location=(0,1.40,0)
   # A closed lofted semitrailer shell with tapered nose and rounded edge strips.
-  shell=b.loft_body('TrailerShell',[(.25,1.10,1.05,1.05,3.5,3.75),(.5,1.25,1.22,1.02,3.60,3.85),(10.9,1.25,1.22,1.02,3.60,3.85),(11.3,1.13,1.10,1.08,3.48,3.72)],b.material('TrailerPaint',(.54,.57,.52),roughness=.8));shell.parent=trailer
+  shell=trailer_shell(trailer,b.material('TrailerPaint',(.54,.57,.52),roughness=.8))
   for side in [-1,1]:
    b.box('TrailerRail',(.06,10.7,.09),(side*1.24,5.7,1.18),dark,parent=trailer)
    for axle in [8.8,10.1]:
@@ -198,10 +224,19 @@ def build(s):
    b.box('TrailerTaillight',(.2,.03,.08),(side*.92,11.31,1.18),mats['Taillight'],parent=trailer)
   for y in [.65,11.0]:b.box('TrailerEndFrame',(2.35,.035,.045),(0,y,3.73),dark,parent=trailer)
   trailer['hitch_m']=1.4;trailer['axle_from_hitch_m']=9.45;trailer['length_m']=11.3
- # Enforce the complete-asset triangle budget without deforming wheel circles.
- meshes=[o for o in root.children_recursive if o.type=='MESH'];count=sum(sum(len(p.vertices)-2 for p in o.data.polygons) for o in meshes)
- if count>7800:
-  eligible=[o for o in meshes if not 'Wheel' in o.name and not 'Steering' in o.name];base=sum(sum(len(p.vertices)-2 for p in o.data.polygons) for o in eligible);ratio=max(.15,1-(count-7000)/max(1,base))
+ # Dissolve planar tessellation first; never collapse four-corner windows,
+ # displays or lamps into triangles just to meet the complete-asset budget.
+ meshes=[o for o in root.children_recursive if o.type=='MESH']
+ for o in meshes:
+  if 'Wheel' in o.name or 'Steering' in o.name or 'Glass' in o.name:continue
+  bpy.context.view_layer.objects.active=o
+  mod=o.modifiers.new('PlanarReduction','DECIMATE');mod.decimate_type='DISSOLVE';mod.angle_limit=.015
+  bpy.ops.object.modifier_apply(modifier=mod.name)
+ count=lambda o:sum(len(p.vertices)-2 for p in o.data.polygons)
+ total=sum(count(o) for o in meshes)
+ if total>7000:
+  eligible=[o for o in meshes if count(o)>100 and not any(n in o.name for n in ('Wheel','Steering','Glass','Screen','Bezel','Headlight'))]
+  subtotal=sum(count(o) for o in eligible);ratio=max(.1,1-(total-6900)/max(1,subtotal))
   for o in eligible:
    bpy.context.view_layer.objects.active=o;m=o.modifiers.new('budget','DECIMATE');m.ratio=ratio;bpy.ops.object.modifier_apply(modifier=m.name)
  return root,wheels
@@ -210,11 +245,12 @@ b.build_car=build
 def preview(scene,s,cam,path,location,target,lens=58):
  if not path.endswith('-interior.png'):
   scale=max(.8,s['length']/5.0);location=tuple(v*scale for v in location);target=(0,0,s['roof']*.48)
-  if s['name']=='SEMI':location=(17,-12,9);target=(0,4,1.4)
+  if s['name'] in ('SEMI','US22'):location=(22,-15,13) if s['name']=='US22' else (17,-12,9);target=(0,6 if s['name']=='US22' else 4,1.4)
  return original_render(scene,s,cam,path,location,target,lens)
 b.render_preview=preview
 specs=[spec('TRIKE',3.65,1.45,1.85,2.35,.34,(.18,.42,.59),'trike'),spec('TRACTOR',4.85,2.45,2.95,2.765,.7156,(.22,.42,.14),'tractor'),spec('SEMI',6.85,2.55,3.75,4.15,.53,(.19,.36,.48),'semi'),spec('CYBERTRUCK',5.6829,2.0316,1.7938,3.635,.4445,(.56,.62,.62),'cyber'),spec('REVUELTO',4.947,2.033,1.160,2.779,.34675,(.78,.55,.12),'sport'),spec('VEYRON',4.462,1.998,1.204,2.710,.355,(.16,.35,.50),'sport'),spec('V800',5.495,2.006,1.850,3.430,.402,(.27,.29,.32),'mpv'),spec('MINI',3.876,1.744,1.432,2.495,.31265,(.27,.42,.32),'mini')]
-for s in specs:
- if os.path.exists(os.path.join(b.OUT_DOCS,s['name']+'-interior.png')) and not os.environ.get('FLEET30_ONLY') and not os.environ.get('FLEET30_REBUILD'):continue
- if os.environ.get('FLEET30_ONLY') and s['name']!=os.environ['FLEET30_ONLY']:continue
- b.build_and_export(s)
+if __name__=='__main__':
+ for s in specs:
+  if os.path.exists(os.path.join(b.OUT_DOCS,s['name']+'-interior.png')) and not os.environ.get('FLEET30_ONLY') and not os.environ.get('FLEET30_REBUILD'):continue
+  if os.environ.get('FLEET30_ONLY') and s['name']!=os.environ['FLEET30_ONLY']:continue
+  b.build_and_export(s)

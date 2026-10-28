@@ -4,7 +4,7 @@ export const HUD_NAMES={steer:'转向区域',gas:'油门',brake:'刹车',gears:'
 export type HudId=keyof typeof HUD_NAMES;
 export type HudRect={x:number;y:number;width:number;height:number};
 export type HudLayout=Partial<Record<HudId,HudRect>>;
-export const isBus=(car:CarType)=>[CarType.COACH,CarType.MIDIBUS,CarType.VAN,CarType.LIGHT_TRUCK].includes(car);
+export const isBus=(car:CarType)=>[CarType.COACH,CarType.MIDIBUS,CarType.VAN,CarType.LIGHT_TRUCK,CarType.SEMI,CarType.US22,CarType.MINING].includes(car);
 export function clampRect(r:HudRect):HudRect{
  const width=Math.max(.035,Math.min(.8,r.width)),height=Math.max(.04,Math.min(.8,r.height));
  return {width,height,x:Math.max(0,Math.min(1-width,r.x)),y:Math.max(0,Math.min(1-height,r.y))};
@@ -26,7 +26,7 @@ export function resolveHudLayout(w:number,h:number,bus:boolean,saved:HudLayout={
   dashboard:px((w-cluster)/2,h-clusterH-7,cluster,clusterH),
   mirrorLeft:px(12,62,sideW,sideH),mirrorRight:px(w-sideW-12,62,sideW,sideH),
   mirrorCentre:px(w*.5-Math.min(190,w*.23)/2,0,Math.min(190,w*.23),Math.min(190,w*.23)/3.7),
-  topbar:px(12,8,176,42),aux:px(w-188,8,176,42),
+  topbar:px(12,8,176,42),aux:px(w-222,8,210,42),
  };
  for(const id of Object.keys(result) as HudId[])if(saved[id])result[id]=clampRect(saved[id]!);
  return result;

@@ -770,61 +770,35 @@ export function analyzeJunctions(polylines: Polyline[]): DetectedJunction[] {
 }
 
 /**
- * 路口自适应多边形（局部坐标，中心=原点）：
- * 取「所有臂道路条带的交集」——即每条臂的两条边线构成的半平面之交——得到随交叉角度
- * 变化的凸多边形，不再用固定正方形。该多边形顶点正是道路边缘两两相交的交叉点，渲染时再
- * 倒圆角，即「以道路两侧交叉点为顶点、四角倒圆」的合格融合路口（正交十字=方块、斜交=
- * 平行四边形、T/Y=对应凸包，均自然成立）。返回顶点 CCW 有序；退化返回 null 由调用方回退。
+ * 路口自适应轮廓（局部坐标，中心=原点）。按实际进口宽度排列道路边缘，
+ * 在相邻道路边缘间补转弯圆角，保留十字、丁字、斜交与直角弯的进口完整宽度。
  */
 export function buildJunctionPolygon(arms: JunctionArm[]): Pt[] | null {
-  const n = arms.length;
-  if (n < 2) return null;
-  // 每条臂 = 两条边线 = 两个半平面：n·(p) <= hw（n 为朝外法向）
-  const half: { nx: number; ny: number; hw: number }[] = [];
-  for (const a of arms) {
-    const nx = -Math.sin(a.heading), ny = Math.cos(a.heading);
-    const hw = a.width / 2;
-    half.push({ nx, ny, hw });
-    half.push({ nx: -nx, ny: -ny, hw });
-  }
-  // 初始大盒（覆盖任意合理路口）
-  let poly: Pt[] = [
-    { x: -1e5, y: -1e5 }, { x: 1e5, y: -1e5 }, { x: 1e5, y: 1e5 }, { x: -1e5, y: 1e5 },
-  ];
-  const clip = (a: Pt, b: Pt, h: { nx: number; ny: number; hw: number }): Pt | null => {
-    const da = h.nx * a.x + h.ny * a.y - h.hw;
-    const db = h.nx * b.x + h.ny * b.y - h.hw;
-    if (da <= 0 && db <= 0) return null; // 边完全在内，无交点（保留两点）
-    const t = da / (da - db);
-    return { x: a.x + t * (b.x - a.x), y: a.y + t * (b.y - a.y) };
-  };
-  for (const h of half) {
-    if (poly.length === 0) break;
-    const next: Pt[] = [];
-    for (let i = 0; i < poly.length; i++) {
-      const cur = poly[i], prv = poly[(i - 1 + poly.length) % poly.length];
-      const curIn = h.nx * cur.x + h.ny * cur.y - h.hw <= 1e-9;
-      const prvIn = h.nx * prv.x + h.ny * prv.y - h.hw <= 1e-9;
-      if (curIn) {
-        if (!prvIn) { const ix = clip(prv, cur, h); if (ix) next.push(ix); }
-        next.push(cur);
-      } else if (prvIn) {
-        const ix = clip(prv, cur, h); if (ix) next.push(ix);
-      }
-    }
-    poly = next;
-  }
-  if (poly.length < 3) return null;
-  // 去掉初始大盒残留（任何顶点离原点过远即视为未裁剪干净的退化）
-  if (poly.some(p => Math.hypot(p.x, p.y) > 2000)) return null;
-  // 去重相邻重复点
-  const clean: Pt[] = [];
-  for (const c of poly) {
-    const last = clean[clean.length - 1];
-    if (!last || Math.hypot(c.x - last.x, c.y - last.y) > 1e-3) clean.push(c);
-  }
-  if (clean.length >= 2 && Math.hypot(clean[0].x - clean[clean.length - 1].x, clean[0].y - clean[clean.length - 1].y) < 1e-3) clean.pop();
-  return clean.length >= 3 ? clean : null;
+  // Offset the actual approach edges and fillet the corner BETWEEN them.
+  // Intersecting every road's half-planes produced only the central square;
+  // rounding that square inward cut away the turning apron.
+  const sorted=arms.filter(a=>a.width>0).map(a=>({...a,heading:(a.heading%(Math.PI*2)+Math.PI*2)%(Math.PI*2)})).sort((a,b)=>a.heading-b.heading);
+  const n=sorted.length;if(n<2)return null;
+  const dirs=sorted.map(a=>({x:Math.cos(a.heading),y:Math.sin(a.heading)}));
+  const reach=sorted.map(a=>a.width*.8);
+  const corners:(Pt[]|null)[]=sorted.map((a,i)=>{
+    const j=(i+1)%n,b=sorted[j],da=dirs[i],db=dirs[j];
+    const gap=(b.heading-a.heading+Math.PI*2)%(Math.PI*2);
+    if(gap<.12||gap>=Math.PI-.06)return null;
+    const pa={x:-da.y*a.width/2,y:da.x*a.width/2},pb={x:db.y*b.width/2,y:-db.x*b.width/2};
+    const cross=da.x*db.y-da.y*db.x,dx=pb.x-pa.x,dy=pb.y-pa.y;
+    const ta=(dx*db.y-dy*db.x)/cross,tb=(dx*da.y-dy*da.x)/cross;
+    const radius=Math.min(35,Math.min(a.width,b.width)*.35),c={x:pa.x+da.x*ta,y:pa.y+da.y*ta};
+    reach[i]=Math.max(reach[i],ta+radius+4);reach[j]=Math.max(reach[j],tb+radius+4);
+    const start={x:c.x+da.x*radius,y:c.y+da.y*radius},end={x:c.x+db.x*radius,y:c.y+db.y*radius};
+    return Array.from({length:13},(_,k)=>{const t=k/12,u=1-t;return{x:u*u*start.x+2*u*t*c.x+t*t*end.x,y:u*u*start.y+2*u*t*c.y+t*t*end.y};});
+  });
+  const outline:Pt[]=[];
+  sorted.forEach((a,i)=>{const d=dirs[i],r=reach[i],w=a.width/2;
+    outline.push({x:d.x*r+d.y*w,y:d.y*r-d.x*w},{x:d.x*r-d.y*w,y:d.y*r+d.x*w});
+    if(corners[i])outline.push(...corners[i]!);
+  });
+  return outline;
 }
 
 /**

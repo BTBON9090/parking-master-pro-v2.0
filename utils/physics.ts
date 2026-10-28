@@ -81,7 +81,7 @@ function polygonsOverlap(a: Vector2[], b: Vector2[]): boolean {
   return true;
 }
 export function checkVehicleCollision(a: VehicleCollider, b: VehicleCollider): boolean {
-  return [a.footprint,...(a.articulated??[])].some(footprint=>polygonsOverlap(getVehicleBoundaryPoints({...a,footprint}),getVehicleBoundaryPoints(b)));
+  return vehicleContacts(a,b).length>0;
 }
 
 function toRectLocal(point: Vector2, rect: Rect): Vector2 {
@@ -154,7 +154,7 @@ function getAxes(corners: Vector2[]): Vector2[] {
     const normal = { x: -edge.y, y: edge.x };
     // Normalize
     const length = Math.sqrt(normal.x * normal.x + normal.y * normal.y);
-    axes.push({ x: normal.x / length, y: normal.y / length });
+    if(length>1e-8)axes.push({ x: normal.x / length, y: normal.y / length });
   }
   return axes;
 }
@@ -202,6 +202,29 @@ export function getConvexContactNormal(vehicle:VehicleCollider, other:Vector2[])
  for(const axis of [...getAxes(own),...getAxes(other)]){
   const a=project(own,axis),b=project(other,axis),overlap=Math.min(a.max,b.max)-Math.max(a.min,b.min);
   if(overlap<depth){depth=overlap;const sign=(vehicle.x-center.x)*axis.x+(vehicle.y-center.y)*axis.y<0?-1:1;result={x:axis.x*sign,y:axis.y*sign};}
+ }
+ return result;
+}
+
+export interface ContactManifold { normal:Vector2; depth:number; point:Vector2 }
+/** Minimum translation on each convex body pair. Includes trailer against trailer.
+ * Containment uses opposing faces, not intersection width, so a hull can escape. */
+export function convexContact(a:Vector2[],b:Vector2[]):ContactManifold|null {
+ let depth=Infinity,normal={x:1,y:0};
+ for(const axis of [...getAxes(a),...getAxes(b)]){
+  const pa=project(a,axis),pb=project(b,axis);
+  if(pa.max<=pb.min || pb.max<=pa.min)return null;
+  const positive=pb.max-pa.min,negative=pa.max-pb.min;
+  const d=Math.min(positive,negative);
+  if(d<depth){depth=d;const sign=positive<negative?1:-1;normal={x:axis.x*sign,y:axis.y*sign};}
+ }
+ const facing=a.reduce((best,p)=>p.x*normal.x+p.y*normal.y<best.x*normal.x+best.y*normal.y?p:best,a[0]);
+ return {normal,depth,point:facing};
+}
+export function vehicleContacts(a:VehicleCollider,b:VehicleCollider):ContactManifold[]{
+ const result:ContactManifold[]=[];
+ for(const fa of [a.footprint,...(a.articulated??[])])for(const fb of [b.footprint,...(b.articulated??[])]){
+  const c=convexContact(getVehicleBoundaryPoints({...a,footprint:fa}),getVehicleBoundaryPoints({...b,footprint:fb}));if(c)result.push(c);
  }
  return result;
 }

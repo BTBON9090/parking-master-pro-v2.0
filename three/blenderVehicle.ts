@@ -1,3 +1,6 @@
+import {separateExteriorPanels} from './exteriorPanels';
+import {DriverHands} from './driverHands';
+import {bindTrackedGear} from './trackedGear';
 import {ArticulatedTrailer} from './articulatedTrailer';
 import * as THREE from 'three';
 import { CarType } from '../types';
@@ -124,7 +127,9 @@ export function buildNativeAuthoredVehicle(source: THREE.Group, cfg: CarConfig):
   };
 
   // ---- four authored wheel assemblies: steer around Y, roll around X ----
-  const labels=cfg.id===CarType.TRIKE?['FrontL','RearL','RearR']:cfg.id===CarType.SEMI?[...WHEEL_LABELS,'Rear2L','Rear2R']:WHEEL_LABELS;
+  const labels=cfg.id===CarType.TRIKE?['FrontL','RearL','RearR']:[CarType.SEMI,CarType.US22].includes(cfg.id)?[...WHEEL_LABELS,'Rear2L','Rear2R']:WHEEL_LABELS;
+  group.userData.expectedWheelCount=labels.length;
+  group.userData.expectedFrontWheelCount=cfg.id===CarType.TRIKE?1:2;
   labels.forEach((label,index)=>{
     const wheelRoot = source.getObjectByName(`Wheel${label}`);
     if (!wheelRoot) throw new Error(`Authored asset missing Wheel${label}`);
@@ -170,6 +175,7 @@ export function buildNativeAuthoredVehicle(source: THREE.Group, cfg: CarConfig):
     // Rotating about glTF Z tumbles the rim instead of turning it in-plane.
     for (const child of [...authoredSteering.children]) spin.add(child);
     authoredSteering.add(spin);
+    const hands=new DriverHands(authoredSteering);spin.userData.updateHands=(angle:number)=>hands.update(angle);
     // Do not recolour the shared dashboard material. Give the authored rim
     // and spokes their own warm-grey leather / satin-aluminium instances.
     spin.traverse(node => {
@@ -287,6 +293,28 @@ export function buildNativeAuthoredVehicle(source: THREE.Group, cfg: CarConfig):
     if (/^Interior/.test(node.name)) node.userData.partRole = 'interior';
   });
 
+  // Reuse the authored light housings. A small lens inside a lamp is a real
+  // surface, not a floating marker beyond the bumper/collision boundary.
+  if(!parts.reverseLights.length&&parts.taillights.length){
+    const housing=parts.taillights[0] as THREE.Mesh;
+    if(housing.isMesh){
+      const lens=new THREE.Mesh(housing.geometry,new THREE.MeshStandardMaterial({color:'#c5d6da',roughness:.45}));
+      lens.name='ReverseLens';housing.add(lens);lens.scale.set(.35,.65,1.04);parts.reverseLights.push(lens);
+    }
+  }
+  if(!parts.leftIndicators.length||!parts.rightIndicators.length){
+    const existing:THREE.Mesh[]=[];source.traverse(n=>{if(n instanceof THREE.Mesh&&n.name.startsWith('Indicator'))existing.push(n);});
+    for(const housing of existing.length?existing:parts.headlights){
+      if(!(housing instanceof THREE.Mesh))continue;
+      const lens=existing.length?housing:new THREE.Mesh(housing.geometry,new THREE.MeshStandardMaterial());
+      if(!existing.length){lens.name='IndicatorLens';housing.add(lens);lens.scale.set(.24,.75,1.05);}
+      lens.material=new THREE.MeshStandardMaterial({name:'IndicatorLens',color:'#c78b27',roughness:.4});
+      const side=housing.getWorldPosition(new THREE.Vector3()).x;
+      (side>0?parts.leftIndicators:parts.rightIndicators).push(lens);
+      parts.taillights=parts.taillights.filter(n=>n!==lens);parts.brakeLights=parts.brakeLights.filter(n=>n!==lens);
+    }
+  }
+
   const trailerNode=source.getObjectByName('TrailerRoot');
   if(trailerNode)parts.trailer=new ArticulatedTrailer(group,trailerNode);
   group.updateWorldMatrix(true, true);
@@ -310,9 +338,11 @@ export function buildNativeAuthoredVehicle(source: THREE.Group, cfg: CarConfig):
     }),
   ]);
   };
+  if(cfg.id===CarType.TYPE100)bindTrackedGear(source,parts);
+  separateExteriorPanels(source,cfg);
   return parts;
 }
 
 export function isAuthoredVehicle(carType: CarType): boolean {
-  return [CarType.TRIKE,CarType.TRACTOR,CarType.SEMI,CarType.CYBERTRUCK,CarType.REVUELTO,CarType.VEYRON,CarType.V800,CarType.MINI,CarType.TRUCK,CarType.TAI7,CarType.LI_I9,CarType.N90,CarType.SEDAN,CarType.SEAL08,CarType.SUV,CarType.JEEP,CarType.MIDIBUS,CarType.COACH,CarType.VAN,CarType.LIGHT_TRUCK].includes(carType);
+  return [CarType.TYPE100,CarType.MINING,CarType.US22,CarType.TRIKE,CarType.TRACTOR,CarType.SEMI,CarType.CYBERTRUCK,CarType.REVUELTO,CarType.VEYRON,CarType.V800,CarType.MINI,CarType.TRUCK,CarType.TAI7,CarType.LI_I9,CarType.N90,CarType.SEDAN,CarType.SEAL08,CarType.SUV,CarType.JEEP,CarType.MIDIBUS,CarType.COACH,CarType.VAN,CarType.LIGHT_TRUCK].includes(carType);
 }

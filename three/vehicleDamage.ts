@@ -22,7 +22,7 @@ export class VehicleDamage {
   this.source.traverse(node=>{
    if(!(node instanceof THREE.Mesh)||node.userData.nativeWheelPart||/Interior|frame-clone/.test(node.name))return;
    const mats=Array.isArray(node.material)?node.material:[node.material];
-   if(mats.length!==1||!(/Headlight|Taillight|ReverseLight|Indicator|MirrorGlass/.test(mats[0].name)||(tier==='moderate'&&mats[0].name==='Glass')))return;
+   if(mats.length!==1||!(/Headlight|Taillight|ReverseLight|Indicator|MirrorGlass/.test(mats[0].name)||(tier==='moderate'&&(mats[0].name==='Glass'||(closing>12&&node.userData.detachable)))))return;
    const pos=node.geometry.getAttribute('position');
    for(const indices of triangleIslands(node.geometry)){
     const center=new THREE.Vector3();for(const i of new Set(indices))center.add(new THREE.Vector3().fromBufferAttribute(pos,i));center.divideScalar(new Set(indices).size).applyMatrix4(node.matrixWorld);

@@ -1,3 +1,4 @@
+import {FLEET31_IDS} from '../utils/fleet31';
 import {FLEET30_IDS} from '../utils/fleet30';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
@@ -237,10 +238,10 @@ async function auditCarGeometry(carType: CarType): Promise<TriangleAudit> {
   // clamp the horizontal view near the top and the horizon.
   const pose = { azimuth: 0, polar: 0.9 };
   const dragged = stepOrbitDrag(pose, 240, -40);
-  assert(dragged.azimuth > pose.azimuth, 'dragging right rotates azimuth');
-  assert(dragged.polar < pose.polar, 'dragging up raises the camera');
-  const top = stepOrbitDrag(pose, 0, -10000);
-  const horizon = stepOrbitDrag(pose, 0, 10000);
+  assert(dragged.azimuth < pose.azimuth, 'dragging right rotates azimuth');
+  assert(dragged.polar > pose.polar, 'dragging up rotates the inspected object with the finger');
+  const top = stepOrbitDrag(pose, 0, 10000);
+  const horizon = stepOrbitDrag(pose, 0, -10000);
   assert(Math.abs(top.polar - ORBIT_POLAR_MIN) < 1e-9, 'orbit pitch clamps at top-down limit');
   assert(Math.abs(horizon.polar - ORBIT_POLAR_MAX) < 1e-9, 'orbit pitch clamps above the horizon');
   assert(ORBIT_POLAR_MIN < ORBIT_POLAR_MAX && ORBIT_POLAR_MIN > 0 && ORBIT_POLAR_MAX < Math.PI / 2);
@@ -882,7 +883,7 @@ async function auditCarGeometry(carType: CarType): Promise<TriangleAudit> {
   // layout and a wheel rim inside the main viewport. This is a projection and
   // geometry-contract check, not a substitute for a browser screenshot.
   // New fleet uses native Blender interiors, verified separately in round30.
-  for (const carType of Object.values(CarType).filter(id=>!(FLEET30_IDS as readonly CarType[]).includes(id))) {
+  for (const carType of Object.values(CarType).filter(id=>!([...FLEET30_IDS,...FLEET31_IDS] as readonly CarType[]).includes(id))) {
     const car = CAR_MODELS[carType];
     const profile = cockpitProfileFor(carType);
     const interior = buildDriverInterior(car, profile).group;

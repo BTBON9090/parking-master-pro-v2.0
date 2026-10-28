@@ -1,5 +1,23 @@
 [
   {
+    "id": "TYPE100",
+    "virtualFrontDeg": 40.10704565915762,
+    "rearInnerLimitDeg": 0,
+    "outerFrontRadiusM": 9.323464189982184
+  },
+  {
+    "id": "MINING",
+    "virtualFrontDeg": 30.72086807904674,
+    "rearInnerLimitDeg": 0,
+    "outerFrontRadiusM": 20.000000000009273
+  },
+  {
+    "id": "US22",
+    "virtualFrontDeg": 36.15014779565427,
+    "rearInnerLimitDeg": 0,
+    "outerFrontRadiusM": 9.999999999998018
+  },
+  {
     "id": "TRIKE",
     "virtualFrontDeg": 44.442075316765944,
     "rearInnerLimitDeg": 0,

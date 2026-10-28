@@ -30,6 +30,10 @@ export const GAME_UNITS_PER_METRE = 10;
 export const SPRING_SCALE = 500000; // N/m per spec.spring unit
 
 const SPECS: Record<CarType, SuspensionSpec> = {
+[CarType.TYPE100]:{massKg:42000,bodyResponse:.08,roll:.55,spring:1.2,damping:.8,travel:2,bumpTravel:3.5,droopTravel:2.5,antiRoll:.6},
+[CarType.MINING]:{massKg:260000,bodyResponse:.08,roll:.55,spring:6.5,damping:.8,travel:2,bumpTravel:3.5,droopTravel:2.5,antiRoll:.6},
+[CarType.US22]:{massKg:44000,bodyResponse:.08,roll:.55,spring:1.2,damping:.8,travel:2,bumpTravel:3.5,droopTravel:2.5,antiRoll:.6},
+
 [CarType.TRIKE]:{massKg:970,bodyResponse:.08,roll:.65,spring:0.06,damping:0.62,travel:1,bumpTravel:2.6,droopTravel:1.5,antiRoll:0.35},
 [CarType.TRACTOR]:{massKg:7800,bodyResponse:.08,roll:.65,spring:0.24,damping:0.65,travel:1,bumpTravel:2.4,droopTravel:1.5,antiRoll:0.35},
 [CarType.SEMI]:{massKg:36000,bodyResponse:.08,roll:.65,spring:1.0,damping:0.78,travel:1,bumpTravel:2.1,droopTravel:1.5,antiRoll:0.55},

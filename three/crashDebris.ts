@@ -44,7 +44,8 @@ export class CrashDebris {
   const inverse=source.matrixWorld.clone().invert();
   const buckets=new Map<string,{positions:number[];normals:number[];material:THREE.Material;region:number}>();
   source.traverse(node=>{
-   if(!(node instanceof THREE.Mesh)||node.userData.nativeWheelPart||node.name==='InteriorCabinLiner'||node.name.includes('frame-clone'))return;
+   if(!(node instanceof THREE.Mesh)||node.userData.nativeWheelPart||node.name==='InteriorCabinLiner'||node.name.includes('frame-clone')||node.userData.detachable)return;
+   for(let p:THREE.Object3D|null=node;p;p=p.parent)if(p.userData.partRole==='driver')return;
    const geom=node.geometry.index?node.geometry.toNonIndexed():node.geometry.clone();
    const pos=geom.getAttribute('position'),norm=geom.getAttribute('normal');
    if(!pos||pos.count>100000){geom.dispose();return;}
@@ -99,6 +100,16 @@ export class CrashDebris {
    chunk.children.forEach(n=>n.position.sub(center));chunk.position.copy(center);
    this.add(chunk,size,(options.mass??1800)/12,inherited(center,region),region);
   }
+  // Door panels retain their complete authored mesh instead of being sliced
+  // through the generic shell fracture grid.
+  source.traverse(node=>{
+    if(!(node instanceof THREE.Mesh)||!node.userData.detachable)return;
+    const geometry=node.geometry.clone().applyMatrix4(node.matrixWorld),material=(node.material as THREE.Material).clone();
+    this.geometries.push(geometry);this.materials.push(material);material.visible=true;
+    const part=new THREE.Mesh(geometry,material),box=new THREE.Box3().setFromObject(part,true),center=box.getCenter(new THREE.Vector3());
+    geometry.translate(-center.x,-center.y,-center.z);part.position.copy(center);part.name='detached-'+node.name;part.castShadow=true;
+    this.add(part,box.getSize(new THREE.Vector3()),18,inherited(center,2),2);
+  });
   // Four intact tyres/axles detach independently, preserving the authored mesh.
   let wheelIndex=0;
   source.traverse(node=>{
@@ -156,10 +167,12 @@ export class CrashDebris {
     faces.push(ids);
    }
    if(faces.length>=4){
-    if(mesh instanceof THREE.Group){
+    {
      const centre=new THREE.Vector3();vertices.forEach(v=>centre.add(new THREE.Vector3(v.x,v.y,v.z)));centre.divideScalar(vertices.length);
      vertices.forEach(v=>{v.x-=centre.x;v.y-=centre.y;v.z-=centre.z;});
-     mesh.children.forEach(n=>n.position.sub(centre));mesh.position.add(centre);
+     if(mesh instanceof THREE.Mesh)mesh.geometry.translate(-centre.x,-centre.y,-centre.z);
+     else mesh.children.forEach(n=>n.position.sub(centre));
+     mesh.position.add(centre);
     }
     shape=new CANNON.ConvexPolyhedron({vertices,faces});
    }
@@ -204,8 +217,16 @@ export class CrashDebris {
     ground.position.set(x,floor,z);ground.quaternion.setFromVectors(new CANNON.Vec3(0,0,1),normal);ground.aabbNeedsUpdate=true;
    }
    this.world.step(h);
-   for(const {body,groundHeight} of this.pieces){
+   for(const {body,ground,groundHeight} of this.pieces){
     if(body.sleepState===CANNON.Body.SLEEPING)continue;
+    // Thin door panels can traverse a contact plane between solver steps.
+    // Project their actual convex vertices out along the local terrain normal.
+    const planeNormal=ground.quaternion.vmult(new CANNON.Vec3(0,0,1));
+    const shape=body.shapes[0];let depth=0;
+    if(shape instanceof CANNON.ConvexPolyhedron){
+      for(const vertex of shape.vertices){const world=body.quaternion.vmult(vertex);world.vadd(body.position,world);world.vsub(ground.position,world);depth=Math.min(depth,world.dot(planeNormal));}
+      if(depth<-.035){body.position.vadd(planeNormal.scale(-depth),body.position);const inward=body.velocity.dot(planeNormal);if(inward<0)body.velocity.vsub(planeNormal.scale(inward*1.12),body.velocity);}
+    }
     body.updateAABB();
     // Boundaries remain solid even for a fast fragment that crosses a wall
     // between solver steps. Resolve its actual extent and dissipate impact.

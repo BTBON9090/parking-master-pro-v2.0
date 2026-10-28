@@ -1,5 +1,23 @@
 [
   {
+    "id": "TYPE100",
+    "cabinRoadAmplitudeRatio": 0.28600000000000003,
+    "driveToneHz": 85.5,
+    "cabinMotorGain": 0.010965405601253425
+  },
+  {
+    "id": "MINING",
+    "cabinRoadAmplitudeRatio": 0.28600000000000003,
+    "driveToneHz": 85.5,
+    "cabinMotorGain": 0.010965405601253425
+  },
+  {
+    "id": "US22",
+    "cabinRoadAmplitudeRatio": 0.28600000000000003,
+    "driveToneHz": 85.5,
+    "cabinMotorGain": 0.010965405601253425
+  },
+  {
     "id": "TRIKE",
     "cabinRoadAmplitudeRatio": 0.28600000000000003,
     "driveToneHz": 85.5,

@@ -1,6 +1,51 @@
 {
   "pedals": [
     {
+      "id": "TYPE100",
+      "throttle": 0.08,
+      "kmh": 4.15485178255785
+    },
+    {
+      "id": "TYPE100",
+      "throttle": 0.15,
+      "kmh": 4.654446314469071
+    },
+    {
+      "id": "TYPE100",
+      "throttle": 0.3,
+      "kmh": 4.760116015491616
+    },
+    {
+      "id": "MINING",
+      "throttle": 0.08,
+      "kmh": 3.9803270030349855
+    },
+    {
+      "id": "MINING",
+      "throttle": 0.15,
+      "kmh": 6.332971592870606
+    },
+    {
+      "id": "MINING",
+      "throttle": 0.3,
+      "kmh": 6.3366512333094285
+    },
+    {
+      "id": "US22",
+      "throttle": 0.08,
+      "kmh": 3.909160897518923
+    },
+    {
+      "id": "US22",
+      "throttle": 0.15,
+      "kmh": 8.595850553622176
+    },
+    {
+      "id": "US22",
+      "throttle": 0.3,
+      "kmh": 8.845678712091514
+    },
+    {
       "id": "TRIKE",
       "throttle": 0.08,
       "kmh": 3.9886578519745104
@@ -380,6 +425,21 @@
   ],
   "assets": [
     {
+      "id": "TYPE100",
+      "markerAboveHub": 1.7588936131598416,
+      "blockedTriangles": 0
+    },
+    {
+      "id": "MINING",
+      "markerAboveHub": 1.7588936131598416,
+      "blockedTriangles": 0
+    },
+    {
+      "id": "US22",
+      "markerAboveHub": 1.7588936980675243,
+      "blockedTriangles": 0
+    },
+    {
       "id": "TRIKE",
       "markerAboveHub": 1.758893698067526,
       "blockedTriangles": 0
@@ -476,6 +536,42 @@
     }
   ],
   "reversal": [
+    {
+      "id": "TYPE100",
+      "direction": -1,
+      "maxStep": 0.02170162056479924,
+      "finalKmh": 4.760116015491616
+    },
+    {
+      "id": "TYPE100",
+      "direction": 1,
+      "maxStep": 0.02170162056479924,
+      "finalKmh": -4.570455585760178
+    },
+    {
+      "id": "MINING",
+      "direction": -1,
+      "maxStep": 0.012745505104617694,
+      "finalKmh": 6.323038921889074
+    },
+    {
+      "id": "MINING",
+      "direction": 1,
+      "maxStep": 0.012745505104617694,
+      "finalKmh": -3.310746557367826
+    },
+    {
+      "id": "US22",
+      "direction": -1,
+      "maxStep": 0.012753446254208711,
+      "finalKmh": 8.847442571300714
+    },
+    {
+      "id": "US22",
+      "direction": 1,
+      "maxStep": 0.012753446254208711,
+      "finalKmh": -8.429832626210182
+    },
     {
       "id": "TRIKE",
       "direction": -1,

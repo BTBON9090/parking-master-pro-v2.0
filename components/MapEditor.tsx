@@ -503,8 +503,8 @@ function renderScene(
   (st.intersections || []).forEach(it => {
     const s = it.size;
     // 自适应路口多边形：以道路边线交点为角点、四角倒圆，随交叉角度变化（≥3 臂且几何有效时启用）
-    const poly = (it.arms && it.arms.length >= 3) ? buildJunctionPolygon(it.arms) : null;
-    const rpoly = poly ? roundedPolygonPoints(poly, junctionCornerR(it.arms)) : null;
+    const poly = (it.arms && it.arms.length >= 2) ? buildJunctionPolygon(it.arms) : null;
+    const rpoly = poly;
     ctx.save();
     ctx.translate(it.x, it.y);
     if (rpoly) {

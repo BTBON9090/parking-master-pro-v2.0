@@ -328,6 +328,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
 
   const [orbitBall, setOrbitBall] = useState({ azimuth: 0, polar: 0.12 });
   const [cameraMenuOpen, setCameraMenuOpen] = useState(false);
+  const [miniZoom,setMiniZoom]=useState(1);
   const [miniMapExpanded, setMiniMapExpanded] = useState(() => {
       try { return localStorage.getItem('parking-master-route-map-expanded') !== 'false'; }
       catch { return true; }
@@ -1045,7 +1046,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                       <SideMirrorFrame
                           key={id}
                           id={id}
-                          layoutStyle={touch?layoutStyle(isLeftSlot?"mirrorLeft":"mirrorRight"):undefined}
+                          layoutStyle={touch?layoutStyle(isLeftSlot?"mirrorLeft":"mirrorRight"):isBus(currentCarId)?hudStyle({x:isLeftSlot?.012:.883,y:.65,width:.105,height:.33},hudViewport.w,hudViewport.h):undefined}
                           pack={cockpitPack}
                           adjustment={settings.mirrorAdjustments[id]}
                           onAdjust={a=>updateSettings({mirrorAdjustments:{...settings.mirrorAdjustments,[id]:a}})}
@@ -1108,6 +1109,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
       <div className="desktop-hud absolute top-4 right-5 z-40 pointer-events-auto flex items-center gap-3">
           {/* 车状态指示灯 */}
           <div className="flex items-start gap-1.5 pr-2.5" style={{ borderRight: '1px solid rgba(255,255,255,0.14)' }}>
+              <Telltale on={settings.absEnabled!==false} color="var(--green)" icon={<span style={{fontSize:8,fontWeight:900}}>ABS</span>} label="ABS" onClick={()=>updateSettings({absEnabled:settings.absEnabled===false})} />
               <Telltale on={inputState.engineStarted} color="var(--green)" icon={<Power size={12} strokeWidth={2.6} />} label="ENG" />
               <Telltale on={inputState.lights} color={inputState.headlightMode===2?"#7ac9ff":"var(--amber)"} icon={<Zap size={12} />} label={inputState.lights?(inputState.headlightMode===2?"远光":"近光"):"LIGHT"} />
               <Telltale on={inputState.handbrake} color="var(--red)" icon={<Pause size={12} />} label="PARK" onClick={() => setInputState(prev => ({ ...prev, parkingBrake:!prev.parkingBrake, handbrake:!prev.parkingBrake }))} />
@@ -1289,7 +1291,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
 
               {/* 路线地图保持独立，仍可折叠。 */}
               <div className={`hud-map absolute right-4 top-[118px] z-30 ${miniMapExpanded ? '' : 'hud-map-minimized'}`}
-                   style={{ width: miniMapExpanded ? 300 : 44, height: miniMapExpanded ? 236 : 44 }}>
+                   style={{ width: miniMapExpanded ? 300 : 44, height: miniMapExpanded ? 236 : 44, "--map-right": `${Math.min(hudViewport.w-156,Math.max(12,hudViewport.w*(1-hudRects.mirrorRight.x)+12))}px` } as React.CSSProperties}>
                   {!miniMapExpanded ? <button type="button" aria-label={lang === Language.CN ? '展开路线地图' : 'Expand route map'}
                       title={lang === Language.CN ? '展开路线地图' : 'Expand route map'} aria-expanded={false}
                       onClick={() => setMiniMapExpanded(true)} className="w-11 h-11 rounded-xl pointer-events-auto flex items-center justify-center"
@@ -1307,12 +1309,13 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                           <span className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'var(--amber)', color: '#111214' }}>
                               <Map size={14} />
                           </span>
-                          {miniMapExpanded && (
+                          {miniMapExpanded && !touch && (
                               <span className="text-[10px] font-black tracking-[0.14em]" style={{ color: 'var(--text)' }}>
                                   {isLevel6 ? `地库 B${mapCarFloor+1} · 高差 4.8m` : lang === Language.CN ? '路线地图' : 'ROUTE MAP'}
                               </span>
                           )}
                       </div>
+                      <button className="w-8 h-8 shrink-0" type="button" aria-label="缩小小地图" onClick={()=>setMiniZoom(v=>Math.max(1,v/1.4))}>−</button><button className="w-8 h-8 shrink-0" type="button" aria-label="放大小地图" onClick={()=>setMiniZoom(v=>Math.min(5,v*1.4))}>＋</button>
                       <button type="button" onClick={() => setMiniMapExpanded(false)} aria-label={lang === Language.CN ? '最小化路线地图' : 'Minimize route map'} aria-expanded={true}
                               title={lang === Language.CN ? '收起为地图按钮' : 'Collapse to map button'}
                               className="w-9 h-9 rounded-md flex items-center justify-center transition-colors"
@@ -1328,7 +1331,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                            border: '1px solid rgba(255,255,255,0.08)',
                            boxShadow: '0 10px 30px rgba(0,0,0,0.45)',
                        }}>
-                      {routeMapSvg}
+                      <div style={{position:'absolute',inset:0,transform:`scale(${miniZoom})`,transformOrigin:`${miniMarkerX}px ${miniMarkerY}px`}}>{routeMapSvg}</div>
                       <div className="absolute z-10 pointer-events-none"
                            style={{
                                left: miniMarkerX,
@@ -1498,7 +1501,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                   speedKmh={liveCarSpeed * 15}
                   rpm={visualRpm}
                   redlineRpm={redlineRpm}
-                  gear={inputState.gear}
+                  gear={inputState.gear} parkingBrake={!!inputState.parkingBrake}
                   singleSpeed={singleSpeed}
                   rpmCaption={lang === Language.CN ? '转速 x1000' : 'RPM x1000'}
                   speedCaption="KM/H"
@@ -1509,7 +1512,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
       </div>
 
       {/* ===== 设置抽屉（语言 + 按键指南 已迁移至此） ===== */}
-      {touch&&<MobileControls speedKmh={Math.abs(liveCarSpeed)*15} input={inputState} update={setInputState} car={currentCarId} layout={layoutStyle} editing={layoutDraft!==null} disabled={showSettings||showGuide||portrait||layoutDraft!==null} settings={()=>setShowSettings(true)} camera={()=>{const views:CameraView[]=['HOOD','FOLLOW_NEAR','FOLLOW_FAR','TOP','REVERSE'];onCameraViewChange(views[(views.indexOf(cameraView)+1)%views.length]);}} map={()=>setGlobalOverviewOpen(!globalOverviewOpen)} reset={resetLevel}/>}
+      {touch&&<MobileControls absEnabled={settings.absEnabled} toggleAbs={()=>updateSettings({absEnabled:!settings.absEnabled})} speedKmh={Math.abs(liveCarSpeed)*15} input={inputState} update={setInputState} car={currentCarId} layout={layoutStyle} editing={layoutDraft!==null} disabled={showSettings||showGuide||portrait||layoutDraft!==null} settings={()=>setShowSettings(true)} camera={()=>{const views:CameraView[]=['HOOD','FOLLOW_NEAR','FOLLOW_FAR','TOP','REVERSE'];onCameraViewChange(views[(views.indexOf(cameraView)+1)%views.length]);}} map={()=>setGlobalOverviewOpen(!globalOverviewOpen)} reset={resetLevel}/>}
       {touch&&portrait&&!showSettings&&<div className="rotate-device" role="status"><strong>请横屏驾驶</strong><p>转动手机，展开方向盘和踏板。</p><button onClick={()=>setShowSettings(true)}>打开设置</button></div>}
       {showSettings && <SettingsPage onLayout={editLayout} settings={settings} update={updateSettings} car={currentCarId} level={level} openWorld={!!levelData?.openWorld} onCar={onChangeCar} onMap={onChangeMap} onTravel={onTravel} close={()=>setShowSettings(false)} reset={resetLevel} exit={exitGame} lang={lang} setLang={setLang} capture={captureBinding} bind={setCaptureBinding} guide={()=>{setShowSettings(false);setShowGuide(true);}}/>}
       {layoutDraft!==null && <HudLayoutEditor rects={hudRects} width={hudViewport.w} height={hudViewport.h}

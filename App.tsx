@@ -129,8 +129,8 @@ function App() {
     shiftPressed: false,
     brake: 0,
     steeringWheelAngle: 0,
-    gear: 0, 
-    handbrake: false,
+    gear: 0, parkingBrake: true,
+    handbrake: true,
     lights: false, 
     engineStarted: true
   });
@@ -365,7 +365,7 @@ function App() {
     setDayTime(initDayTime);
     const initialInput = {
         throttle: 0, gasPressed: false, shiftPressed: false, brake: 0,
-        steeringWheelAngle: 0, gear: 0, handbrake: false, lights: false, engineStarted: true
+        steeringWheelAngle: 0, gear: 0, parkingBrake: true, handbrake: true, lights: false, engineStarted: true
     };
     setInputState(initialInput);
     inputRef.current = initialInput;

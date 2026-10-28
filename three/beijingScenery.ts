@@ -114,9 +114,20 @@ export function addBeijingScenery(scene:THREE.Scene,level:LevelData,trackGeo:(g:
  // ===== Instanced curbs along the main streets =====
  const curbs=mergeCurbVisuals(level.curbSegments??[]);
  if(curbs.length){
+  const curbMaterial=new THREE.MeshLambertMaterial({color:'#b8b3a7'});
+  curbMaterial.onBeforeCompile=shader=>{
+   shader.vertexShader='varying float curbU;\n'+shader.vertexShader;
+   shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\ncurbU=position.x*length(instanceMatrix[0].xyz);');
+   shader.fragmentShader='varying float curbU;\n'+shader.fragmentShader;
+   shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
+    float seam=abs(fract(curbU/10.+.5)-.5)*10.;
+    float aa=max(fwidth(curbU),.05);
+    float line=1.-smoothstep(.07,.07+aa,seam);
+    diffuseColor.rgb*=1.-.28*line;`);
+  };
   const curbMesh=new THREE.InstancedMesh(
    trackGeo(new THREE.BoxGeometry(1,1,1)),
-   new THREE.MeshLambertMaterial({color:'#b8b3a7'}),
+   curbMaterial,
    curbs.length,
   );
   const matrix=new THREE.Matrix4(),q=new THREE.Quaternion(),p=new THREE.Vector3(),scale=new THREE.Vector3();

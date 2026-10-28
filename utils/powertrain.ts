@@ -95,6 +95,10 @@ export interface PowertrainSpec {
 // —— 各车型扭矩曲线性格（分段线性：rpmRatio → 扭矩倍率）——
 // 家用车：中段饱满，高转衰减；SUV：涡轮平原；跑车：高转爆发；皮卡：低速大扭矩、高转乏力。
 const TORQUE_CURVES: Record<CarType, [number, number][]> = {
+ [CarType.TYPE100]:[[0,.8],[.25,1],[.65,1],[1,.7]],
+ [CarType.MINING]:[[0,.8],[.25,1],[.65,1],[1,.7]],
+ [CarType.US22]:[[0,.8],[.25,1],[.65,1],[1,.7]],
+
  [CarType.TRIKE]:[[0,.78],[.25,1],[.65,1],[.85,.91],[1,.75]],
  [CarType.TRACTOR]:[[0,.78],[.25,1],[.65,1],[.85,.91],[1,.75]],
  [CarType.SEMI]:[[0,.78],[.25,1],[.65,1],[.85,.91],[1,.75]],
@@ -222,6 +226,9 @@ const simulateZeroTo100 = (
 // Game-training shift suggestions, deliberately distinct from redline speeds.
 // They are not manufacturer shift points or universal real-car figures.
 const SHIFT_UP_KMH: Record<CarType, number[]> = {
+ [CarType.TYPE100]:[5,10,15,22,30,38,45,55,65,70],
+ [CarType.MINING]:[8,15,24,35,45,56,67],
+ [CarType.US22]:[5,9,14,21,31,44,57,72,85,100],
  [CarType.TRIKE]:[10,18,28,40,50],
  [CarType.TRACTOR]:[4,7,11,17,24,32,40,48],
  [CarType.SEMI]:[5,9,14,21,31,44,57,72,85,95],

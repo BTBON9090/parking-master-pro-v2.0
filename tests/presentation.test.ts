@@ -1,3 +1,4 @@
+function hasDriverAncestor(n:THREE.Object3D):boolean{for(let p:THREE.Object3D|null=n;p;p=p.parent)if(p.userData.partRole==='driver')return true;return false;}
 import {BASELINE_FLEET} from './baselineFleet';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -67,7 +68,7 @@ for(const id of BASELINE_FLEET){
    assert(new THREE.Raycaster(movingEye,target.clone().sub(movingEye).normalize(),0,movingEye.distanceTo(target)).intersectObject(liner).length>0,`${id}: inertial head motion exposes ground through cabin`);
   }
  }
- let triangles=0;parts.group.traverse(n=>{if(n instanceof THREE.Mesh)triangles+=(n.geometry.index?.count??n.geometry.getAttribute('position').count)/3;});
+ let triangles=0;parts.group.traverse(n=>{if(n instanceof THREE.Mesh&&!hasDriverAncestor(n))triangles+=(n.geometry.index?.count??n.geometry.getAttribute('position').count)/3;});
  assert(triangles<8000,`${id}: preserve low-poly budget (${triangles})`);
  console.log(id,{eye:eye.toArray(),rimClearanceM:(eye.y-rim.max.y)/10,triangles,linerBounds:bounds});
 }

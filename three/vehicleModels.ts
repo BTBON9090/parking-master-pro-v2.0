@@ -1357,9 +1357,9 @@ export function validateVehicleBindings(parts: CarMeshParts): VehicleBindingRepo
   const require = (key: string, min: number, label: string) => {
     if ((counts[key] ?? 0) < min) missing.push(`${label}(${counts[key] ?? 0}/${min})`);
   };
-  require('wheels', 4, '车轮滚动');
-  require('wheelMounts', 4, '车轮悬挂');
-  require('frontWheels', 2, '前轮转向');
+  require('wheels', parts.group.userData.expectedWheelCount??4, '车轮滚动');
+  require('wheelMounts', parts.group.userData.expectedWheelCount??4, '车轮悬挂');
+  require('frontWheels', parts.group.userData.expectedFrontWheelCount??2, '前轮转向');
   require('headlights', 2, '大灯');
   require('taillights', 1, '尾灯');
   require('brakeLights', 1, '刹车灯');
@@ -1403,6 +1403,7 @@ export function updateVehicleExtras(extras: VehicleExtras | undefined, state: Ve
   // 方向盘：实际前轮角 × 转向系传动比（约 5.2:1），负号对应视觉方向
   extras.steeringWheels.forEach(binding => {
     const angle = -(state.steeringWheelAngle ?? state.steer * 15.5) * binding.ratio;
+    binding.object.userData.updateHands?.(angle);
     if (binding.axis) binding.object.quaternion.setFromAxisAngle(binding.axis, angle);
     else binding.object.rotation.z = angle;
   });

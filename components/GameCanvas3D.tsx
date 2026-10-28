@@ -1,3 +1,5 @@
+import {heavyCrushEligible,crushedCarSupport} from '../utils/heavyContact';
+import { vehicleContacts } from '../utils/physics';
 import {automaticForwardGear,isAutomaticVehicle} from '../utils/powertrain';
 import {challengeGripAt} from '../utils/challengeMaps';
 import {stableSunTarget} from '../utils/stableShadow';
@@ -844,8 +846,9 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
 
     (async () => {
       const ccCur = CAR_MODELS[currentCarId];
-      const staticLevelData = { ...levelData, obstacles: obstaclesRef.current };
+      const staticLevelData = { ...levelData, obstacles: obstaclesRef.current, spots:[...levelData.spots], roadSurfaces:[...(levelData.roadSurfaces??[])], curvedRoads:[...(levelData.curvedRoads??[])],streetSigns:[...(levelData.streetSigns??[])] };
       built = await buildScene(staticLevelData, ccCur, currentCarId);
+      obstaclesRef.current=staticLevelData.obstacles;
       resolutionSampler.reset(performance.now());
       if (disposed) {disposeResources([built.scene,...(built.streamingChunks?.values()??[])]);return;}
       // buildScene computes actual parked-model hulls on the level objects;
@@ -1419,7 +1422,12 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       // 地图边界
       physics.addBoundary(levelData.mapWidth, levelData.mapHeight);
 
-      // 启动渲染循环
+      // Compile visible shaders while loading, not on the first road transition.
+      // Synchronous preparation is cancellable between scene generations.
+      // compileAsync retains a material polling loop after a scene is disposed
+      // during vehicle/map changes, leaving currentProgram undefined.
+      if(disposed)return;
+      renderer.compile(scene,camera);
       startRenderLoop();
     })();
 
@@ -1734,8 +1742,14 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         width: playerCc.width,
         height: playerCc.length,
       };
+      const playerBlockers=[playerBlocker];
+      if(built.playerCarParts?.trailer){
+        const pose={...carState.current,length:playerCc.length,width:playerCc.width,footprint:built.playerCarParts.trailer.collisionFootprint()};
+        const points=getVehicleBoundaryPoints(pose),xs=points.map(p=>p.x),ys=points.map(p=>p.y);
+        playerBlockers.push({id:'player-trailer',x:(Math.min(...xs)+Math.max(...xs))/2,y:(Math.min(...ys)+Math.max(...ys))/2,width:Math.max(...xs)-Math.min(...xs),height:Math.max(...ys)-Math.min(...ys)});
+      }
       for (const obs of active) {
-        if (!obs.ai) continue;
+        if (!obs.ai || movingParked.has(obs.id)) continue;
         const distanceToPlayer = Math.hypot(obs.x - carState.current.x, obs.y - carState.current.y);
         // Far cars update at 9 Hz; near cars every frame. dt covers the real
         // elapsed time, so traffic speed does not depend on the update rate.
@@ -1752,7 +1766,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           if (Math.abs(other.x - obs.x) > 1200 || Math.abs(other.y - obs.y) > 1200) continue;
           blockers.push({ id: other.id, x: other.x, y: other.y, width: other.width, height: other.height });
         }
-        blockers.push(playerBlocker);
+        blockers.push(...playerBlockers);
         const result = stepTrafficVehicle({
           id: obs.id,
           x: obs.x,
@@ -2040,7 +2054,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
             [...nearbyCollisionObstacles(x,y,120)].some(other=>other.id!==id&&vehicleLayersCompatible(carBody,other)&&
               (other.type==='car'?checkVehicleCollision(carBody,{x:other.x,y:other.y,width:other.width,length:other.height,rotation:other.rotation,footprint:other.collisionFootprint,elevation:other.elevation}):
                 other.type==='wall'&&checkVehicleRectCollision(carBody,other)));
-          if(blocked){velocity.x*=-.12;velocity.y*=-.12;}
+          if(blocked){velocity.x=0;velocity.y=0;}
           else {obs.x=x;obs.y=y;built?.parkedVisuals.get(id)?.(obs);}
           const damping=Math.exp(-1.6*dt);velocity.x*=damping;velocity.y*=damping;
           if(Math.hypot(velocity.x,velocity.y)<.035){movingParked.delete(id);parkedSettled=true;}
@@ -2211,7 +2225,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         const fourAngles = fourWheelAckermannAngles(car.steeringAngle, rearSteerAngle, rigWheelbase, halfTrack);
         playerParts.frontWheels.forEach(w => {
           const side = Number(w.userData.vehicleSideX ?? w.position.x);
-          w.rotation.y = Math.abs(side)<.1?-car.steeringAngle:side > 0 ? -fourAngles.frontLeft : -fourAngles.frontRight;
+          w.rotation.y = cc.id===CarType.TYPE100?0:Math.abs(side)<.1?-car.steeringAngle:side > 0 ? -fourAngles.frontLeft : -fourAngles.frontRight;
         });
         // Rear steering acts on the steer-knuckle (wheelMount), not on the
         // tyre roll node. frontWheels are mounts, wheels are roll pivots.
@@ -2243,6 +2257,12 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         if(!airborneActive){
           car.speed=Math.sign(car.speed)*Math.max(0,Math.abs(car.speed)-lateral.scrubAccel*(frameDelta/1000)/(SPEED_UNIT_KMH/3.6));
           car.driftSlip=-lateral.beta;
+        }
+        if(cc.id===CarType.TYPE100){
+          const drive=currentInputReal.engineStarted&&!currentInputReal.handbrake&&currentInputReal.brake<.1&&currentInputReal.gear!==0&&throttleState.current>.02;
+          lateral.yawRate=drive ? -currentInputReal.steeringWheelAngle / wheelMaxDeg * Math.min(.52,.14+throttleState.current*.42) : 0;
+          lateral.beta=0;lateral.frontSlip=0;lateral.rearSlip=0;
+          if(Math.abs(car.speed)<.025&&drive)car.rotation+=lateral.yawRate*frameDelta/1000;
         }
         const motionSteerAngle=Math.atan(lateral.yawRate*rigWheelbase/Math.max(.01,speedMs*10));
 
@@ -2430,12 +2450,16 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           // NPC cars are merged in by their live positions. Without this, a
           // moving NPC could be missed by the player's kinematic collision.
           const candidates = new Map<string, Obstacle>();
+          const assembly=getVehicleBoundaryPoints(bodyAtPose).concat(...(bodyAtPose.articulated??[]).map(footprint=>getVehicleBoundaryPoints({...bodyAtPose,footprint})));
+          const minX=Math.min(...assembly.map(p=>p.x))-100,maxX=Math.max(...assembly.map(p=>p.x))+100;
+          const minY=Math.min(...assembly.map(p=>p.y))-100,maxY=Math.max(...assembly.map(p=>p.y))+100;
+          const nearAssembly=(obs:Obstacle)=>obs.x+obs.height/2>minX&&obs.x-obs.height/2<maxX&&obs.y+obs.height/2>minY&&obs.y-obs.height/2<maxY;
           if(playerParts.trailer){const p=getVehicleBoundaryPoints({...bodyAtPose,footprint:playerParts.trailer.collisionFootprint()});for(const point of p)nearbyCollisionObstacles(point.x,point.y).forEach(obs=>candidates.set(obs.id,obs));}
           nearbyCollisionObstacles(x, y).forEach(obs => candidates.set(obs.id, obs));
           built?.trafficObstacles.forEach(obs => {
-            if (Math.abs(obs.x - x) < 180 && Math.abs(obs.y - y) < 180) candidates.set(obs.id, obs);
+            if (nearAssembly(obs)) candidates.set(obs.id, obs);
           });
-          movingParked.forEach((_,id)=>{const obs=obstacleById.get(id);if(obs&&Math.abs(obs.x-x)<180&&Math.abs(obs.y-y)<180)candidates.set(id,obs);});
+          movingParked.forEach((_,id)=>{const obs=obstacleById.get(id);if(obs&&nearAssembly(obs))candidates.set(id,obs);});
           candidates.forEach(obs => {
             // Height layers are explicit; direction/angle is never used to
             // guess whether an overpass barrier belongs to this layer.
@@ -2455,16 +2479,36 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
                   height: obs.height,
                   rotation: obs.rotation,
                 });
+            if(hit&&heavyCrushEligible(cc,obs)&&(obs.crushed??0)>.65&&(obs.verticalHeight??20)<cc.dynamics.transmission.wheelRadiusM*10*1.1)return;
             if (hit) hits.add(obs.id);
           });
           return hits;
         };
-        const previousHits = solidHitsAt(previousPose.x, previousPose.y, previousPose.rotation);
-        const nextHits = solidHitsAt(car.x, car.y, car.rotation);
-        // If a level ever starts a large vehicle slightly intersecting a prop,
-        // let it escape; only reject collisions newly entered this frame.
-        const newHitIds = Array.from(nextHits).filter(id => !previousHits.has(id));
-        const hitSolid = newHitIds.length > 0;
+        const obstacleCollider=(obs:Obstacle):VehicleCollider=>({
+          x:obs.x,y:obs.y,rotation:obs.rotation,length:obs.type==='car'?obs.height:obs.width,
+          width:obs.type==='car'?obs.width:obs.height,footprint:obs.collisionFootprint,
+          elevation:obs.elevation,verticalHeight:obs.verticalHeight});
+        // Sweep the whole assembly, then resolve persistent overlap too. Ignoring
+        // old contacts allowed trailers and moving NPCs to pass through each other.
+        const desiredMotion={x:car.x-previousPose.x,y:car.y-previousPose.y};
+        const travel=Math.hypot(desiredMotion.x,desiredMotion.y);
+        const steps=Math.max(1,Math.min(16,Math.ceil(travel/Math.max(2,cc.width*.2))));
+        let nextHits=new Set<string>();
+        for(let n=1;n<=steps;n++){
+          const t=n/steps,x=previousPose.x+(car.x-previousPose.x)*t,y=previousPose.y+(car.y-previousPose.y)*t;
+          nextHits=solidHitsAt(x,y,car.rotation);
+          if(nextHits.size){car.x=x;car.y=y;collisionBody.x=x;collisionBody.y=y;break;}
+        }
+        for(const id of nextHits){
+          const obs=obstacleById.get(id);if(!obs||!heavyCrushEligible(cc,obs))continue;
+          if((throttleState.current>.32||Math.abs(car.speed)*SPEED_UNIT_KMH>8)&&!currentInputReal.handbrake){
+            obs.crushed=Math.min(1,(obs.crushed??0)+frameDelta/1000*Math.min(3,cc.weight/obs.weight*.18));
+            obs.verticalHeight=CAR_MODELS[obs.carType??CarType.SEDAN].height*(1-obs.crushed*.62);
+            built?.parkedVisuals.get(obs.id)?.(obs);car.speed*=Math.exp(-frameDelta/1000*.55);
+          }
+        }
+        const newHitIds=Array.from(nextHits);
+        const hitSolid=newHitIds.length>0;
         if (outsideMap || hitSolid) {
           const impactSpeed = Math.abs(car.speed);
           const motionX = car.x - previousPose.x;
@@ -2488,10 +2532,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           newHitIds.forEach(id => {
             const obstacle = obstacleById.get(id);
             if (!obstacle) return;
-            const outline=(obstacle.type==='car'||obstacle.collisionFootprint?.length)
-              ? getVehicleBoundaryPoints({x:obstacle.x,y:obstacle.y,length:obstacle.height,width:obstacle.width,rotation:obstacle.rotation,footprint:obstacle.collisionFootprint})
-              : getRectCorners(obstacle);
-            contactNormals.push(getConvexContactNormal(collisionBody,outline));
+            vehicleContacts(collisionBody,obstacleCollider(obstacle)).forEach(c=>contactNormals.push(c.normal));
           });
 
           // Select the contact carrying the largest normal component. A value
@@ -2509,10 +2550,10 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           });
 
           const dt=frameDelta/1000;
-          const incoming={x:motionX/dt/10,y:motionY/dt/10};
+          const incoming={x:desiredMotion.x/dt/10,y:desiredMotion.y/dt/10};
           const arm=impactContactArm(boundaryPoints,{x:car.x,y:car.y},contactNormal);
           const response=solveVehicleImpact(incoming,contactNormal,arm,cc.length/10,cc.width/10,impactMotion.yaw);
-          const parked=newHitIds.map(id=>obstacleById.get(id)).find(obs=>obs?.type==='car'&&!obs.ai);
+          const parked=newHitIds.map(id=>obstacleById.get(id)).find(obs=>obs?.type==='car');
           if(parked){
             const before=movingParked.get(parked.id)??{x:0,y:0};
             const pair=parkedCarImpact(incoming,before,contactNormal,cc.weight,parked.weight);
@@ -2521,11 +2562,33 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           if(response.closing>.15) impactReadout={closing:response.closing*3.6,yaw:response.yawRate,speedAfter:Math.hypot(response.velocity.x,response.velocity.y)*3.6,obstacle:newHitIds[0]??'boundary'};
           // Return to the last accepted pose and separate outwards. Subsequent
           // frames carry the reflected world velocity, not just a reduced speed.
-          car.x=previousPose.x;car.y=previousPose.y;car.rotation=previousPose.rotation;
-          for(const separation of [.35,.18,.05]){
-            const x=previousPose.x+contactNormal.x*separation,y=previousPose.y+contactNormal.y*separation;
-            if(![...solidHitsAt(x,y,car.rotation)].some(id=>!previousHits.has(id))){car.x=x;car.y=y;break;}
+          // Split position correction by mass. A parked vehicle moves with its
+          // rendered hull; correction is separate from velocity (no energy injection).
+          for(let iteration=0;iteration<4;iteration++){
+            let separated=true;
+            for(const id of solidHitsAt(car.x,car.y,car.rotation)){
+              const obs=obstacleById.get(id);if(!obs)continue;
+              const contacts=vehicleContacts({...collisionBody,x:car.x,y:car.y},obstacleCollider(obs));
+              for(const c of contacts){
+                const otherMass=obs.type==='car'?Math.max(500,obs.weight??1500):Infinity;
+                const playerShare=otherMass===Infinity?1:otherMass/(otherMass+cc.weight);
+                const correction=Math.min(c.depth+.025,cc.width);
+                car.x+=c.normal.x*correction*playerShare;car.y+=c.normal.y*correction*playerShare;
+                if(obs.type==='car'){
+                  obs.x-=c.normal.x*correction*(1-playerShare);obs.y-=c.normal.y*correction*(1-playerShare);
+                  built.parkedVisuals.get(id)?.(obs);
+                  if(!movingParked.has(id))movingParked.set(id,{x:0,y:0});
+                }
+                separated=false;
+              }
+            }
+            if(separated)break;
           }
+          const correctedBoundary=[collisionBody.footprint,...(collisionBody.articulated??[])].flatMap(footprint=>getVehicleBoundaryPoints({...collisionBody,x:car.x,y:car.y,footprint}));
+          const minX=Math.min(...correctedBoundary.map(p=>p.x)),maxX=Math.max(...correctedBoundary.map(p=>p.x));
+          const minY=Math.min(...correctedBoundary.map(p=>p.y)),maxY=Math.max(...correctedBoundary.map(p=>p.y));
+          car.x+=Math.max(0,-minX)+Math.min(0,ldCur.mapWidth-maxX);
+          car.y+=Math.max(0,-minY)+Math.min(0,ldCur.mapHeight-maxY);
           impactMotion.x=response.velocity.x;impactMotion.y=response.velocity.y;
           impactMotion.yaw=response.yawRate;if(response.closing>.025)impactMotion.time=1;
           car.speed=(response.velocity.x*Math.cos(car.rotation)+response.velocity.y*Math.sin(car.rotation))/(SPEED_UNIT_KMH/3.6);
@@ -2808,7 +2871,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
 
         // Recorded CC0 layers replace the oscillator/noise beds once decoded.
         const recordingStatus = getRecordingAudioStatus();
-        updateRecordingAudio({
+        updateRecordingAudio({carType:cc.id,
           enabled: sCur.soundEnabled,
           paused: false,
           engineOn: currentInputReal.engineStarted,
@@ -2847,12 +2910,16 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           // Sample road excitation along the travelled segment, not once at
           // its endpoint: a narrow bump must not disappear on a slow frame.
           const substeps=Math.min(24,Math.max(1,Math.ceil(frameDelta/1000*120),Math.ceil(Math.hypot(dx,dz)/2)));
-          const supportLevel={...ldCur,curbSegments:nearbyWheelCurbs(ldCur.curbSegments??[],car,cc.length+Math.hypot(dx,dz))};
+          const supportLevel=ldCur.challengeTerrain||!ldCur.curbSegments?.length?ldCur:{...ldCur,curbSegments:nearbyWheelCurbs(ldCur.curbSegments,car,cc.length+Math.hypot(dx,dz))};
           let pose!:ReturnType<typeof stepChassis>;
           for(let sub=1;sub<=substeps;sub++){
             const at={x:previousPose.x+dx*sub/substeps,y:previousPose.y+dz*sub/substeps,rotation:car.rotation};
-            const support=(i:number,hub:THREE.Vector3,axis:THREE.Vector3)=>sampleWheelSupport(supportLevel,at,
-              {x:hub.x,z:hub.z,radius:rigWheels[i].radius,halfWidth:rigWheels[i].halfWidth,steer:-rigWheels[i].steer,axis:worldAxis(axis)},car.roadHeight);
+            const crushedNearby=[...nearbyCollisionObstacles(at.x,at.y,cc.length)].filter(o=>(o.crushed??0)>.65&&heavyCrushEligible(cc,o));
+            const support=(i:number,hub:THREE.Vector3,axis:THREE.Vector3)=>{
+              const ground=sampleWheelSupport(supportLevel,at,{x:hub.x,z:hub.z,radius:rigWheels[i].radius,halfWidth:rigWheels[i].halfWidth,steer:-rigWheels[i].steer,axis:worldAxis(axis)},car.roadHeight);
+              const x=at.x+Math.sin(at.rotation)*hub.x+Math.cos(at.rotation)*hub.z,y=at.y-Math.cos(at.rotation)*hub.x+Math.sin(at.rotation)*hub.z;
+              return Math.max(ground,...crushedNearby.map(o=>crushedCarSupport(o,x,y)));
+            };
             pose=stepChassis(chassisState,{wheels:rigWheels,spec:suspensionSetup,mass:cc.weight,
               cgM:cc.dynamics.cgHeightM,frontBias:cc.dynamics.frontWeightBias,longG:filteredLongAccelG,
               latG:tyreLateralG,deltaLeft:(dx*Math.sin(car.rotation)-dz*Math.cos(car.rotation))/substeps,
@@ -2881,11 +2948,11 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           if(!destroyed && impactMotion.time<=0 && !pose.unstable && !pose.airborne && Math.abs(pose.pitch)<.45 && Math.abs(pose.roll)<.4 && simulationClockMs-lastRecoveryAt>1000){
             recoveryPose=recoveryCandidate;recoveryCandidate={x:car.x,y:car.y,rotation:car.rotation,roadHeight:car.roadHeight};lastRecoveryAt=simulationClockMs;
           }
-          if((pose.unstable||curbTripSpeed!==0)&&!destroyed){
+          if((pose.unstable||curbTripSpeed!==0||(pose.airborne&&pose.height-pose.neutralHeight>cc.height*1.8))&&!destroyed){
             accidentRecoveryPose={...recoveryPose};
             rollover=new VehicleRollover(playerParts.group,{mass:cc.weight,width:cc.width,length:cc.length,height:cc.height,
               cgHeight:cc.dynamics.cgHeightM*10,wheels:rigWheels.map((w,i)=>({position:playerParts.wheelMounts[i].position.clone(),radius:w.radius,width:w.halfWidth*2,steer:w.steer})),
-              velocity:new THREE.Vector3(Math.cos(car.rotation+lateral.beta),0,Math.sin(car.rotation+lateral.beta)).multiplyScalar((curbTripSpeed?curbTripSpeed*.65:car.speed*SPEED_UNIT_KMH/3.6)*10),
+              velocity:new THREE.Vector3(Math.cos(car.rotation+lateral.beta)*(curbTripSpeed?curbTripSpeed*.65:car.speed*SPEED_UNIT_KMH/3.6)*10,pose.verticalVelocity,Math.sin(car.rotation+lateral.beta)*(curbTripSpeed?curbTripSpeed*.65:car.speed*SPEED_UNIT_KMH/3.6)*10),
               tipX:curbTripSpeed?Math.sign(lateral.beta)*Math.min(3,Math.abs(curbTripSpeed*Math.sin(lateral.beta))*.35):pose.loads.tipX,tipZ:pose.loads.tipZ,surface:(x,z)=>sampleTerrainSurface(ldCur,x,z,car.roadHeight).height});
             setOverturned(true);impactMotion.time=0;car.speed=0;
           }
@@ -3017,6 +3084,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           ? Infinity
           : Math.abs(rigWheelbase / tanSteerPhys);
         playerParts.wheels.forEach((w, idx) => {
+          if(cc.id===CarType.TYPE100)return;
           let turnFactor = 1;
           if (diffGain > 0 && Number.isFinite(turnRadius) && Math.abs(car.speed) > 0.001) {
             const isFront = idx < playerParts.frontWheels.length;
@@ -3040,6 +3108,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           const locked = idx < playerParts.frontWheels.length ? longResult.frontLocked : longResult.rearLocked;
           if (!locked) w.rotation.x += (frameTravelSpeed * TRAVEL_PER_SPEED_FRAME / wheelRadius) * turnFactor * frameScale;
         });
+        playerParts.group.userData.updateTracks?.(frameTravelSpeed*TRAVEL_PER_SPEED_FRAME*frameScale,lateral.yawRate*frameDelta/1000);
 
         // Preview the same axle-based integration used by the live vehicle.
         turnAssistGroup.visible = settingsRef.current.turnAssist && !firstPersonView;
@@ -3421,7 +3490,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
                   // 尊界 V8：长车头、镜位高且靠后
                   : cc.id === CarType.ZUNJIE
                     ? { height: 0.9, outward: 0.08, forward: 0.015, zoom: 1.4, distance: 2.5 }
-                    : [CarType.MIDIBUS,CarType.COACH,CarType.VAN,CarType.LIGHT_TRUCK].includes(cc.id)
+                    : [CarType.MIDIBUS,CarType.COACH,CarType.VAN,CarType.LIGHT_TRUCK,CarType.SEMI,CarType.US22,CarType.MINING].includes(cc.id)
                       // Commercial mirrors sit next to the front glazing,
                       // considerably farther forward and higher than a car's.
                       ? { height: cc.height*.47+4-11.75, outward: 0, forward: .36, zoom: 0, distance: 0 }
@@ -3445,7 +3514,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           const tuning = mirrorSettings.mirrorAdjustments[id];
           const distance = tuning.targetDistance + mirrorCalibration.distance;
           const outward = Math.tan(THREE.MathUtils.degToRad(tuning.yaw)) * distance;
-          const commercial=[CarType.MIDIBUS,CarType.COACH,CarType.VAN,CarType.LIGHT_TRUCK].includes(cc.id);
+          const commercial=[CarType.MIDIBUS,CarType.COACH,CarType.VAN,CarType.LIGHT_TRUCK,CarType.SEMI,CarType.US22,CarType.MINING].includes(cc.id);
           const mount=nativeMirrors?.[side===1?0:1];
           const mountForward = commercial?(mount?.z??cc.length*.5-.3)+(tuning.mountForward+.6)*cc.length*.16:cc.length*(.18+tuning.mountForward*.16+mirrorCalibration.forward);
           const mountSide = commercial?Math.abs(mount?.x??cc.width*.5+2.3)+(tuning.mountOutward+2.5)*cc.width*.16:Math.max(cc.width*.52,cc.width*(.96+tuning.mountOutward*.16+mirrorCalibration.outward));

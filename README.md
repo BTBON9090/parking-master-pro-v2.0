@@ -1,4 +1,4 @@
-# 停车大师 Pro · Driving Academy
+# 老司机是怎样炼成的
 
 基于 React、TypeScript、Three.js / WebGL2 与 cannon-es 的单机网页驾驶游戏。车辆、地图与模拟在浏览器本地运行，不需要游戏服务器、数据库或模型 API Key。保存的偏好在当前浏览器中。
 

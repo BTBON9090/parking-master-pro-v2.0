@@ -1,6 +1,195 @@
 {
   "handling": [
     {
+      "id": "TYPE100",
+      "hz": 30,
+      "mode": "normal",
+      "peakDegrees": 0.4774648028645787,
+      "slipAfter3SecondsDegrees": 1.364126432974905e-7
+    },
+    {
+      "id": "TYPE100",
+      "hz": 30,
+      "mode": "flick",
+      "peakDegrees": 6.138624909433747,
+      "slipAfter3SecondsDegrees": 0.0000010153558097701725
+    },
+    {
+      "id": "TYPE100",
+      "hz": 30,
+      "mode": "handbrake",
+      "peakDegrees": 12.894607319016194,
+      "slipAfter3SecondsDegrees": 0.000004256601085274263
+    },
+    {
+      "id": "TYPE100",
+      "hz": 60,
+      "mode": "normal",
+      "peakDegrees": 0.47743167721286073,
+      "slipAfter3SecondsDegrees": 1.6343808880083647e-7
+    },
+    {
+      "id": "TYPE100",
+      "hz": 60,
+      "mode": "flick",
+      "peakDegrees": 6.133811778814307,
+      "slipAfter3SecondsDegrees": 0.0000012242927316838398
+    },
+    {
+      "id": "TYPE100",
+      "hz": 60,
+      "mode": "handbrake",
+      "peakDegrees": 13.176112402507673,
+      "slipAfter3SecondsDegrees": 0.0000052827208440829856
+    },
+    {
+      "id": "TYPE100",
+      "hz": 120,
+      "mode": "normal",
+      "peakDegrees": 0.4809117940904068,
+      "slipAfter3SecondsDegrees": 1.9054711407788985e-7
+    },
+    {
+      "id": "TYPE100",
+      "hz": 120,
+      "mode": "flick",
+      "peakDegrees": 6.133637467013488,
+      "slipAfter3SecondsDegrees": 0.0000014303590977936128
+    },
+    {
+      "id": "TYPE100",
+      "hz": 120,
+      "mode": "handbrake",
+      "peakDegrees": 13.243572556985551,
+      "slipAfter3SecondsDegrees": 0.0000061648565564934225
+    },
+    {
+      "id": "MINING",
+      "hz": 30,
+      "mode": "normal",
+      "peakDegrees": 0.2531688415825433,
+      "slipAfter3SecondsDegrees": 2.2794891811655728e-8
+    },
+    {
+      "id": "MINING",
+      "hz": 30,
+      "mode": "flick",
+      "peakDegrees": 1.4667755277366619,
+      "slipAfter3SecondsDegrees": 2.9955573615408944e-7
+    },
+    {
+      "id": "MINING",
+      "hz": 30,
+      "mode": "handbrake",
+      "peakDegrees": 3.6206625767445764,
+      "slipAfter3SecondsDegrees": 7.703145363442752e-7
+    },
+    {
+      "id": "MINING",
+      "hz": 60,
+      "mode": "normal",
+      "peakDegrees": 0.25318866961067615,
+      "slipAfter3SecondsDegrees": 2.7313068580632926e-8
+    },
+    {
+      "id": "MINING",
+      "hz": 60,
+      "mode": "flick",
+      "peakDegrees": 1.4725114262677512,
+      "slipAfter3SecondsDegrees": 3.587209554552104e-7
+    },
+    {
+      "id": "MINING",
+      "hz": 60,
+      "mode": "handbrake",
+      "peakDegrees": 3.7455656926239156,
+      "slipAfter3SecondsDegrees": 9.545276721586325e-7
+    },
+    {
+      "id": "MINING",
+      "hz": 120,
+      "mode": "normal",
+      "peakDegrees": 0.2552482274761516,
+      "slipAfter3SecondsDegrees": 3.28564870609068e-8
+    },
+    {
+      "id": "MINING",
+      "hz": 120,
+      "mode": "flick",
+      "peakDegrees": 1.4767407966214947,
+      "slipAfter3SecondsDegrees": 4.215917067095466e-7
+    },
+    {
+      "id": "MINING",
+      "hz": 120,
+      "mode": "handbrake",
+      "peakDegrees": 3.7707904099705467,
+      "slipAfter3SecondsDegrees": 0.0000011193555390759
+    },
+    {
+      "id": "US22",
+      "hz": 30,
+      "mode": "normal",
+      "peakDegrees": 1.4729944334217513,
+      "slipAfter3SecondsDegrees": 0.000022042234231502802
+    },
+    {
+      "id": "US22",
+      "hz": 30,
+      "mode": "flick",
+      "peakDegrees": 7.271503363669109,
+      "slipAfter3SecondsDegrees": 0.00014522623284202152
+    },
+    {
+      "id": "US22",
+      "hz": 30,
+      "mode": "handbrake",
+      "peakDegrees": 22.676512297836638,
+      "slipAfter3SecondsDegrees": 0.0049845756352488516
+    },
+    {
+      "id": "US22",
+      "hz": 60,
+      "mode": "normal",
+      "peakDegrees": 1.4785149591870412,
+      "slipAfter3SecondsDegrees": 0.00002521540086799021
+    },
+    {
+      "id": "US22",
+      "hz": 60,
+      "mode": "flick",
+      "peakDegrees": 7.26888703305666,
+      "slipAfter3SecondsDegrees": 0.00016664852088842545
+    },
+    {
+      "id": "US22",
+      "hz": 60,
+      "mode": "handbrake",
+      "peakDegrees": 23.071431565872896,
+      "slipAfter3SecondsDegrees": 0.006251258195523323
+    },
+    {
+      "id": "US22",
+      "hz": 120,
+      "mode": "normal",
+      "peakDegrees": 1.4787750713010492,
+      "slipAfter3SecondsDegrees": 0.000027809530527318366
+    },
+    {
+      "id": "US22",
+      "hz": 120,
+      "mode": "flick",
+      "peakDegrees": 7.26621672897779,
+      "slipAfter3SecondsDegrees": 0.00018389833276598344
+    },
+    {
+      "id": "US22",
+      "hz": 120,
+      "mode": "handbrake",
+      "peakDegrees": 23.216298532701128,
+      "slipAfter3SecondsDegrees": 0.00709031467686495
+    },
+    {
       "id": "TRIKE",
       "hz": 30,
       "mode": "normal",

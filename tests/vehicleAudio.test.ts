@@ -49,8 +49,10 @@ class Node {next:Node[]=[];connect(n:Node){this.next.push(n);return n;}disconnec
 class Gain extends Node {gain=new Param();}
 class Filter extends Node {frequency=new Param();Q=new Param();type='';}
 class Source extends Node {playbackRate=new Param();buffer:any;loop=false;stopped=false;start(){}stop(){this.stopped=true;}}
+class Oscillator extends Node {frequency=new Param();start(){}stop(){}setPeriodicWave(_wave:unknown){}}
 const sources:Source[]=[],masters:Gain[]=[];
 const context={currentTime:0,destination:new Node(),createGain(){const g=new Gain();masters.push(g);return g;},createBufferSource(){const s=new Source();sources.push(s);return s;},
+ createOscillator(){return new Oscillator();},createPeriodicWave(){return {};},
  createBiquadFilter(){return new Filter();},createDynamicsCompressor(){return Object.assign(new Node(),{threshold:new Param(),knee:new Param(),ratio:new Param(),attack:new Param(),release:new Param()});},
  decodeAudioData:async()=>({duration:2})} as unknown as AudioContext;
 const realFetch=globalThis.fetch;globalThis.fetch=async()=>({ok:true,arrayBuffer:async()=>new ArrayBuffer(0)}) as Response;

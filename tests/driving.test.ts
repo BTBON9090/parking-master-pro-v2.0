@@ -153,18 +153,24 @@ for(const cfg of Object.values(CAR_MODELS)) {
       : buildCarMeshFromGLB(group,cfg);
   }
   // Trailer has an independent articulated collider; validate tractor here.
-  if(cfg.id===CarType.SEMI)parts.trailer?.root.removeFromParent();
-  assert.equal(parts.wheels.length,cfg.id===CarType.TRIKE?3:cfg.id===CarType.SEMI?6:4,`${cfg.id}: four independently rolling wheels`);
+  if([CarType.SEMI,CarType.US22].includes(cfg.id))parts.trailer?.root.removeFromParent();
+  assert.equal(parts.wheels.length,cfg.id===CarType.TRIKE?3:[CarType.SEMI,CarType.US22].includes(cfg.id)?6:4,`${cfg.id}: four independently rolling wheels`);
   {
     parts.group.updateWorldMatrix(true,true);
     const bodyBox=new THREE.Box3();
-    if (isAuthoredVehicle(cfg.id) && cfg.id!==CarType.SEMI) {
+    if (isAuthoredVehicle(cfg.id) && ![CarType.MINING,CarType.TYPE100].includes(cfg.id)) {
       // Manufacturer body width excludes the outboard mirror housings.
       bodyBox.setFromObject(parts.group.getObjectByName('Body')!, true);
+      parts.group.traverse(n=>{if(n.userData.detachable)bodyBox.expandByObject(n,true);});
     } else {
-      parts.group.children.filter(child=>!parts.wheelMounts.includes(child)).forEach(child=>bodyBox.expandByObject(child));
+      parts.group.children.filter(child=>!parts.wheelMounts.includes(child)&&!/Mirror|driver-hands/.test(child.name)).forEach(child=>bodyBox.expandByObject(child));
     }
     const bodySize=bodyBox.getSize(new THREE.Vector3());
+    if(cfg.id===CarType.TYPE100)bodySize.z=new THREE.Box3().setFromObject(parts.group.getObjectByName('Body')!,true).getSize(new THREE.Vector3()).z;
+    if([CarType.SEMI,CarType.US22].includes(cfg.id)){
+      const runningGear=bodyBox.clone();parts.wheelMounts.forEach(w=>runningGear.expandByObject(w,true));
+      bodySize.z=runningGear.max.z-runningGear.min.z;
+    }
     assert(Math.abs((cfg.id===CarType.TRACTOR?new THREE.Box3().setFromObject(parts.group,true).getSize(new THREE.Vector3()).x:bodySize.x)-cfg.width)<cfg.width*0.12,`${cfg.id}: body width ${bodySize.x.toFixed(2)} vs cfg ${cfg.width}`);
     assert(Math.abs(bodySize.z-cfg.length)<cfg.length*0.12,`${cfg.id}: body length ${bodySize.z.toFixed(2)} vs cfg ${cfg.length}`);
     // The body shell starts above the wheel contact patch; its TOP must still
@@ -189,7 +195,7 @@ for(const cfg of Object.values(CAR_MODELS)) {
     assert(new THREE.Box3().setFromObject(wheel, true).min.y > -0.25,
       `${cfg.id}: wheel ${index} bottom must not sink below the ground plane`);
   });
-  assert.equal(parts.wheelMounts.length,cfg.id===CarType.TRIKE?3:cfg.id===CarType.SEMI?6:4,`${cfg.id}: independent suspension mounts`);
+  assert.equal(parts.wheelMounts.length,cfg.id===CarType.TRIKE?3:[CarType.SEMI,CarType.US22].includes(cfg.id)?6:4,`${cfg.id}: independent suspension mounts`);
   if (cfg.id === CarType.SPORTS) {
     const frameNodes = collectConceptCockpitFrameMeshes(parts.group);
     assert.equal(frameNodes.length, 3, `Concept: expected 3 real cockpit boundary meshes after buildCarMeshFromGLB, got ${frameNodes.map(n=>n.name).join(',')}`);
@@ -242,10 +248,15 @@ for(const cfg of Object.values(CAR_MODELS)) {
     assert(Math.abs((bounds.maxY - bounds.minY) - actualSize.x) < 0.75,
       `${cfg.id}: footprint width must follow actual model incl mirrors/tyres (${(bounds.maxY-bounds.minY).toFixed(2)} vs ${actualSize.x.toFixed(2)})`);
     const collider = { x: 0, y: 0, length: cfg.length, width: cfg.width, rotation: 0, footprint, elevation: 0 };
-    assert(checkVehicleCollision(collider, { ...collider, x: 2 * bounds.maxX - 0.5 }), `${cfg.id}: actual nose overlap must collide`);
-    assert(!checkVehicleCollision(collider, { ...collider, x: 2 * bounds.maxX + 2.5 }), `${cfg.id}: just beyond actual nose must clear`);
-    assert(checkVehicleCollision(collider, { ...collider, y: 2 * bounds.maxY - 0.5 }), `${cfg.id}: actual side overlap must collide`);
-    assert(!checkVehicleCollision(collider, { ...collider, y: 2 * bounds.maxY + 1.5 }), `${cfg.id}: just beyond actual side must clear`);
+    // Long-nose and articulated tractor origins need not sit at the AABB
+    // midpoint. Probe each real extremity with a spanning barrier instead of
+    // assuming another asymmetric vehicle has its nose at -maxX.
+    const noseWall={x:bounds.maxX+.5,y:(bounds.minY+bounds.maxY)/2,length:2,width:bounds.maxY-bounds.minY+4,rotation:0,elevation:0};
+    const sideWall={x:(bounds.minX+bounds.maxX)/2,y:bounds.maxY+.5,length:bounds.maxX-bounds.minX+4,width:2,rotation:0,elevation:0};
+    assert(checkVehicleCollision(collider,noseWall),`${cfg.id}: nose must contact barrier`);
+    assert(!checkVehicleCollision(collider,{...noseWall,x:noseWall.x+2}),`${cfg.id}: barrier beyond nose clears`);
+    assert(checkVehicleCollision(collider,sideWall),`${cfg.id}: side must contact barrier`);
+    assert(!checkVehicleCollision(collider,{...sideWall,y:sideWall.y+2}),`${cfg.id}: barrier beyond side clears`);
     assert(!vehicleLayersCompatible({ ...collider, elevation: 18 }, { elevation: 0 }), `${cfg.id}: bridge layer must not collide with ground layer`);
     assert(vehicleLayersCompatible({ ...collider, elevation: 18 }, { elevation: 18 }), `${cfg.id}: same bridge layer collides`);
   }

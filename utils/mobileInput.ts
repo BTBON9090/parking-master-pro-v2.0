@@ -32,7 +32,9 @@ export class MobileInputController {
     const position=clamp((x-left)/width*2-1,-1,1),half=lock/zoom;
     if(zoom<=1.001)this.rulerCentre=0;
     else if(this.rulerX===undefined || Math.abs(zoom-this.rulerZoom)>.001)
-      this.rulerCentre=clamp(c.value-position*half,-lock+half,lock-half);
+      // Preserve the angle under the PREVIOUS finger position while zooming.
+      // Anchoring to the new position cancels every steering move during acceleration.
+      this.rulerCentre=clamp(c.value-clamp(((this.rulerX??x)-left)/width*2-1,-1,1)*half,-lock+half,lock-half);
     else if(x<left || x>left+width)
       this.rulerCentre=clamp(this.rulerCentre+(x-this.rulerX)/width*2*half,-lock+half,lock-half);
     c.value = clamp(this.rulerCentre+position*half,-lock,lock);

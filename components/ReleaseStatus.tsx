@@ -24,7 +24,7 @@ export function ReleaseStatus(){
  const update=release&&isNewerVersion(release.version,APP_VERSION);
  const android=Capacitor.getPlatform()==='android';
  const downloadUrl=android&&release?.androidUrl?release.androidUrl:RELEASE_PAGE;
- return <section><h3>版本与更新</h3><p>停车大师 Pro <strong>{APP_VERSION}</strong></p>
+ return <section><h3>版本与更新</h3><p>老司机是怎样炼成的 <strong>{APP_VERSION}</strong></p>
   <div className="release-actions">
    <button className="settings-primary" disabled={busy} onClick={check}>{busy?'正在检查…':'检查新版本'}</button>
    {update&&<a className="settings-primary" href={downloadUrl} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer" onClick={external(downloadUrl)}>{android?'下载 Android 更新':'下载新版本'} · {release.version}</a>}
