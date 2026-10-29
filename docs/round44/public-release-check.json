@@ -1,0 +1,44 @@
+{
+  "version": "0.29.0",
+  "checks": [
+    "https://cdn.btbon.cn manifest exact",
+    "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com manifest exact",
+    "index.html exact",
+    "features.html exact",
+    "development-review.html exact",
+    "Full public CDN Android APK SHA256 matched"
+  ],
+  "assets": [
+    {
+      "name": "Parking-Master-Pro-0.29.0-mac-arm64.dmg",
+      "size": 168308357,
+      "sha256": "677e91ef46ed5acd37e0ee3c70b7d99d9b450a4faa5a3f96fdf705123c52574c",
+      "status": 200
+    },
+    {
+      "name": "Parking-Master-Pro-0.29.0-mac-x64.dmg",
+      "size": 172568175,
+      "sha256": "3f819963843bf033365b5792444875db621833c0a6e727d5ff3528e5b418a61f",
+      "status": 200
+    },
+    {
+      "name": "Parking-Master-Pro-0.29.0-win-x64.exe",
+      "size": 150242427,
+      "sha256": "548b74fc0a8ca0b3b5619f606f511705c998bf0b5b6aba0a41fdb1bd768c4f9f",
+      "status": 200
+    },
+    {
+      "name": "Parking-Master-Pro-0.29.0-android.apk",
+      "size": 30918634,
+      "sha256": "fb133003982340aaf072039afe431edb3f90e3fbd9cbd2f4bbb6b4b14a3b3b96",
+      "status": 200
+    },
+    {
+      "name": "Parking-Master-Pro-0.29.0-iOS-Project.zip",
+      "size": 29051577,
+      "sha256": "801e1ba189bc69fcbf3ffdd6f6394e6ee6d208cd700758e3dccab29df4342542",
+      "status": 200
+    }
+  ],
+  "result": "PASS"
+}

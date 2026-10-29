@@ -27,6 +27,8 @@ async function put(file,objectKey,immutable=false){
 const release=JSON.parse(fs.readFileSync('distribution/site/latest.json','utf8'));
 for(const asset of release.assets){const pathname=new URL(asset.url).pathname.slice(1);await put(path.join('release',asset.name),pathname,true);}
 await put('release/SHA256SUMS.txt',`parking-master/releases/${release.version}/SHA256SUMS.txt`,true);
+// Stage immutable packages before switching any public download page or manifest.
+if(process.argv.includes('--assets-only'))process.exit(0);
 function* files(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){const p=path.join(dir,e.name);if(e.isDirectory())yield* files(p);else yield p;}}
 for(const file of files('distribution/site'))if(!file.endsWith('/latest.json'))await put(file,'parking-master/'+path.relative('distribution/site',file));
 // Publish the manifest last, after every linked package has passed verification.

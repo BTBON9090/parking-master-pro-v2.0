@@ -1,0 +1,24 @@
+  • electron-builder  version=26.18.0 os=25.6.0
+  • loaded configuration  file=/Users/aiden/Desktop/工程/Car/parking-master-pro-v2.0/electron-builder.yml
+  • executing @electron/rebuild  electronVersion=45.0.0 arch=x64 buildFromSource=false workspaceRoot=/Users/aiden/Desktop/工程/Car/parking-master-pro-v2.0 projectDir=./ appDir=./
+  • installing native dependencies  arch=x64
+  • completed installing native dependencies
+  • packaging       platform=darwin arch=x64 electron=45.0.0 appOutDir=release/mac
+  • downloaded      label=electron progress=100%
+  • downloaded electron zip extracted successfully  output=/Users/aiden/Desktop/工程/Car/parking-master-pro-v2.0/release/mac
+  • searching for node modules  pm=npm searchDir=/Users/aiden/Desktop/工程/Car/parking-master-pro-v2.0
+  • duplicate dependency references  dependencies=["@capacitor/core@8.5.3","@capacitor/core@8.5.3","@capacitor/core@8.5.3","@emnapi/runtime@1.11.3"]
+  • skipped macOS code signing  reason=identity explicitly is set to null
+  • building        target=DMG arch=x64 file=release/Parking-Master-Pro-0.29.0-mac-x64.dmg
+  • executing @electron/rebuild  electronVersion=45.0.0 arch=arm64 buildFromSource=false workspaceRoot=/Users/aiden/Desktop/工程/Car/parking-master-pro-v2.0 projectDir=./ appDir=./
+  • installing native dependencies  arch=arm64
+  • completed installing native dependencies
+  • packaging       platform=darwin arch=arm64 electron=45.0.0 appOutDir=release/mac-arm64
+  • downloaded      label=electron progress=100%
+  • downloaded electron zip extracted successfully  output=/Users/aiden/Desktop/工程/Car/parking-master-pro-v2.0/release/mac-arm64
+  • searching for node modules  pm=npm searchDir=/Users/aiden/Desktop/工程/Car/parking-master-pro-v2.0
+  • duplicate dependency references  dependencies=["@capacitor/core@8.5.3","@capacitor/core@8.5.3","@capacitor/core@8.5.3","@emnapi/runtime@1.11.3"]
+  • building block map  blockMapFile=release/Parking-Master-Pro-0.29.0-mac-x64.dmg.blockmap
+  • skipped macOS code signing  reason=identity explicitly is set to null
+  • building        target=DMG arch=arm64 file=release/Parking-Master-Pro-0.29.0-mac-arm64.dmg
+  • building block map  blockMapFile=release/Parking-Master-Pro-0.29.0-mac-arm64.dmg.blockmap

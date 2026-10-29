@@ -1,0 +1,17 @@
+{
+  "version": "0.29.0",
+  "assetCount": 109,
+  "exact": 101,
+  "lineEndingOnly": [
+    "dist/brands/ATTRIBUTION.md",
+    "dist/brands/bugatti.svg",
+    "dist/brands/byd.svg",
+    "dist/brands/lamborghini.svg",
+    "dist/brands/mini.svg",
+    "dist/brands/tesla.svg",
+    "dist/models/cars/concept-car.LICENSE.txt"
+  ],
+  "htmlBlankLines": [
+    "dist/index.html"
+  ]
+}

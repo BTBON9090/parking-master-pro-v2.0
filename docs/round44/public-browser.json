@@ -1,0 +1,29 @@
+{
+  "links": [
+    {
+      "platform": "mac-arm64",
+      "url": "https://cdn.btbon.cn/parking-master/releases/0.29.0/Parking-Master-Pro-0.29.0-mac-arm64.dmg"
+    },
+    {
+      "platform": "mac-x64",
+      "url": "https://cdn.btbon.cn/parking-master/releases/0.29.0/Parking-Master-Pro-0.29.0-mac-x64.dmg"
+    },
+    {
+      "platform": "windows-x64",
+      "url": "https://cdn.btbon.cn/parking-master/releases/0.29.0/Parking-Master-Pro-0.29.0-win-x64.exe"
+    },
+    {
+      "platform": "android",
+      "url": "https://cdn.btbon.cn/parking-master/releases/0.29.0/Parking-Master-Pro-0.29.0-android.apk"
+    },
+    {
+      "platform": "ios-source",
+      "url": "https://cdn.btbon.cn/parking-master/releases/0.29.0/Parking-Master-Pro-0.29.0-iOS-Project.zip"
+    },
+    {
+      "platform": "android",
+      "url": "https://github.com/BTBON9090/parking-master-pro-v2.0/releases/download/v0.29.0/Parking-Master-Pro-0.29.0-android.apk"
+    }
+  ],
+  "version": "v0.29.0 · 2026-10-29"
+}
