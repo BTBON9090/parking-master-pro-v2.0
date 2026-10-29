@@ -25,3 +25,21 @@ browser-first-failure.json 是CDP测试脚本错误地用touchEnd传剩余触点
 - 完整 npm test PASS，历史round JSON按运行前字节恢复；typecheck PASS。旧JSON和Blender缓存的既有本地变化保留。
 - 实际雪岭地图高海拔场景及暂停时开启雨已检查，粒子锚点与路面一致；截图 weather-settings.png / mountain-weather.png 已独立查看。browser.json 含实际高度、设置八组合及无页面脚本异常结果。
 - Android签名验证通过；APK、iOS工程ZIP、两种Mac app.asar 各96个网页资源与dist逐字节一致，版本0.27.1。见package-check.json / mac-package-check.json。
+
+- 正式dist浏览器独立复验通过：无开发car钩子，K重绑油门不会触发雨刮，V重绑车灯不会换挡；无页面脚本错误，production-browser.json。
+- 源码提交19606e99f35eb61ff2808924156a563e610b819a已推送。GitHub Actions 40818340096与该提交一致，Windows和iOS无签名编译均success。
+- HTML桌面1280px/手机390px布局与F046检索通过，report-browser.json；新增F045–F047，总47项。
+
+- Windows原代理下载较慢，改从GitHub API取限时产物地址直接下载；zip的服务器SHA-256和workflow head均匹配。停止了仅本轮的冗余代理传输，未改系统代理。windows-artifact.json保留核验结果，无凭据/限时URL落盘。
+- Windows安装包内96个资源：88个逐字节一致，8个仅平台换行（index.html含空行）差异；JS/CSS/模型/声音全部逐字节一致，windows-package-check.json。
+- 发布清单与静态下载链接生成；releases.test.ts再次通过。
+
+## 发布完成
+
+- GitHub v0.27.1已公开，五个包和SHA256SUMS共6项服务器digest与本地完全一致，github-published.json。
+- COS先上传并核验不可变安装包，再上传下载站和两份报告，最后发布latest.json；cos-assets.txt / cos-publish.txt记录顺序。
+- COS源站/CDN清单均为0.27.1。下载页、功能索引、发展报告公开内容与本地逐字节一致；CDN完整下载Android包27,053,039字节，SHA-256 d4be86b0104cf762947eac2e97b24bea2c674bbbea50587267a383f293ee4fef。
+- 公网浏览器检查版本、Android链接、47项计数及F047检索通过，无页面脚本错误，online-browser.json。
+- 下载：https://cdn.btbon.cn/parking-master/index.html#download
+- 清单：https://cdn.btbon.cn/parking-master/features.html#overnight-progress
+- 所有本轮浏览器已关闭；临时生产预览5312端口已停止，用户原有5190/4311预览保留。没有操作手机、付费或改系统设置。

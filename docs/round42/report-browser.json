@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "reports": [
+    {
+      "width": 1280,
+      "count": 47,
+      "filtered": 1,
+      "horizontalOverflow": false
+    },
+    {
+      "width": 390,
+      "count": 47,
+      "filtered": 1,
+      "horizontalOverflow": false
+    }
+  ],
+  "errors": []
+}

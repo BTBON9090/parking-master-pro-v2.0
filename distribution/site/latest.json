@@ -1,43 +1,43 @@
 {
-  "version": "0.27.0",
+  "version": "0.27.1",
   "date": "2026-10-29",
-  "githubRelease": "https://github.com/BTBON9090/parking-master-pro-v2.0/releases/tag/v0.27.0",
-  "notes": "# 老司机是怎样炼成的 · 0.27.0 体验测试版\n\n本次重点改善安卓触控、持续负载、车辆比例和碰撞体验，保留应用标识及 Android 签名，可覆盖安装并保留设置。\n\n- 方向控制改为可调位置、尺寸的四分之一圆弧，高速继续放大刻度；减少触屏拖动造成的重绘，保留各车型方向盘行程。\n- 优化方向盘换手与手臂，加入驾驶位前后、高低、视线俯仰设置；这组设置移动眼点，座椅模型本体不移动。\n- 修正大巴、重卡轮径和宽高观感，以及挂车、矿卡、中巴和长轴接驳车的轮胎/轮拱间隙；履带演示轮组和履带加入可见转动及悬架表现。\n- 雨、雪、雾可单独开关或组合；减弱高速模糊，调整高速护栏、弯道提示及建筑与道路的对齐。\n- 驾驶、后视镜、车库预览与后台分别限制渲染频率；复用碰撞查询、路面采样与静态物理结构。桌面回归通过，不代表安卓温升已改善。\n- 车库动力试听默认关闭；总静音释放音频资源，暂停/后台挂起音频图。修复静音按钮被镜面挡住，总静音保留独立声源设置。\n- 碰撞车损按相对速度计算，移动 NPC 的速度参与质量冲量；被撞停的 NPC 从静止重新起步，侧向滑行同步到物理体。玩家高速事故使用数量受限的碎片效果。\n\n已完成代码完整回归、TypeScript 检查、桌面浏览器检查与安装包构建/资源一致性核验。涉及资产的修改保留 Blender 渲染与游戏内检查记录。\n\n**本次发布未做新的 Android 实机、高速长测或温升验收。** 原应用内浏览器曾出现音频恢复挂起，独立 Chrome 连续恢复检查已通过，Android 前后台恢复仍需验证。L80 A 柱精修、NPC 完整散架尚未完成；逐轮驱动/差速器只在开发环境隔离实验，正式模式仍是原简化动力模型。\n\nMac / Windows 未签名；iOS 提供工程 ZIP，暂无可安装 IPA。模拟参数为游戏标定，不代表原厂级仿真。\n",
+  "githubRelease": "https://github.com/BTBON9090/parking-master-pro-v2.0/releases/tag/v0.27.1",
+  "notes": "# 0.27.1 · 天气独立设置与输入恢复\n\n- 白天 / 夜晚可在出发设置和驾驶设置中单独选择并保存，开启天气或重新进图不再随机变成夜晚。\n- 雨、雪、雾仍可独立组合。雨雪粒子跟随道路海拔，修复高山路段天气落在脚下；降雪速度按经过时间计算，30–144 Hz 数值轨迹一致。切换雾与时段复用现有雨雪缓冲区。\n- 按住油门时重置车辆会清空旧触控记录，旧手指移动不会重新踩油门；切后台释放键盘及触控踏板，返回后重新操作才生效。\n- 修复 V 键被雨刮功能拦截：V 挂空挡且不自动拉驻车手刹；K 开关雨刮，考试面板和引导同步更新。自定义按键优先于固定附属快捷键。\n\n验证：数值回归、桌面 Chrome 游戏内天气八种组合、设置保存、双触点重置和后台事件检查；多平台构建及资源一致性另见 docs/round42/VALIDATION.md。\n\n本轮没有修改车辆模型或正式驱动算法，没有 Android 实机测试。按用户要求暂缓温升、A柱遮挡、NPC完整散架、正时 / 正式逐轮驱动问题。雨雪仍是有数量上限的视觉近似，不代表完整气象或隧道遮雨仿真。Mac/Windows安装包仍未签名；iOS提供工程ZIP，不提供IPA。\n",
   "assets": [
     {
       "platform": "mac-arm64",
-      "name": "Parking-Master-Pro-0.27.0-mac-arm64.dmg",
-      "size": 164537051,
-      "sha256": "453e64cf97205b54878fbc2bf75bd6038584439ccc3d49d2b6c1c50f71494246",
-      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.27.0/Parking-Master-Pro-0.27.0-mac-arm64.dmg"
+      "name": "Parking-Master-Pro-0.27.1-mac-arm64.dmg",
+      "size": 164538271,
+      "sha256": "e2bb037a22609ce09ecef0cb3a30ac604c615d2d4964f02d7508db0db9610cc6",
+      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.27.1/Parking-Master-Pro-0.27.1-mac-arm64.dmg"
     },
     {
       "platform": "mac-x64",
-      "name": "Parking-Master-Pro-0.27.0-mac-x64.dmg",
-      "size": 168810625,
-      "sha256": "b234254a5b0811c20eac2c472cecd49a76400446623e9ed1a4a65afc91964a50",
-      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.27.0/Parking-Master-Pro-0.27.0-mac-x64.dmg"
+      "name": "Parking-Master-Pro-0.27.1-mac-x64.dmg",
+      "size": 168810615,
+      "sha256": "9f4fa0199620c2f3446a4c2457e17e98ea527736fca32ee7e1c2897cc295fc22",
+      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.27.1/Parking-Master-Pro-0.27.1-mac-x64.dmg"
     },
     {
       "platform": "windows-x64",
-      "name": "Parking-Master-Pro-0.27.0-win-x64.exe",
-      "size": 146536298,
-      "sha256": "56233d57fced3f0e9d998a381c3ca90365d6011798f699e1f48a66ecb7355f6d",
-      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.27.0/Parking-Master-Pro-0.27.0-win-x64.exe"
+      "name": "Parking-Master-Pro-0.27.1-win-x64.exe",
+      "size": 146539811,
+      "sha256": "980b62382ef563dac5955ec45af2107914bd6e87d355d10338e912a2440f6f2b",
+      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.27.1/Parking-Master-Pro-0.27.1-win-x64.exe"
     },
     {
       "platform": "android",
-      "name": "Parking-Master-Pro-0.27.0-android.apk",
-      "size": 27052535,
-      "sha256": "42793fe0b8748795ec6150f29d5ca22877378964a40da0498c5ad0064692b419",
-      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.27.0/Parking-Master-Pro-0.27.0-android.apk"
+      "name": "Parking-Master-Pro-0.27.1-android.apk",
+      "size": 27053039,
+      "sha256": "d4be86b0104cf762947eac2e97b24bea2c674bbbea50587267a383f293ee4fef",
+      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.27.1/Parking-Master-Pro-0.27.1-android.apk"
     },
     {
       "platform": "ios-source",
-      "name": "Parking-Master-Pro-0.27.0-iOS-Project.zip",
-      "size": 25276801,
-      "sha256": "796cbf144410c5fb86b29f304530aaee4b2b02e82985ee4d932529ea03d26b26",
-      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.27.0/Parking-Master-Pro-0.27.0-iOS-Project.zip"
+      "name": "Parking-Master-Pro-0.27.1-iOS-Project.zip",
+      "size": 25277366,
+      "sha256": "3575f4ac3a02a4ad02021c0b0021c5cc91dbcf103375b9ea159d06e10744d029",
+      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.27.1/Parking-Master-Pro-0.27.1-iOS-Project.zip"
     }
   ]
 }

@@ -1,0 +1,15 @@
+{
+  "version": "0.27.1",
+  "exact": 88,
+  "newlineOnly": [
+    "brands/ATTRIBUTION.md",
+    "brands/bugatti.svg",
+    "brands/byd.svg",
+    "brands/lamborghini.svg",
+    "brands/mini.svg",
+    "brands/tesla.svg",
+    "index.html",
+    "models/cars/concept-car.LICENSE.txt"
+  ],
+  "status": "PASS"
+}

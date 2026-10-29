@@ -1,0 +1,6 @@
+{
+  "status": "PASS",
+  "build": "production dist, no DEV car hook",
+  "customKeys": "K=accelerate does not activate wipers; V=lights does not change D gear",
+  "errors": []
+}

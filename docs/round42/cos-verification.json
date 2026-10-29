@@ -1,0 +1,36 @@
+{
+  "version": "0.27.1",
+  "manifests": [
+    {
+      "origin": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com",
+      "version": "0.27.1",
+      "assets": 5
+    },
+    {
+      "origin": "https://cdn.btbon.cn",
+      "version": "0.27.1",
+      "assets": 5
+    }
+  ],
+  "pages": [
+    {
+      "name": "index.html",
+      "exact": true
+    },
+    {
+      "name": "features.html",
+      "exact": true
+    },
+    {
+      "name": "development-review.html",
+      "exact": true
+    }
+  ],
+  "apk": {
+    "name": "Parking-Master-Pro-0.27.1-android.apk",
+    "size": 27053039,
+    "sha256": "d4be86b0104cf762947eac2e97b24bea2c674bbbea50587267a383f293ee4fef",
+    "fullDownloadVerified": true
+  },
+  "status": "PASS"
+}
