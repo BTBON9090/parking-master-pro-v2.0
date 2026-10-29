@@ -4,24 +4,24 @@
     "Trusted newer signed APK downloaded, byte count / SHA256 / package / version / signer checks passed; install requested."
   ],
   "initial": {
-    "ready": false,
+    "ready": true,
     "busy": false,
-    "permission": false,
-    "version": ""
+    "permission": true,
+    "version": "0.28.0"
   },
   "downloaded": {
     "ok": true,
     "value": {
       "ready": true,
       "busy": false,
-      "permission": false,
-      "version": "0.28.0"
+      "permission": true,
+      "version": "0.28.1"
     }
   },
   "install": {
     "ok": true,
     "value": {
-      "permissionRequired": true
+      "installerOpened": true
     }
   },
   "result": "PASS"

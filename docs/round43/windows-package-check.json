@@ -1,0 +1,17 @@
+{
+  "version": "0.28.1",
+  "exact": 88,
+  "normalized": [
+    "dist/brands/ATTRIBUTION.md",
+    "dist/brands/bugatti.svg",
+    "dist/brands/byd.svg",
+    "dist/brands/lamborghini.svg",
+    "dist/brands/mini.svg",
+    "dist/brands/tesla.svg",
+    "dist/index.html",
+    "dist/models/cars/concept-car.LICENSE.txt"
+  ],
+  "normalization": "CR characters only in text assets; JS/CSS/GLB/audio and other binary content exact",
+  "head": "819f5303647a5fe8d3616fac8eff470a5752d572",
+  "result": "PASS"
+}

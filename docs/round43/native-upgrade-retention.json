@@ -1,0 +1,25 @@
+{
+  "result": "PASS",
+  "environment": "Local Android API36.1 emulator, not user hardware",
+  "sourceHost": "temporary test host 0.27.1 signed with same release key",
+  "installedVersion": "0.28.1",
+  "installedVersionCode": 2801,
+  "download": "CDN native plugin streamed download; APK verified by size, SHA256, package, versionCode and signer",
+  "installation": "User-confirmed Android system installer; first-install permission approved in emulator UI",
+  "retention": {
+    "continueVisible": true,
+    "car": "SUV",
+    "level": "三层地库",
+    "uiCoordinates": {
+      "x": 850,
+      "y": 500
+    },
+    "speedKmh": 0,
+    "gear": "N",
+    "parkingBrake": true
+  },
+  "limits": [
+    "B2 height and saved money/parking/exam sanitization separately verified by browser and numeric tests; production WebView debugging is disabled, so no claim of direct private-storage inspection after upgrade.",
+    "Software GPU emulator logs shadow sampler errors; rendering performance and manufacturer installer behavior require user hardware testing."
+  ]
+}

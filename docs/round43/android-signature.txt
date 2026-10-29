@@ -1,0 +1,4 @@
+Signer #1 certificate DN: CN=BTBON, O=BTBON, C=CN
+Signer #1 certificate SHA-256 digest: cc306eb99d987edc140a3d52f4ed40c8af99f92271f2323c14dcc944ec0cad83
+Signer #1 certificate SHA-1 digest: 83d330b2fd29ea5d8c9c9889cd0a70fd3f935624
+Signer #1 certificate MD5 digest: 3ea1d9606ec2de93cd7e2e19cbf51d76

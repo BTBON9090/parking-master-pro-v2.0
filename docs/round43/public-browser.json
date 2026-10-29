@@ -1,0 +1,28 @@
+{
+  "result": "PASS",
+  "links": [
+    {
+      "platform": "mac-arm64",
+      "url": "https://cdn.btbon.cn/parking-master/releases/0.28.1/Parking-Master-Pro-0.28.1-mac-arm64.dmg"
+    },
+    {
+      "platform": "mac-x64",
+      "url": "https://cdn.btbon.cn/parking-master/releases/0.28.1/Parking-Master-Pro-0.28.1-mac-x64.dmg"
+    },
+    {
+      "platform": "windows-x64",
+      "url": "https://cdn.btbon.cn/parking-master/releases/0.28.1/Parking-Master-Pro-0.28.1-win-x64.exe"
+    },
+    {
+      "platform": "android",
+      "url": "https://cdn.btbon.cn/parking-master/releases/0.28.1/Parking-Master-Pro-0.28.1-android.apk"
+    },
+    {
+      "platform": "ios-source",
+      "url": "https://cdn.btbon.cn/parking-master/releases/0.28.1/Parking-Master-Pro-0.28.1-iOS-Project.zip"
+    }
+  ],
+  "featureCount": "56",
+  "search": "F049",
+  "errors": []
+}

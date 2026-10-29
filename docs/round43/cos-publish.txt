@@ -1,0 +1,21 @@
+Verified existing parking-master/releases/0.28.1/Parking-Master-Pro-0.28.1-mac-arm64.dmg
+Verified existing parking-master/releases/0.28.1/Parking-Master-Pro-0.28.1-mac-x64.dmg
+Verified existing parking-master/releases/0.28.1/Parking-Master-Pro-0.28.1-win-x64.exe
+Verified existing parking-master/releases/0.28.1/Parking-Master-Pro-0.28.1-android.apk
+Verified existing parking-master/releases/0.28.1/Parking-Master-Pro-0.28.1-iOS-Project.zip
+Verified existing parking-master/releases/0.28.1/SHA256SUMS.txt
+Uploaded and verified parking-master/assets/LI_I9.webp 5130
+Uploaded and verified parking-master/assets/N90.webp 6096
+Uploaded and verified parking-master/assets/SEAL08.webp 5842
+Uploaded and verified parking-master/assets/SUV.webp 5764
+Uploaded and verified parking-master/assets/TAI7.webp 5742
+Uploaded and verified parking-master/assets/TRUCK.webp 5494
+Uploaded and verified parking-master/assets/campus.webp 48614
+Uploaded and verified parking-master/assets/icon.png 667851
+Uploaded and verified parking-master/assets/mountain.webp 47388
+Uploaded and verified parking-master/development-review.html 157568
+Uploaded and verified parking-master/downloads.js 2120
+Uploaded and verified parking-master/features.html 60879
+Uploaded and verified parking-master/index.html 8332
+Uploaded and verified parking-master/style.css 5875
+Uploaded and verified parking-master/latest.json 4734

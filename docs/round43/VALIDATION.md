@@ -1,4 +1,4 @@
-# 0.28.1 验证记录（发布准备中）
+# 0.28.1 验证记录（已发布）
 
 用户已授权版本更新、推送与COS发布。本轮直接实施，未指挥DeepSeek、未付费接入服务、未使用新引擎、未连接或启动用户手机。
 
@@ -21,7 +21,7 @@
 
 ## Android更新验收
 
-本机API36.1模拟器用于插件验证，不是手机硬件。临时0.27.1测试宿主只在其未发布的资源配置启用WebView检查，正式版本配置恢复；不将测试宿主上传。正式0.28.0下载、签名/哈希验证、系统权限/安装器与覆盖后进度保留待继续验证。
+本机API36.1模拟器用于插件验证，不是手机硬件。临时0.27.1测试宿主使用相同正式签名，仅该未发布宿主启用WebView检查。原生插件从CDN下载正式0.28.1 APK，通过大小/SHA256/包名/版本号/签名校验；经模拟器系统界面授权安装来源、确认安装，dumpsys核对versionCode=2801、versionName=0.28.1。新版本主菜单仍显示“继续上次驾驶”，进入原三层地库，UI坐标X850/Y500、0km/h、N挡驻车。正式APK无WebView调试。证据native-updater-install.json、native-upgrade-retention.json、android-system-installer.png、android-continue.png、android-resumed.png。B2层高、奖励/完成项细节另由数值/浏览器验证，不声称读到了正式包的私有存储。
 
 ## 边界
 
@@ -33,3 +33,20 @@
 - 正式Android签名有效，Android/iOS工程96个资源与dist完全一致，正式APK未启用WebView调试。仅不可变APK已上传用于真实更新链验证，尚未更新公开latest清单。
 
 候选独立复查：0.28.0第三人称升降井壁遮挡，因此未更新公开清单。最终0.28.1对附近第三人称隐藏井壁外壳，驾驶舱与实体碰撞保留；浏览器升降与四向通道再验通过并独立查看截图。原f99bfc8候选的Windows/iOS Actions虽通过，但最终包必须以新提交的CI为准。
+
+## 最终构建一致性
+
+- 发布代码提交819f5303647a5fe8d3616fac8eff470a5752d572；Actions 40830625622 的Windows与iOS编译均success，head一致。0.28.0候选不用于最终发行。
+- 最后CSS修正后重新生成所有本地包。0.28.1 Android、iOS工程与两个Mac的96项游戏资源逐字节一致；package-check.json与mac-package-check.json记录。Android签名核验通过。Windows产物经GitHub SHA256验证；解包后88项逐字节一致，另8项文本仅CR换行差异，JS/CSS/GLB/audio完全一致（windows-package-check.json）。
+- 模拟器软件GPU出现SHADOW sampler日志；当前用途是原生下载/安装和存档恢复验收，不以此证明手机渲染性能。短横屏版本说明可滚动；自动焦点会滚到“继续”按钮，标题可能需向上滚动查看，属于后续界面细节。
+
+- HTML索引56项，F049搜索及390px无横向溢出检查通过，发展报告当前状态链接同步。模拟器已关闭，未留下手机测试或设备负载。
+
+## 公开分发完成
+
+0.28.1 已发布到 GitHub Release 与 COS。五个平台产物和 SHA256SUMS 的GitHub服务端digest/大小全部匹配本地；tag v0.28.1 指向819f5303647a5fe8d3616fac8eff470a5752d572。COS不可变对象元数据逐项核对，最后更新latest。CDN/COS公开latest与本地完全一致；CDN下载页、功能清单和开发报告逐字节一致；五个安装包HEAD大小及SHA元数据一致；Android整包重新GET并计算SHA256通过。真实浏览器确认五条0.28.1下载链接、功能数56和F049搜索。证据 public-release-check.json / public-browser.json / github-published.json。
+
+下载：https://cdn.btbon.cn/parking-master/index.html#download
+功能清单：https://cdn.btbon.cn/parking-master/features.html#overnight-progress
+
+用户旧版0.27.1尚无原生更新插件，需先从下载页覆盖安装0.28.1；之后新版本可在App内下载安装。保存仅限本机，卸载/清数据不保留。没有手机硬件温升/帧率或厂商安装器验收。

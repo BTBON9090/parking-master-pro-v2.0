@@ -1,14 +1,14 @@
 {
-  "version": "0.28.0",
+  "version": "0.28.1",
   "assets": [
     {
-      "name": "Parking-Master-Pro-0.28.0-android.apk",
-      "size": 27069431,
-      "sha256": "27c68b6e57b3d1f770582e5f5234189ceae7cda820f6df9c1395438c97a87560",
+      "name": "Parking-Master-Pro-0.28.1-android.apk",
+      "size": 27069499,
+      "sha256": "7fa93a30585287b38288ca3245c83aad4cd035cf62297ab4c831d2a8d3f2b924",
       "assetCount": 96,
       "match": "exact",
       "platform": "android",
-      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.28.0/Parking-Master-Pro-0.28.0-android.apk"
+      "url": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com/parking-master/releases/0.28.1/Parking-Master-Pro-0.28.1-android.apk"
     }
   ]
 }
