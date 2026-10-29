@@ -13,7 +13,7 @@ export function DrivingGuide({done,settings}:{done:()=>void;settings:UserSetting
   {title:'挡位与手刹',desc:'D 升挡、A 降挡，Q 倒挡、V 空挡。电车只有一个前进挡。空格按住拉起手刹，松开释放；P 切换驻车手刹。',keys:[keys.gearUp,keys.gearDown,'q','v',keys.handbrake]},
   {title:'方向盘连续转动',desc:'在下面区域按住鼠标右键左右拖动，练习转向。松开停止输入；Alt+C 可让方向盘回正。',keys:[]},
   {title:'看向路边，也能回正',desc:'按住左键拖动观察。车外可以环视，车内转头范围有限；双击左键回正。F 切换视角。',keys:[keys.camera]},
-  {title:'准备出发',desc:'B 启动或关闭动力；L 在关闭、近光和远光之间切换。M 或 Esc 暂停，随时换车、调节声音与画面。',keys:[keys.engine,keys.lights,keys.settings]},
+  {title:'准备出发',desc:'B 启动或关闭动力；L 切换车灯，K 切换雨刮。M 或 Esc 暂停，随时换车、调节声音与画面。',keys:[keys.engine,keys.lights,keys.settings]},
  ];if(isTouchDevice()){
  lessons[0].desc='右侧按住油门起步，松开滑行；踏板上滑越多，力度越大，右侧红条为油门、绿条为刹车。可以同时操作方向盘与踏板。';
  lessons[1].desc='右侧 R / N / D 选择倒挡、空挡和前进挡，− / ＋控制手动挡。按住手刹临时制动，驻车 P 点按开关。';

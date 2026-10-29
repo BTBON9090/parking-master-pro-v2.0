@@ -1,0 +1,14 @@
+{
+  "environment": "Desktop Chrome, CDP touch and DOM visibility simulation; no Android test",
+  "errors": [],
+  "start": {
+    "background": "c0cad6",
+    "fog": false,
+    "rain": null,
+    "snow": "1d58cfc7-21f5-4391-9126-a4b8ccc24e88",
+    "snowY": -20,
+    "surface": 0
+  },
+  "status": "FAIL",
+  "failure": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n'12' !== '0'\n"
+}

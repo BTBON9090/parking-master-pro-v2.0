@@ -1,0 +1,16 @@
+[
+  {
+    "name": "Parking-Master-Pro-0.27.1-android.apk",
+    "size": 27053039,
+    "sha256": "d4be86b0104cf762947eac2e97b24bea2c674bbbea50587267a383f293ee4fef",
+    "assetCount": 96,
+    "match": "exact"
+  },
+  {
+    "name": "Parking-Master-Pro-0.27.1-iOS-Project.zip",
+    "size": 25277366,
+    "sha256": "3575f4ac3a02a4ad02021c0b0021c5cc91dbcf103375b9ea159d06e10744d029",
+    "assetCount": 96,
+    "match": "exact"
+  }
+]

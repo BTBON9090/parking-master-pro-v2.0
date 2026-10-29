@@ -72,6 +72,7 @@ import { buildCollisionGrid, queryCollisionGrid } from '../utils/collisionSpatia
 import {VehicleCollisionQuery} from '../utils/vehicleCollisionQuery';
 import { isGravelSurface, isTrainingTerrain, trainingTerrainGradient, trainingTerrainHeight, TRAINING_TERRAIN } from '../utils/trainingTerrain';
 import {resolveWeatherOptions} from '../utils/weatherOptions';
+import {PrecipitationField, syncPrecipitation} from '../three/precipitation';
 import { sampleElevatedRoad } from '../utils/elevatedRoad';
 import { sampleTerrainSurface, sampleWheelSurfaceHeight } from '../utils/terrainSampling';
 import { isWheelGroundedByGap } from '../utils/wheelContact';
@@ -1464,16 +1465,13 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     })();
 
     // ===== 天气 / 时间 状态（动态可调） =====
-    let rainParticles: THREE.LineSegments | null = null;
-    let snowParticles: THREE.Points | null = null;
+    let rainParticles: PrecipitationField | null = null;
+    let snowParticles: PrecipitationField | null = null;
 
     function applyWeather() {
       const {rain,snow,fog} = resolveWeatherOptions(settingsRef.current,weatherRef.current);
       const d = dayTimeRef.current;
 
-      // 清除旧粒子
-      if (rainParticles) { scene.remove(rainParticles); rainParticles.geometry.dispose(); (rainParticles.material as THREE.Material).dispose(); rainParticles = null; }
-      if (snowParticles) { scene.remove(snowParticles); snowParticles.geometry.dispose(); (snowParticles.material as THREE.Material).dispose(); snowParticles = null; }
       scene.fog = null;
 
       // 背景色
@@ -1508,37 +1506,11 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       // 雾
       if (fog && !isUnderground) scene.fog = new THREE.Fog(bg, 180, 800);
 
-      // 雨粒子
-      if (rain && !isUnderground) {
-        const count = 900;
-        const positions = new Float32Array(count * 6);
-        for (let i = 0; i < count; i++) {
-          const x=(Math.random() - 0.5) * 1200, y=Math.random() * 600, z=(Math.random() - 0.5) * 1200;
-          positions[i*6]=x; positions[i*6+1]=y; positions[i*6+2]=z;
-          positions[i*6+3]=x; positions[i*6+4]=y-3; positions[i*6+5]=z;
-        }
-        const geo = new THREE.BufferGeometry();
-        geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        const mat = new THREE.LineBasicMaterial({ color: 0x99bbdd, transparent: true, opacity: 0.45, depthWrite:false });
-        rainParticles = new THREE.LineSegments(geo, mat);
-        scene.add(rainParticles);
-      }
-
-      // 雪粒子
-      if (snow && !isUnderground) {
-        const count = 800;
-        const positions = new Float32Array(count * 3);
-        for (let i = 0; i < count; i++) {
-          positions[i * 3] = (Math.random() - 0.5) * 1200;
-          positions[i * 3 + 1] = Math.random() * 600;
-          positions[i * 3 + 2] = (Math.random() - 0.5) * 1200;
-        }
-        const geo = new THREE.BufferGeometry();
-        geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        const mat = new THREE.PointsMaterial({ color: 0xffffff, size: 4, transparent: true, opacity: 0.7 });
-        snowParticles = new THREE.Points(geo, mat);
-        scene.add(snowParticles);
-      }
+      rainParticles = syncPrecipitation(scene, rainParticles, 'rain', rain && !isUnderground);
+      snowParticles = syncPrecipitation(scene, snowParticles, 'snow', snow && !isUnderground);
+      const car = carState.current;
+      rainParticles?.step(0, car.x, car.roadHeight ?? 0, car.y);
+      snowParticles?.step(0, car.x, car.roadHeight ?? 0, car.y);
     }
     applyWeather();
 
@@ -3460,27 +3432,9 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         sun.position.copy(lightTarget).add(new THREE.Vector3(-150,220,-100));
         sun.target.updateMatrixWorld();
 
-        // 12. 天气粒子更新
-        if (rainParticles) {
-          rainParticles.position.set(car.x, 0, car.y);
-          const positions = (rainParticles.geometry.getAttribute('position') as THREE.BufferAttribute).array as Float32Array;
-          for (let i = 0; i < positions.length; i += 6) {
-            positions[i + 1] -= 18 * frameScale;
-            if (positions[i + 1] < 0) positions[i + 1] = 600;
-            positions[i + 4] = positions[i + 1] - 3;
-          }
-          (rainParticles.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
-        }
-        if (snowParticles) {
-          snowParticles.position.set(car.x, 0, car.y);
-          const positions = (snowParticles.geometry.getAttribute('position') as THREE.BufferAttribute).array as Float32Array;
-          for (let i = 0; i < positions.length; i += 3) {
-            positions[i + 1] -= 2;
-            positions[i] += Math.sin((Date.now() + i) * 0.001) * 0.5;
-            if (positions[i + 1] < 0) positions[i + 1] = 600;
-          }
-          (snowParticles.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
-        }
+        // Precipitation follows the road even on elevated mountain routes.
+        rainParticles?.step(frameDelta / 1000, car.x, renderSlope.height, car.y);
+        snowParticles?.step(frameDelta / 1000, car.x, renderSlope.height, car.y);
         } // end if (frameDelta > 0)
       }  // end if (!paused)
 

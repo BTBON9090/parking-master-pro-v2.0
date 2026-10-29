@@ -15,7 +15,7 @@ export function ExamPanel({level,input,update}:{level:LevelData;input:InputState
   {c?.kind==='signal'&&<b className={green?'exam-green':'exam-red'}>{green?'绿灯 · 通行':'红灯 · 停车'}</b>}
   <nav><button aria-pressed={input.indicator===-1} onPointerDown={e=>{e.stopPropagation();update(v=>({...v,indicator:v.indicator===-1?0:-1}));}}>← 左灯</button>
    <button aria-pressed={input.indicator===1} onPointerDown={e=>{e.stopPropagation();update(v=>({...v,indicator:v.indicator===1?0:1}));}}>右灯 →</button>
-   <button aria-pressed={input.wipers} onPointerDown={e=>{e.stopPropagation();update(v=>({...v,wipers:!v.wipers}));}}>雨刮 V</button>
+   <button aria-pressed={input.wipers} onPointerDown={e=>{e.stopPropagation();update(v=>({...v,wipers:!v.wipers}));}}>雨刮 K</button>
    <button onClick={()=>{if(c){penaliseExam(s,c.id+'skip','跳过考点',10);advanceExam(s,level.exam!);}else session.current=newExam();redraw(v=>v+1);}}>{c?'跳过 −10':'重考'}</button></nav>
  </aside>;
 }

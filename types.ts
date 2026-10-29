@@ -463,6 +463,7 @@ export interface UserSettings {
   logitechKnobMode: boolean; // Optional media-dial steering + right-hand key layout
   wheelGhost: boolean; // 车轮透视：车身 30% 半透明，便于观察车轮与转向几何
   autoTurnSignal: boolean;
+  dayTime?: DayTime; // Independent of precipitation and fog.
   weatherEnabled: boolean;
   weatherRain?: boolean;
   weatherSnow?: boolean;

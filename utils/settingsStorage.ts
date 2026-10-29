@@ -1,6 +1,6 @@
 import {sanitizeHudLayout} from './mobileLayout';
 import {normalizeDriverSeat} from './driverSeat';
-import type {UserSettings} from '../types';
+import {DayTime, type UserSettings} from '../types';
 export const SETTINGS_KEY='parking-master-settings-v1';
 // Copy only known keys and matching primitive types. New settings keep their defaults.
 function mergeKnown(defaults:any,saved:any):any {
@@ -15,6 +15,7 @@ export function restoreSettings(defaults:UserSettings,raw:string|null):UserSetti
   const result=mergeKnown(defaults,saved) as UserSettings;
   result.mobileHudLayout=sanitizeHudLayout(saved?.mobileHudLayout);
   if (defaults.driverSeatAdjustment) result.driverSeatAdjustment=normalizeDriverSeat(result.driverSeatAdjustment);
+  if(result.dayTime !== DayTime.DAY && result.dayTime !== DayTime.NIGHT) result.dayTime=DayTime.DAY;
   if(!['auto','low','medium','high','ultra'].includes(result.renderQuality??''))result.renderQuality='auto';
   for(const key of ['volume','cabinVolume','exteriorVolume'] as const)result[key]=Math.max(0,Math.min(1,result[key]??1));
   result.steeringSensitivity=Math.max(0,Math.min(3,result.steeringSensitivity));

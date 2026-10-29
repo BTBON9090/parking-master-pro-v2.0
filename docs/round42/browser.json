@@ -1,0 +1,121 @@
+{
+  "environment": "Desktop Chrome, CDP touch and DOM visibility simulation; no Android test",
+  "errors": [],
+  "start": {
+    "background": "c0cad6",
+    "fog": false,
+    "rain": null,
+    "snow": "7aa9aa9b-390d-4ea1-9fc7-00c88be23689",
+    "snowY": -20,
+    "surface": 0
+  },
+  "hitTargets": [
+    "<button class=\"mobile-gas hud-positioned\" aria-label=\"触屏油门\" style=\"--hud-x: 1172px; --hud-y: 694px; --hud-w: 94px; --hud-h: 94px;\">油门<small>上滑加力</small></button>",
+    "<button aria-label=\"重置车辆\" title=\"重置车辆\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-rotate-ccw\" aria-hidden=\"true\"><path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"></path><path d=\"M3 3v5h5\"></path></svg></button>"
+  ],
+  "touchEvents": [
+    {
+      "type": "pointerdown",
+      "target": "触屏油门",
+      "id": 2
+    },
+    {
+      "type": "pointerdown",
+      "target": "重置车辆",
+      "id": 3
+    },
+    {
+      "type": "free-drive-stop"
+    }
+  ],
+  "resetHeldPedal": "PASS: old contact remains released, fresh touch works",
+  "keyboardAuxiliary": "PASS: V selects neutral without applying parking brake, K toggles wipers",
+  "hiddenKeyboard": "PASS: hidden without blur releases throttle; repeated key does not reapply it",
+  "combinations": [
+    {
+      "mask": 0,
+      "background": "8db8e0",
+      "fog": false,
+      "rain": null,
+      "snow": null,
+      "surface": 0
+    },
+    {
+      "mask": 1,
+      "background": "6b7a8f",
+      "fog": false,
+      "rain": "bde5c117-1146-40e3-804b-c6ac392253ce",
+      "snow": null,
+      "surface": 0
+    },
+    {
+      "mask": 2,
+      "background": "c0cad6",
+      "fog": false,
+      "rain": null,
+      "snow": "92dc0e8d-eef8-4fef-a6f0-e2f8e0793f81",
+      "snowY": -20,
+      "surface": 0
+    },
+    {
+      "mask": 3,
+      "background": "6b7a8f",
+      "fog": false,
+      "rain": "2d71d500-3d15-4fd6-9b70-617c9ab8dd06",
+      "snow": "92dc0e8d-eef8-4fef-a6f0-e2f8e0793f81",
+      "snowY": -20,
+      "surface": 0
+    },
+    {
+      "mask": 4,
+      "background": "b8b8b8",
+      "fog": true,
+      "rain": null,
+      "snow": null,
+      "surface": 0
+    },
+    {
+      "mask": 5,
+      "background": "b8b8b8",
+      "fog": true,
+      "rain": "1126c8ae-26d2-4d88-87e3-b2dab19bd785",
+      "snow": null,
+      "surface": 0
+    },
+    {
+      "mask": 6,
+      "background": "b8b8b8",
+      "fog": true,
+      "rain": null,
+      "snow": "9d9f037d-eee4-4e3f-b2d9-ca73776b72bb",
+      "snowY": -20,
+      "surface": 0
+    },
+    {
+      "mask": 7,
+      "background": "b8b8b8",
+      "fog": true,
+      "rain": "e212b83e-28d7-4622-a799-a078e2db0c62",
+      "snow": "9d9f037d-eee4-4e3f-b2d9-ca73776b72bb",
+      "snowY": -20,
+      "surface": 0
+    }
+  ],
+  "daylight": "PASS: independent, live change, buffers reused",
+  "persistence": "PASS",
+  "mountain": {
+    "highPoint": {
+      "x": 6500,
+      "y": 3000,
+      "height": 2533.598621482014
+    },
+    "background": "c0cad6",
+    "fog": false,
+    "rain": null,
+    "snow": "2bab7dc6-6f04-457c-b0d7-24072a781fc3",
+    "snowY": 2513.5923284133346,
+    "surface": 2533.596161499401,
+    "pausedRain": 2513.075797055745
+  },
+  "status": "PASS"
+}

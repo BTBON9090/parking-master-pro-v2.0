@@ -1,5 +1,5 @@
 import React,{useState,useEffect} from 'react';
-import {CarType,Language,UserSettings} from '../types';
+import {CarType,Language,UserSettings,DayTime} from '../types';
 import {CAR_MODELS,LEVEL_LIST} from '../constants';
 import {VehicleBrowser,MapBrowser} from './SelectionBrowser';
 import {DriverSeatControls} from './DriverSeatControls';
@@ -26,6 +26,7 @@ export default function MainMenu(p:MainMenuProps){
  const go=(value:0|1|2)=>{playUiClick();setStep(value);};
  const toggle=(key:keyof UserSettings,label:string)=><label key={key}><span>{label}</span><input type="checkbox" checked={!!p.settings[key]} onChange={e=>p.updateSettings({[key]:e.target.checked})}/></label>;
  const training=<><h3>训练设置</h3><p>按自己的节奏探索；途中可随时换车。</p>
+  <label><span>驾驶时段</span><select aria-label="驾驶时段" value={p.settings.dayTime??DayTime.DAY} onChange={e=>p.updateSettings({dayTime:e.target.value as DayTime})}><option value={DayTime.DAY}>白天</option><option value={DayTime.NIGHT}>夜晚</option></select></label>
   {toggle('turnAssist','转弯辅助线')}{toggle('rearviewMirrors','显示后视镜')}{toggle('steeringReleaseAssist','松手自动回正')}
   {toggle('absEnabled','ABS 防抱死')}{toggle('autoTurnSignal','自动转向灯')}{toggle('weatherEnabled','天气效果')}
   {p.settings.weatherEnabled&&<>{toggle('weatherRain','降雨')}{toggle('weatherSnow','降雪')}{toggle('weatherFog','大雾')}</>}

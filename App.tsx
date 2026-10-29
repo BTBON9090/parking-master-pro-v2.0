@@ -48,8 +48,7 @@ function App() {
   const [completedSpots, setCompletedSpots] = useState<Set<string>>(new Set());
   
   // Default Weather and Lights OFF
-  const [weather, setWeather] = useState(WeatherType.SUNNY);
-  const [dayTime, setDayTime] = useState(DayTime.DAY);
+  const weather = WeatherType.SUNNY; // Legacy fallback; explicit rain/snow/fog settings own weather.
   const [currentCar, setCurrentCar] = useState<CarType>(CarType.SUV);
   const [cameraView, setCameraView] = useState<CameraView>('HOOD');
   const inspectionRef=useRef(false);
@@ -75,6 +74,7 @@ function App() {
     logitechKnobMode: false,
     wheelGhost: false,
     autoTurnSignal: true,
+    dayTime: DayTime.DAY,
     weatherEnabled: false,
     weatherRain: false, weatherSnow: false, weatherFog: false,
     shadowsEnabled: true,    // 近范围硬边太阳阴影默认开启；远端不投射
@@ -115,18 +115,7 @@ function App() {
   useEffect(()=>{const flush=()=>saveSettings(settingsToSave.current);
     window.addEventListener('pagehide',flush);return()=>{flush();window.removeEventListener('pagehide',flush);};},[]);
 
-  // The in-game weather switch now has an immediate, visible result. Turning
-  // it on enters a representative rainy lesson; turning it off restores the
-  // clear daytime baseline without requiring the level to be restarted.
-  useEffect(() => {
-    if (!levelData) return;
-    if (settings.weatherEnabled) {
-      setWeather(current => current === WeatherType.SUNNY ? WeatherType.RAINY : current);
-    } else {
-      setWeather(WeatherType.SUNNY);
-      setDayTime(DayTime.DAY);
-    }
-  }, [settings.weatherEnabled, levelData]);
+  const dayTime = settings.dayTime ?? DayTime.DAY;
 
   const [inputState, setInputState] = useState<InputState>({
     throttle: 0,
@@ -240,8 +229,17 @@ function App() {
       if(document.pointerLockElement) document.exitPointerLock();
     };
     if(isPaused) releaseControls();
+    const hidden = () => { if (document.hidden) releaseControls(); };
     window.addEventListener('blur',releaseControls);
-    return()=>window.removeEventListener('blur',releaseControls);
+    window.addEventListener('pagehide',releaseControls);
+    window.addEventListener('free-drive-stop',releaseControls);
+    document.addEventListener('visibilitychange',hidden);
+    return()=>{
+      window.removeEventListener('blur',releaseControls);
+      window.removeEventListener('pagehide',releaseControls);
+      window.removeEventListener('free-drive-stop',releaseControls);
+      document.removeEventListener('visibilitychange',hidden);
+    };
   },[isPaused]);
 
 
@@ -367,16 +365,7 @@ function App() {
 
   // 应用一个 LevelData 并进入 3D 游戏（编辑器测试 / 自定义关卡 / 内置关卡 共用）
   const playLevelData = (data: LevelData) => {
-    let initWeather = WeatherType.SUNNY;
-    let initDayTime = DayTime.DAY;
-    if (settings.weatherEnabled) {
-        const weathers = [WeatherType.SUNNY, WeatherType.RAINY, WeatherType.SUNNY, WeatherType.FOGGY, WeatherType.SNOWY];
-        initWeather = weathers[Math.floor(Math.random() * weathers.length)];
-        initDayTime = Math.random() > 0.7 ? DayTime.NIGHT : DayTime.DAY;
-    }
     setLevelData(data);
-    setWeather(initWeather);
-    setDayTime(initDayTime);
     const initialInput = {
         throttle: 0, gasPressed: false, shiftPressed: false, brake: 0,
         steeringWheelAngle: 0, gear: 0, parkingBrake: true, handbrake: true, lights: false, engineStarted: true
@@ -790,7 +779,7 @@ function App() {
         // Number/range/text fields own their keystrokes. Without this guard,
         // typing in the live-tuning panel also changed camera/gear/throttle.
         // IME composition is likewise left to the editor.
-        if (isEditableTarget(e.target) || e.isComposing) return;
+        if (document.hidden || isEditableTarget(e.target) || e.isComposing) return;
         // Alt+J / Alt+L / Alt+K are deliberate look-only bindings. They avoid
         // the Logitech mode's j/l/k driving actions and all custom bindings.
         if (e.altKey && !e.repeat) {
@@ -818,13 +807,18 @@ function App() {
             return;
         }
         const rawKey = e.key.toLowerCase();
-        if(!e.repeat && isInGame && ['[',']','v'].includes(rawKey)){
-          e.preventDefault();updateInput(v=>rawKey==='v'?{...v,wipers:!v.wipers}:{...v,indicator:v.indicator===(rawKey==='['?-1:1)?0:(rawKey==='['?-1:1)});return;
-        }
         const k = mapDrivingKey(rawKey);
         const bindings = { ...DEFAULT_KEY_BINDINGS, ...(settings.keyBindings || {}) } as KeyBindings;
         const action = (Object.keys(bindings) as Array<keyof KeyBindings>)
             .find(name => bindings[name] === k) ?? null;
+
+        // Fixed auxiliary shortcuts must not steal a user-assigned driving key.
+        if (!action && !e.repeat && ['[', ']', 'k'].includes(k)) {
+            e.preventDefault();
+            updateInput(v => k === 'k' ? {...v, wipers: !v.wipers}
+                : {...v, indicator: v.indicator === (k === '[' ? -1 : 1) ? 0 : (k === '[' ? -1 : 1)});
+            return;
+        }
 
         // Shift/W/S pedal state is tracked independently so Shift pressed
         // before W, Shift released after W, or W+S cannot leave a stuck pedal.
@@ -892,8 +886,8 @@ function App() {
             const gear = inputRef.current.gear;
             if (gear > -1) requestGearChange(gear - 1);
         }
-        if (k === 'q') requestGearChange(-1);
-        if (k === 'v') updateInput(prev => ({ ...prev, gear: 0, parkingBrake: true, handbrake: true, throttle: 0, gasPressed: false }));
+        if (!action && k === 'q') requestGearChange(-1);
+        if (!action && k === 'v') requestGearChange(0);
         if (action === 'lights') updateInput(prev => {const mode=((prev.headlightMode??(prev.lights?1:0))+1)%3 as 0|1|2;return {...prev,lights:mode!==0,headlightMode:mode};});
         if (action === 'engine') updateInput(prev => ({ ...prev, engineStarted: !prev.engineStarted }));
     };

@@ -1,0 +1,11 @@
+{
+  "before": {
+    "background": "c0cad6",
+    "rain": 0,
+    "snow": 1
+  },
+  "held": "12",
+  "afterResetOldFingerMove": "100",
+  "expectedAfterReset": 0,
+  "note": "Synthetic pointer event exercises real React handler, not Android touch hardware."
+}

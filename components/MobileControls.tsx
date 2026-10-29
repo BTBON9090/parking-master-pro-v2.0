@@ -68,8 +68,17 @@ export function MobileControls(p: {input: InputState; update: React.Dispatch<Rea
   useEffect(() => {
     const clear = () => {stopPan();controller.current.clear(); publish();};
     const hidden = () => {if (document.hidden) clear();};
-    window.addEventListener('blur', clear); document.addEventListener('visibilitychange', hidden);
-    return () => {clear(); window.removeEventListener('blur', clear); document.removeEventListener('visibilitychange', hidden);};
+    window.addEventListener('blur', clear);
+    window.addEventListener('pagehide', clear);
+    window.addEventListener('free-drive-stop', clear);
+    document.addEventListener('visibilitychange', hidden);
+    return () => {
+      clear();
+      window.removeEventListener('blur', clear);
+      window.removeEventListener('pagehide', clear);
+      window.removeEventListener('free-drive-stop', clear);
+      document.removeEventListener('visibilitychange', hidden);
+    };
   }, []);
   useEffect(() => {stopPan();controller.current.clear(); publish();}, [p.disabled, p.car]);
   const hold = (control: HeldControl) => ({
