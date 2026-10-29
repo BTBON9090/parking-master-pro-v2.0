@@ -1,0 +1,13 @@
+{
+  "version": "0.27.0",
+  "architectures": [
+    {
+      "arch": "arm64",
+      "webResourcesVerified": 96
+    },
+    {
+      "arch": "x64",
+      "webResourcesVerified": 96
+    }
+  ]
+}

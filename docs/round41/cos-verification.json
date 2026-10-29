@@ -1,0 +1,23 @@
+{
+  "version": "0.27.0",
+  "manifests": [
+    {
+      "root": "https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com",
+      "version": "0.27.0",
+      "assets": 5
+    },
+    {
+      "root": "https://cdn.btbon.cn",
+      "version": "0.27.0",
+      "assets": 5
+    }
+  ],
+  "androidDownloadedAndSha256Verified": true,
+  "androidBytes": 27052535,
+  "publicPagesVerified": [
+    "index.html",
+    "features.html",
+    "development-review.html"
+  ],
+  "checkedAt": "2026-10-29T02:52:29.964Z"
+}

@@ -1,0 +1,40 @@
+{
+  "id": 427407276,
+  "draft": false,
+  "tag_name": "v0.27.0",
+  "html_url": "https://github.com/BTBON9090/parking-master-pro-v2.0/releases/tag/v0.27.0",
+  "published_at": "2026-10-29T02:48:42Z",
+  "assets": [
+    {
+      "name": "Parking-Master-Pro-0.27.0-android.apk",
+      "size": 27052535,
+      "digest": "sha256:42793fe0b8748795ec6150f29d5ca22877378964a40da0498c5ad0064692b419"
+    },
+    {
+      "name": "Parking-Master-Pro-0.27.0-iOS-Project.zip",
+      "size": 25276801,
+      "digest": "sha256:796cbf144410c5fb86b29f304530aaee4b2b02e82985ee4d932529ea03d26b26"
+    },
+    {
+      "name": "Parking-Master-Pro-0.27.0-mac-arm64.dmg",
+      "size": 164537051,
+      "digest": "sha256:453e64cf97205b54878fbc2bf75bd6038584439ccc3d49d2b6c1c50f71494246"
+    },
+    {
+      "name": "Parking-Master-Pro-0.27.0-mac-x64.dmg",
+      "size": 168810625,
+      "digest": "sha256:b234254a5b0811c20eac2c472cecd49a76400446623e9ed1a4a65afc91964a50"
+    },
+    {
+      "name": "Parking-Master-Pro-0.27.0-win-x64.exe",
+      "size": 146536298,
+      "digest": "sha256:56233d57fced3f0e9d998a381c3ca90365d6011798f699e1f48a66ecb7355f6d"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "size": 526,
+      "digest": "sha256:76620707eda5bcffc5391e74893bfdb78976f5e7d17695c7783bd9aa14a8f5c4"
+    }
+  ],
+  "allAssetSha256Verified": true
+}

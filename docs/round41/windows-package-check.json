@@ -1,0 +1,18 @@
+{
+  "version": "0.27.0",
+  "files": 96,
+  "exact": 88,
+  "lineEndingOnly": [
+    "dist/brands/ATTRIBUTION.md",
+    "dist/brands/bugatti.svg",
+    "dist/brands/byd.svg",
+    "dist/brands/lamborghini.svg",
+    "dist/brands/mini.svg",
+    "dist/brands/tesla.svg",
+    "dist/models/cars/concept-car.LICENSE.txt"
+  ],
+  "emptyHtmlLinesOnly": [
+    "dist/index.html"
+  ],
+  "result": "PASS"
+}
