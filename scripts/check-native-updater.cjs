@@ -7,13 +7,13 @@ try{
  const status=await call('status');assert(status.ok);out.initial=status.value;
  if(process.env.CAR_UPDATE_APK_MANIFEST){
   const r=JSON.parse(fs.readFileSync(process.env.CAR_UPDATE_APK_MANIFEST,'utf8')),a=r.assets.find(a=>a.platform==='android');
-  const d={url:a.url,version:r.version,sha256:a.sha256,size:a.size};
+  const d={url:'https://cdn.btbon.cn'+new URL(a.url).pathname,version:r.version,sha256:a.sha256,size:a.size};
   await evaluate(`localStorage.setItem('parking-master-progress-v1',JSON.stringify({schema:1,worldRevision:43,savedAt:Date.now(),car:'SUV',levelId:6,money:4321,camera:'HOOD',pose:{x:850,y:500,rotation:0,elevation:-96},maps:{6:{completedSpots:['garage-1-bay-0-3']}}}));true`);
   const downloaded=await call('download',d);assert(downloaded.ok,JSON.stringify(downloaded));out.downloaded=await call('status');
   out.install=await call('install');assert(out.install.ok,JSON.stringify(out.install));
   out.checks.push('Trusted newer signed APK downloaded, byte count / SHA256 / package / version / signer checks passed; install requested.');
  }else{
-  const r=JSON.parse(fs.readFileSync('distribution/site/latest.json','utf8')),a=r.assets.find(a=>a.platform==='android'),d={url:a.url,version:r.version,sha256:a.sha256,size:a.size};
+  const r=JSON.parse(fs.readFileSync('distribution/site/latest.json','utf8')),a=r.assets.find(a=>a.platform==='android'),d={url:'https://cdn.btbon.cn'+new URL(a.url).pathname,version:r.version,sha256:a.sha256,size:a.size};
   for(const patch of [{url:'http://cdn.btbon.cn/x.apk'},{url:'https://evil.example/app.apk'},{sha256:'bad'},{size:500*1024*1024}]){const v=await call('download',{...d,...patch});assert(!v.ok);if(patch.url)assert(v.error.includes('不受信任'));out.checks.push(v.error);}
   const missing=await call('install');assert(!missing.ok);out.checks.push(missing.error);
   const downloading=call('download',d);await new Promise(r=>setTimeout(r,250));await call('cancel');const cancelled=await downloading;assert(!cancelled.ok);assert(cancelled.error.includes('取消'),JSON.stringify(cancelled));out.checks.push(cancelled.error);

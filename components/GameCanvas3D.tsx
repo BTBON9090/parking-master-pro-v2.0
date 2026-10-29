@@ -1955,6 +1955,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       // the scene or resets the camera.
       const showVehicleBody = !sCur.hideVehicleBody;
       const firstPersonView = !destroyed && !rollover && cameraViewRef.current === 'HOOD';
+      if(ldCur.openWorld){const nearLift=inMountainLift(car.x,car.y,-250);for(const node of scene.children)if(node.userData.liftShell)node.visible=firstPersonView||!nearLift;}
       playerParts.group.visible=!destroyed;
       // HOOD uses the real paint shell filtered into a frame clone. The solid
       // outer paint is hidden in this pass (its DoubleSide underside was the

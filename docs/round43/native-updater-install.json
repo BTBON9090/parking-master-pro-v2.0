@@ -1,10 +1,28 @@
 {
   "environment": "Android API36.1 local emulator; signed temporary test host with WebView inspection enabled only in its unshipped config",
-  "checks": [],
+  "checks": [
+    "Trusted newer signed APK downloaded, byte count / SHA256 / package / version / signer checks passed; install requested."
+  ],
   "initial": {
     "ready": false,
     "busy": false,
     "permission": false,
     "version": ""
-  }
+  },
+  "downloaded": {
+    "ok": true,
+    "value": {
+      "ready": true,
+      "busy": false,
+      "permission": false,
+      "version": "0.28.0"
+    }
+  },
+  "install": {
+    "ok": true,
+    "value": {
+      "permissionRequired": true
+    }
+  },
+  "result": "PASS"
 }

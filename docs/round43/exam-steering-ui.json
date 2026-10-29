@@ -1,10 +1,23 @@
 {
   "errors": [],
   "examBox": {
-    "x": 212,
+    "x": 240,
     "y": 6,
-    "width": 420,
+    "width": 364,
     "height": 84.5
+  },
+  "power": {
+    "x": 622,
+    "y": 8,
+    "width": 40.390625,
+    "height": 44
+  },
+  "css": {
+    "width": "364px",
+    "minWidth": "220px",
+    "maxWidth": "none",
+    "innerWidth": 844,
+    "screenWidth": 844
   },
   "relativeTouch": {
     "initial": 0,

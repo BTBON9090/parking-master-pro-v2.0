@@ -25,10 +25,10 @@ export function addMountainAdventure(scene:THREE.Scene,track:(g:THREE.BufferGeom
  for(const side of [-1,1]){const rail=new THREE.Mesh(track(new THREE.BoxGeometry(260,2,3)),new THREE.MeshBasicMaterial({color:'#edc46e'}));rail.position.set(0,10,side*87);lift.add(rail);}
  scene.add(lift);
  for(const side of [-1,1]){
-  const wall=new THREE.Mesh(track(new THREE.BoxGeometry(280,10050,8)),new THREE.MeshStandardMaterial({color:'#4e6067',roughness:1}));wall.position.set(MOUNTAIN_LIFT.x,5025,MOUNTAIN_LIFT.y+side*96);scene.add(wall);
+  const wall=new THREE.Mesh(track(new THREE.BoxGeometry(280,10050,8)),new THREE.MeshStandardMaterial({color:'#4e6067',roughness:1}));wall.position.set(MOUNTAIN_LIFT.x,5025,MOUNTAIN_LIFT.y+side*96);wall.userData.liftShell=true;scene.add(wall);
  }
  for(const [x,y,width,depth,height,elevation] of [[MOUNTAIN_LIFT.x+134,MOUNTAIN_LIFT.y,8,200,9950,90],[MOUNTAIN_LIFT.x-134,MOUNTAIN_LIFT.y,8,200,9960,0],...[-1,1].map(side=>[MOUNTAIN_LIFT.x+132,MOUNTAIN_LIFT.y+side*85.5,5,21,90,0])]){
-  const wall=new THREE.Mesh(track(new THREE.BoxGeometry(width,height,depth)),new THREE.MeshStandardMaterial({color:'#4e6067',roughness:1}));wall.position.set(x,elevation+height/2,y);scene.add(wall);
+  const wall=new THREE.Mesh(track(new THREE.BoxGeometry(width,height,depth)),new THREE.MeshStandardMaterial({color:'#4e6067',roughness:1}));wall.position.set(x,elevation+height/2,y);wall.userData.liftShell=true;scene.add(wall);
  }
  const shaftBands=new THREE.InstancedMesh(track(new THREE.BoxGeometry(1,3,150)),new THREE.MeshBasicMaterial({color:'#b6d8cd'}),20);
  for(let i=0;i<20;i++)shaftBands.setMatrixAt(i,new THREE.Matrix4().makeTranslation(MOUNTAIN_LIFT.x+129.5,250+i*500,MOUNTAIN_LIFT.y));scene.add(shaftBands);
