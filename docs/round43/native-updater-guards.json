@@ -1,0 +1,24 @@
+{
+  "environment": "Android API36.1 local emulator; signed temporary test host with WebView inspection enabled only in its unshipped config",
+  "checks": [
+    "更新地址不受信任",
+    "更新地址不受信任",
+    "更新信息不完整，请重试检查更新",
+    "更新信息不完整，请重试检查更新",
+    "请先下载更新",
+    "已取消下载"
+  ],
+  "initial": {
+    "ready": false,
+    "busy": false,
+    "permission": false,
+    "version": ""
+  },
+  "final": {
+    "ready": false,
+    "busy": false,
+    "permission": false,
+    "version": ""
+  },
+  "result": "PASS"
+}

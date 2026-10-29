@@ -1,3 +1,4 @@
+import {addMapPortals} from './utils/mapPortals';
 import {FLEET31_IDS,FLEET31_CARS,FLEET31_TUNING,FLEET31_STEERING} from './utils/fleet31';
 import {FLEET30_IDS} from './utils/fleet30';
 import {buildHighway} from './utils/highway';
@@ -1142,5 +1143,5 @@ export const GENERATE_LEVEL=(id:number):LevelData=>{
   obstacle.movable=true;
   if(obstacle.weight<500)obstacle.weight=obstacle.weight>=140?2200:1600;
  }
- return level;
+ return addMapPortals(level);
 };

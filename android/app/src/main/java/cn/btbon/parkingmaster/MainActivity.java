@@ -10,12 +10,13 @@ import androidx.core.view.WindowInsetsControllerCompat;
 
 public class MainActivity extends BridgeActivity {
     @Override public void onCreate(Bundle savedInstanceState) {
+        registerPlugin(AppUpdatePlugin.class);
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         enterImmersiveMode();
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override public void handleOnBackPressed() {
-                getBridge().getWebView().evaluateJavascript("window.dispatchEvent(new CustomEvent('toggle-settings'))", null);
+                getBridge().getWebView().evaluateJavascript("window.dispatchEvent(new CustomEvent(document.body.dataset.releaseNotes ? 'close-release-notes' : 'toggle-settings'))", null);
             }
         });
     }

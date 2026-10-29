@@ -1,3 +1,5 @@
+import {inCity} from '../utils/openWorld';
+import {MOUNTAIN_LIFT,inMountainLift,setMountainLiftHeight,mountainTunnelSample} from '../utils/mountainAdventure';
 import {AudioPlaybackGate} from '../utils/audioPlaybackGate';
 import {experimentalContactsFromSamples,experimentalDriveEnabled,type WheelSample} from '../utils/experimentalContactBridge';
 import {stepExperimentalFrames,type ExperimentalContacts} from '../utils/experimentalDrivetrain';
@@ -683,6 +685,24 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     const impactMotion={x:0,y:0,yaw:0,time:0};
     const movingParked=new Map<string,{x:number;y:number}>(); // metres/second
     setWrecked(false);setDamagePercent(0);setDamageTier('none');
+    let liftRide:{from:number;to:number;elapsed:number;x:number;y:number;rotation:number}|null=null;
+    let lastLiftStatus=0;
+    const startLift=()=>{
+      const car=carState.current,parts=built?.playerCarParts,cc=CAR_MODELS[currentCarIdRef.current];
+      if(!levelData.openWorld||!parts||liftRide||destroyed||rollover||Math.abs(car.speed)>.1)return;
+      const body={x:car.x,y:car.y,rotation:car.rotation,width:cc.width,length:cc.length};
+      const hulls=[parts.group.userData.collisionFootprint,...(parts.trailer?[parts.trailer.collisionFootprint()]:[])];
+      if(!hulls.every(footprint=>getVehicleBoundaryPoints({...body,footprint}).every(p=>inMountainLift(p.x,p.y,3)))){
+       window.dispatchEvent(new CustomEvent('mountain-lift-status',{detail:{near:true,error:'请将整车停入升降台再启动'}}));return;
+      }
+      const from=(car.roadHeight??0)>5000?MOUNTAIN_LIFT.top:MOUNTAIN_LIFT.bottom;
+      if(Math.abs((car.roadHeight??0)-from)>20)return;
+      window.dispatchEvent(new Event('save-progress'));window.dispatchEvent(new Event('free-drive-stop'));
+      liftRide={from,to:from===0?MOUNTAIN_LIFT.top:0,elapsed:0,x:car.x,y:car.y,rotation:car.rotation};
+      setMountainLiftHeight(from);
+    };
+    const skipLift=()=>{if(liftRide)liftRide.elapsed=MOUNTAIN_LIFT.duration;};
+    window.addEventListener('mountain-lift-start',startLift);window.addEventListener('mountain-lift-skip',skipLift);
     let driverMotion=createDriverMotion();
     let suspensionPitch = 0;
     let suspensionRoll = 0;
@@ -1914,7 +1934,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         }
         scene.children.forEach(n=>{if(n.userData.garageRamp!==undefined){
           const upper=n.userData.garageRamp as number;
-          n.visible=(car.roadHeight??-48)<=GARAGE_LEVELS[upper]+2 && (car.roadHeight??-48)>=GARAGE_LEVELS[upper+1]-2;
+          n.visible=n.name==='garage-spiral'||(car.roadHeight??-48)<=GARAGE_LEVELS[upper]+2 && (car.roadHeight??-48)>=GARAGE_LEVELS[upper+1]-2;
           n.children.forEach(c=>{if(c.userData.garageCeiling)c.visible=cameraViewRef.current==='HOOD';});
         }});
       }
@@ -2063,6 +2083,20 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         carSpeedRef.current = car.speed;
         if (frameDelta > 0) {
         simulationClockMs += frameDelta;
+        if(liftRide){
+          liftRide.elapsed=Math.min(MOUNTAIN_LIFT.duration,liftRide.elapsed+frameDelta/1000);
+          const t=liftRide.elapsed/MOUNTAIN_LIFT.duration,h=liftRide.from+(liftRide.to-liftRide.from)*t*t*(3-2*t),delta=h-(car.roadHeight??liftRide.from);
+          car.x=liftRide.x;car.y=liftRide.y;car.rotation=liftRide.rotation;car.speed=0;car.roadHeight=h;
+          chassisState.height+=delta;chassisState.lastTarget+=delta;chassisState.velocity=0;chassisState.worldVelocity=0;
+          impactMotion.time=0;setMountainLiftHeight(h);
+          if(t>=1){liftRide=null;setMountainLiftHeight(null);window.dispatchEvent(new Event('free-drive-stop'));suspensionResetRef.current++;}
+        }
+        if(ldCur.openWorld){
+          const platform=scene.getObjectByName('mountain-vehicle-lift');if(platform)platform.position.y=liftRide?car.roadHeight!:(car.roadHeight??0)>5000?MOUNTAIN_LIFT.top:MOUNTAIN_LIFT.bottom;
+          if(simulationClockMs-lastLiftStatus>300){lastLiftStatus=simulationClockMs;
+            window.dispatchEvent(new CustomEvent('mountain-lift-status',{detail:{near:inMountainLift(car.x,car.y,-90),active:!!liftRide,up:(car.roadHeight??0)<5000,progress:liftRide?Math.round(liftRide.elapsed/MOUNTAIN_LIFT.duration*100):0,stopped:Math.abs(car.speed)<.1}}));
+          }
+        }
         built.updateExamSignals?.(simulationClockMs);
         // Only impacted parked cars are stepped. Their body, four tyres,
         // shadow and collision hull share the same updated pose.
@@ -2081,7 +2115,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           if(Math.hypot(velocity.x,velocity.y)<.035){interruptTrafficForImpact(obs,simulationClockMs);movingParked.delete(id);parkedSettled=true;}
         }
         if(parkedSettled)indexCollisionObstacles();
-        let currentInputReal = (destroyed || rollover || fires.length>0) ? {...inputRef.current,throttle:0,gasPressed:false,brake:1,handbrake:true,engineStarted:false} : inputRef.current;
+        let currentInputReal = (destroyed || rollover || fires.length>0 || liftRide) ? {...inputRef.current,throttle:0,gasPressed:false,brake:1,handbrake:true,engineStarted:false} : inputRef.current;
         if(destroyed || rollover || fires.length>0){car.speed=0;throttleState.current=0;}
         if(lastSuspensionReset!==suspensionResetRef.current){
           damageModel?.reset();looseDebris.splice(0).forEach(d=>d.dispose());fires.splice(0).forEach(f=>f.dispose());setDamageTier('none');
@@ -2093,7 +2127,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         const pt = getPowertrain(cc.id);
         const vehicleTune = settingsRef.current.vehicleTuning?.[cc.id] ?? DEFAULT_VEHICLE_TUNING[cc.id];
         const wCur = resolveWeatherOptions(sCur,weatherRef.current);
-        const terrainResponse = ldCur.challengeTerrain ? {...ldCur.challengeTerrain,grip:challengeGripAt(ldCur,car.x,car.y),gravel:ldCur.challengeTerrain.kind==='mud'||ldCur.challengeTerrain.kind==='quarry'} : ldCur.openWorld ? worldSurface(car.x, car.y) : {grip:1,rolling:1,gravel:false};
+        const terrainResponse = ldCur.challengeTerrain ? {...ldCur.challengeTerrain,grip:challengeGripAt(ldCur,car.x,car.y),gravel:ldCur.challengeTerrain.kind==='mud'||ldCur.challengeTerrain.kind==='quarry'} : ldCur.openWorld ? (mountainTunnelSample(car.x,car.y,car.roadHeight??0)?{grip:1,rolling:1,gravel:false}:worldSurface(car.x, car.y)) : {grip:1,rolling:1,gravel:false};
         // Snow maps already include the snowy surface friction. Multiplying
         // by the snow-weather factor again makes the same snow behave as ice.
         const weatherGrip = (ldCur.levelId === 6 ? 1 : wCur.snow && ldCur.challengeTerrain?.kind !== 'snow' ? 0.38 : wCur.rain ? 0.62 : 1) * terrainResponse.grip;
@@ -2990,7 +3024,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           if(wiperRef.current)wiperRef.current.style.display=cameraViewRef.current==='HOOD'&&currentInputReal.wipers?'block':'none';
           if(ldCur.exam)window.dispatchEvent(new CustomEvent('exam-telemetry',{detail:{x:car.x,y:car.y,rotation:car.rotation,speedKmh:car.speed*15,time:simulationClockMs,gear:currentInputReal.gear,manual:!isAutomaticVehicle(cc.id),width:cc.width,length:cc.length}}));
           window.dispatchEvent(new CustomEvent('car-map-position', {
-            detail: { x: car.x, y: car.y, rotation: car.rotation, floor: carFloor },
+            detail: { x: car.x, y: car.y, rotation: car.rotation, floor: carFloor, elevation:car.roadHeight??0, safe:!destroyed&&!rollover&&!liftRide },
           }));
         }
 
@@ -3433,6 +3467,9 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         sun.target.updateMatrixWorld();
 
         // Precipitation follows the road even on elevated mountain routes.
+        const underCover=ldCur.garage||!!(ldCur.openWorld&&mountainTunnelSample(car.x,car.y,car.roadHeight??0)&&!inCity(car.x,car.y));
+        if(rainParticles)rainParticles.object.visible=!underCover;
+        if(snowParticles)snowParticles.object.visible=!underCover;
         rainParticles?.step(frameDelta / 1000, car.x, renderSlope.height, car.y);
         snowParticles?.step(frameDelta / 1000, car.x, renderSlope.height, car.y);
         } // end if (frameDelta > 0)
@@ -3578,7 +3615,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           height: centreHeight,
           radius: 14,
         });
-        if (centreGlass.width >= 2 && centreGlass.height >= 2) {
+        if (!ldCur.exam && centreGlass.width >= 2 && centreGlass.height >= 2) {
         const centreDistance = centreTuning.targetDistance;
         const centreMountHeight = 10.5 + centreTuning.mountHeight;
         centreMirrorCamera.fov = 40 + centreTuning.imageZoom;
@@ -3727,6 +3764,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       collisionDebugGroupRef.current?.parent?.remove(collisionDebugGroupRef.current);
       collisionDebugGroupRef.current = null;
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('mountain-lift-start',startLift);window.removeEventListener('mountain-lift-skip',skipLift);setMountainLiftHeight(null);
       window.removeEventListener('vehicle-recover',recoverInPlace);
       dom.removeEventListener('wheel', onWheel);
       // 物理引擎释放

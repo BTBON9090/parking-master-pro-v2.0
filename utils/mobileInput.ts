@@ -19,8 +19,7 @@ type Contact = { id: number; x: number; y: number; value: number; start: number 
 export class MobileInputController {
   private contacts = new Map<HeldControl, Contact>();
   rulerCentre = 0;
-  private rulerX: number | undefined;
-  private rulerZoom = 1;
+  private rulerPosition: number | undefined;
   begin(control: HeldControl, id: number, x: number, y: number, angle = 0) {
     if (this.contacts.has(control) || [...this.contacts.values()].some(v => v.id === id)) return false;
     this.contacts.set(control, { id, x, y, start: angle, value: control === 'gas' || control === 'brake' ? .12 : angle });
@@ -37,38 +36,38 @@ export class MobileInputController {
     }
     return true;
   }
-  /** Absolute steering position; pointer capture keeps the end stops active
-   * even after a finger leaves the bar. */
+  /** The first contact anchors the CURRENT wheel angle. Subsequent arc
+   * displacement is relative, so re-gripping never jumps the steering. */
   steerAt(id: number, x: number, left: number, width: number, lock: number, zoom = 1) {
     const c = this.contacts.get('steer');
     if (!c || c.id !== id || width <= 0) return false;
-    const position=clamp((x-left)/width*2-1,-1,1),half=lock/zoom;
-    if(zoom<=1.001)this.rulerCentre=0;
-    else if(this.rulerX===undefined || Math.abs(zoom-this.rulerZoom)>.001)
-      // Preserve the angle under the PREVIOUS finger position while zooming.
-      // Anchoring to the new position cancels every steering move during acceleration.
-      this.rulerCentre=clamp(c.value-clamp(((this.rulerX??x)-left)/width*2-1,-1,1)*half,-lock+half,lock-half);
-    else if(x<left || x>left+width)
-      this.rulerCentre=clamp(this.rulerCentre+(x-this.rulerX)/width*2*half,-lock+half,lock-half);
-    c.value = clamp(this.rulerCentre+position*half,-lock,lock);
-    this.rulerX=x;this.rulerZoom=zoom;
+    const position = (x - left) / width;
+    if (this.rulerPosition !== undefined) {
+      c.value = clamp(c.value + (position - this.rulerPosition) * 2 * lock / Math.max(1, zoom), -lock, lock);
+    }
+    this.rulerPosition = position;
+    this.rulerCentre = this.viewCentre(lock, zoom);
     return true;
   }
-  /** Continue panning a zoomed ruler while a finger rests beyond its end.
-   * This makes full lock reachable without dragging beyond the physical screen. */
+  /** Keep the ruler under a stationary finger when speed changes the zoom. */
+  viewCentre(lock: number, zoom: number) {
+    const c = this.contacts.get('steer');
+    return c ? c.value - ((this.rulerPosition ?? .5) * 2 - 1) * lock / Math.max(1, zoom) : this.rulerCentre;
+  }
+  /** Deliberate dragging beyond an arc end continues turning without having
+   * to leave the screen. Relative low-speed control also needs this reach. */
   panSteering(id:number,direction:number,dt:number,lock:number,zoom:number){
     const c=this.contacts.get('steer');
-    if(!c||c.id!==id||!direction||zoom<=1.001)return false;
-    const half=lock/zoom,sign=Math.sign(direction);
-    this.rulerCentre=clamp(this.rulerCentre+sign*lock*.75*clamp(dt,0,.1),-lock+half,lock-half);
-    c.value=clamp(this.rulerCentre+sign*half,-lock,lock);
+    if(!c||c.id!==id||!direction)return false;
+    c.value=clamp(c.value+Math.sign(direction)*lock*.75*clamp(dt,0,.1),-lock,lock);
+    this.rulerCentre=this.viewCentre(lock,zoom);
     return true;
   }
   end(control: HeldControl, id: number) {
     if (this.contacts.get(control)?.id !== id) return false;
-    this.contacts.delete(control); if(control==='steer')this.rulerX=undefined; return true;
+    this.contacts.delete(control); if(control==='steer')this.rulerPosition=undefined; return true;
   }
-  clear() { this.contacts.clear();this.rulerX=undefined; }
+  clear() { this.contacts.clear();this.rulerPosition=undefined; }
   held(control: HeldControl) { return this.contacts.has(control); }
   snapshot() {
     const brake = this.contacts.get('brake')?.value ?? 0;

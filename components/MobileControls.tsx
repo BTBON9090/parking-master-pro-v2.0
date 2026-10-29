@@ -30,18 +30,18 @@ export function MobileControls(p: {input: InputState; update: React.Dispatch<Rea
   const panTimer=useRef<ReturnType<typeof setInterval>|null>(null);
   const panPointer=useRef({id:-1,direction:0,last:0});
   const stopPan=()=>{if(panTimer.current!==null)clearInterval(panTimer.current);panTimer.current=null;panPointer.current.id=-1;};
-  const centre=controller.current.held('steer')?controller.current.rulerCentre:
+  const centre=controller.current.held('steer')?controller.current.viewCentre(lock,zoom):
     Math.max(-lock+lock/zoom,Math.min(lock-lock/zoom,p.input.steeringWheelAngle));
   const ticks=steeringRulerTicks(lock,centre,zoom);
   const arcPoint=(fraction:number,radius=1)=>{
     const a=Math.max(0,Math.min(1,fraction))*Math.PI/2;
     return {x:Math.sin(a)*radius*100,y:100-Math.cos(a)*radius*100};
   };
-  const pointerSteer=(id:number,x:number,y:number,r:DOMRect)=>{
+  const pointerSteer=(id:number,x:number,y:number,r:DOMRect,canPan=true)=>{
     const fraction=steeringArcPosition(x,y,r.left,r.top,r.width,r.height);
     const changed=controller.current.steerAt(id,r.left+fraction*r.width,r.left,r.width,lock,zoom);
     if(!changed)return false; // A different finger must not stop or steal edge panning.
-    const direction=fraction>1.02?1:fraction<-.02?-1:0;
+    const direction=canPan?(fraction>1.02?1:fraction<-.02?-1:0):0;
     if(!direction)stopPan();
     else {
       panPointer.current={id,direction,last:performance.now()};
@@ -86,7 +86,7 @@ export function MobileControls(p: {input: InputState; update: React.Dispatch<Rea
       e.preventDefault(); e.stopPropagation();
       if (p.disabled || !controller.current.begin(control, e.pointerId, e.clientX, e.clientY, p.readInput?.().steeringWheelAngle??p.input.steeringWheelAngle)) return;
       e.currentTarget.setPointerCapture(e.pointerId);
-      if (control === 'steer') {const r=e.currentTarget.getBoundingClientRect();pointerSteer(e.pointerId,e.clientX,e.clientY,r);}
+      if (control === 'steer') {const r=e.currentTarget.getBoundingClientRect();pointerSteer(e.pointerId,e.clientX,e.clientY,r,false);}
       publish();
     },
     onPointerMove: (e: React.PointerEvent<HTMLElement>) => {

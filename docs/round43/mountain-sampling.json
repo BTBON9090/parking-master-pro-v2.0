@@ -1,0 +1,10 @@
+{
+  "probes": 4662,
+  "maxError": 0,
+  "coldOptimizedMs": 193.76804100000004,
+  "beforeMs": 165.29445899999996,
+  "afterMs": 32.23974999999996,
+  "ratio": 0.1950443480988069,
+  "rails": 5600,
+  "environment": "Node CPU sampling, not Android frame-rate"
+}

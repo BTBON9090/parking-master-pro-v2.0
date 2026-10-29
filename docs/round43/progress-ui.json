@@ -1,0 +1,114 @@
+{
+  "errors": [],
+  "environment": "Desktop Chrome touch emulation; no Android hardware",
+  "save": {
+    "schema": 1,
+    "worldRevision": 43,
+    "savedAt": 1793255012704,
+    "car": "SUV",
+    "levelId": 6,
+    "money": 100,
+    "camera": "HOOD",
+    "pose": {
+      "x": 1360,
+      "y": 242,
+      "rotation": 0,
+      "elevation": -48
+    },
+    "maps": {
+      "6": {
+        "completedSpots": []
+      }
+    }
+  },
+  "resumed": {
+    "yawRate": 0,
+    "slipAngle": 0,
+    "driftSlip": 0,
+    "turnRadius": null,
+    "steeringAngleDeg": 0,
+    "effectiveSteeringAngleDeg": 0,
+    "steeringWheelDeg": 0,
+    "speed": 0,
+    "speedKmh": 0,
+    "rpm": 0,
+    "gear": 0,
+    "accelG": 0,
+    "filteredAccelG": 0,
+    "throttleActual": 0,
+    "brakeActual": 0,
+    "brakeLocks": "滚动 / 滚动 · ABS ON",
+    "dynamicPitchDeg": 0,
+    "rearSteerDeg": 0,
+    "surfaceHeight": -48,
+    "npcStatic": 36,
+    "lateralG": 0,
+    "shiftProgress": 1,
+    "steerWheelMaxDeg": 592.0486496985332,
+    "wheelbase": 31.100000143051147,
+    "halfTrack": 8.60000029206276,
+    "rearAxleOffset": 15.099797248840332,
+    "terrainHeight": -48,
+    "bodyHeave": 0,
+    "bodyPitchDeg": 0,
+    "bodyRollDeg": 0,
+    "wheelTravel": [
+      -4.870495340369985e-9,
+      -4.870495340369985e-9,
+      4.870505554421811e-9,
+      4.870505554421811e-9
+    ],
+    "wheelContacts": [
+      -48,
+      -48,
+      -48,
+      -48
+    ],
+    "wheelGrounded": [
+      true,
+      true,
+      true,
+      true
+    ],
+    "wheelGap": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "surface": "asphalt",
+    "carId": "SUV",
+    "simulationSeconds": 1.240800000000745,
+    "driverReaction": "驾驶中",
+    "gpuResources": "330 / 12 / 49",
+    "cpuMs": "0.7 / 3.0 ms",
+    "frameAvgMs": 18.247058823540367,
+    "frameP95Ms": 30.600000001490116,
+    "positionStepMax": 0,
+    "speedStepMax": 0,
+    "audioReady": false,
+    "audioLoaded": 0,
+    "audioTotal": 11,
+    "audioFailed": "",
+    "audioActive": false,
+    "audioMix": {
+      "cabin": true,
+      "motor": 0,
+      "road": 0,
+      "hz": 58,
+      "driving": false
+    },
+    "driverHeadOffset": [
+      0,
+      0,
+      0
+    ],
+    "impactReadout": {
+      "closing": 0,
+      "yaw": 0,
+      "speedAfter": 0,
+      "obstacle": "—"
+    }
+  },
+  "result": "PASS"
+}

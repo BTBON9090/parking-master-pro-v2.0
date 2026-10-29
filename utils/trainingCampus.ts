@@ -3,7 +3,7 @@ import type {LevelData,Vector2,ExamStation} from '../types';
 /** An authored exam campus. The route, physical gates and scoring checkpoints
  * share coordinates; legacy maps are deliberately no longer tiled together. */
 export function buildTrainingCampus(_legacy?:(id:number)=>LevelData):LevelData{
- const out:LevelData={levelId:4,mapWidth:5000,mapHeight:3400,startPos:{x:260,y:330,rotation:0},spots:[],obstacles:[],markings:[],roadSurfaces:[],curvedRoads:[],slopeZones:[],elevatedRoads:[],streetSigns:[],exam:[],training:{title:'综合驾驶考试场 · 100 分',tips:['跟随考点提示，完成当前任务后再驶向下一项；所有项目均有判定','[ / ] 左右转向灯，V 雨刮，L 远近光；触屏可点考核面板按钮','超速、碰撞、错误灯光及未停车会扣分；允许自由练习与重新考试']}};
+ const out:LevelData={levelId:4,mapWidth:5000,mapHeight:3400,startPos:{x:260,y:330,rotation:0},spots:[],obstacles:[],markings:[],roadSurfaces:[],curvedRoads:[],slopeZones:[],elevatedRoads:[],streetSigns:[],exam:[],training:{title:'综合驾驶考试场 · 100 分',tips:['可从任意考点开始；说明和评分随当前位置切换，已完成项目不重复计分','[ / ] 左右转向灯，K 雨刮，L 远近光；触屏可点考核面板按钮','超速、碰撞、错误灯光及未停车会扣分；允许自由练习与重新考试']}};
  const road=(points:number[][],width=80)=>out.curvedRoads!.push({points:points.map(([x,y])=>({x,y})),width,color:'#393e42',lanes:width<65?1:2,direction:width<65?'one-way':'two-way',warningEdges:width<65});
  const box=(id:string,x:number,y:number,w:number,h:number,z=12,elevation=0)=>out.obstacles.push({id,x,y,width:w,height:h,rotation:0,type:'wall',movable:false,weight:0,color:'#a1a6a2',verticalHeight:z,elevation});
  const task=(id:string,name:string,kind:ExamStation['kind'],x:number,y:number,ex:number,ey:number,hint:string,limit=30,heading?:number)=>{

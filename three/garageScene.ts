@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {GARAGE_LEVELS, garageRampHeight, GARAGE_PILLAR_X, GARAGE_PILLAR_Y, GARAGE_SPEED_TABLES, garageBump} from '../utils/garage';
+import {GARAGE_SPIRAL,garageSpiralPoint,GARAGE_LEVELS, garageRampHeight, GARAGE_PILLAR_X, GARAGE_PILLAR_Y, GARAGE_SPEED_TABLES, garageBump} from '../utils/garage';
 
 /** Shared ramp profile drives both the triangles and the tyre contact surface. */
 export function addGarageArchitecture(scene:THREE.Scene,track:(g:THREE.BufferGeometry)=>THREE.BufferGeometry){
@@ -81,5 +81,21 @@ export function addGarageArchitecture(scene:THREE.Scene,track:(g:THREE.BufferGeo
   ramp.children[before].userData.garageCeiling=true;
   scene.add(ramp);
  }
- scene.add(ceilingGroup);return ceilingGroup;
+ // One continuous mesh remains loaded across floor transitions; tyre support
+ // uses the same helix and prior height to distinguish its two turns.
+ const helix=new THREE.Group();helix.name='garage-spiral';helix.userData.garageRamp=0;
+ for(const [left,right,lift,color] of [[-55,55,.12,'#394249'],[-.7,.7,.23,'#edc458'],[-52,-50.8,.23,'#ece9df'],[50.8,52,.23,'#ece9df']] as const){
+  const positions:number[]=[],ids:number[]=[];
+  for(let i=0;i<=360;i++){for(const off of [left,right]){const p=garageSpiralPoint(i/360,off);positions.push(p.x,p.height+lift,p.y);}if(i<360){const n=i*2;ids.push(n,n+2,n+1,n+1,n+2,n+3);}}
+  const geometry=track(new THREE.BufferGeometry());geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setIndex(ids);geometry.computeVertexNormals();
+  const m=new THREE.Mesh(geometry,new THREE.MeshStandardMaterial({color,roughness:1,side:THREE.DoubleSide}));m.receiveShadow=true;helix.add(m);
+ }
+ for(const f of [0,2]){
+  const sign=makeLabel(f===0?'B3 ↓  螺旋直达  10 km/h':'B1 ↑  螺旋直达  10 km/h','#276977',125,17);
+  sign.position.set(800,GARAGE_LEVELS[f]+31,910);helix.add(sign);
+ }
+ // Ring light strips provide depth without additional dynamic lights.
+ const lights=new THREE.InstancedMesh(track(new THREE.BoxGeometry(10,1,2)),new THREE.MeshBasicMaterial({color:'#cce4d6'}),40);
+ for(let i=0;i<40;i++){const p=garageSpiralPoint((i+.5)/40,54),m=new THREE.Matrix4().makeRotationY(-p.angle-Math.PI/2);m.setPosition(p.x,p.height+17,p.y);lights.setMatrixAt(i,m);}helix.add(lights);
+ scene.add(helix);scene.add(ceilingGroup);return ceilingGroup;
 }

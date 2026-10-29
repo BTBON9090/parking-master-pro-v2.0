@@ -1,0 +1,25 @@
+{
+  "errors": [],
+  "environment": "Desktop Chrome; procedural scene and real App transitions, no Android test",
+  "liftMoving": {
+    "x": 44050,
+    "y": 1700,
+    "rotation": 0,
+    "floor": -1,
+    "elevation": 9979.825770899375,
+    "safe": false
+  },
+  "spiral": {
+    "visible": true,
+    "pose": {
+      "x": 917.5570504584947,
+      "y": 1461.8033988749894,
+      "rotation": 8.79645943005142,
+      "floor": 2,
+      "elevation": -123.264,
+      "safe": true
+    }
+  },
+  "portalTransitions": 4,
+  "result": "PASS"
+}

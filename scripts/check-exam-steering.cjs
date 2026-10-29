@@ -1,0 +1,15 @@
+const {chromium}=require(process.env.PLAYWRIGHT_PATH||'playwright');const assert=require('node:assert/strict'),fs=require('node:fs');
+(async()=>{const b=await chromium.launch({channel:'chrome',headless:true,args:['--enable-unsafe-swiftshader']});const result={errors:[]};try{const p=await b.newPage({viewport:{width:844,height:390},hasTouch:true});p.on('pageerror',e=>result.errors.push(String(e)));
+await p.addInitScript(()=>{localStorage.setItem('parking-master-release-seen','0.28.0');localStorage.setItem('car-driving-guide-v2','done');localStorage.setItem('parking-master-settings-v1',JSON.stringify({soundEnabled:false,steeringReleaseAssist:false,shadowsEnabled:false,renderQuality:'low'}));localStorage.setItem('parking-master-progress-v1',JSON.stringify({schema:1,worldRevision:43,savedAt:Date.now(),car:'SUV',levelId:4,money:100,camera:'HOOD',pose:{x:260,y:330,rotation:0,elevation:0},maps:{}}));window.addEventListener('car-map-position',e=>window.qaPosition=e.detail);});
+await p.goto('http://127.0.0.1:5190/?controls=touch');await p.getByRole('button',{name:/继续上次驾驶/}).click();await p.waitForFunction(()=>window.__dshCar?.group?.parent,null,{timeout:90000});await p.waitForTimeout(800);
+const exam=p.locator('.exam-panel');const box=await exam.boundingBox();assert(box.y<15);result.examBox=box;assert.equal(await p.locator('.centre-mirror-frame').count(),0);
+await p.screenshot({path:'docs/round43/exam-mobile.png'});
+const cdp=await p.context().newCDPSession(p),arc=p.getByRole('slider',{name:'弧形转向'}),a=await arc.boundingBox();
+const touch=(type,points)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:points});
+// A point on the far end of the quarter arc: touching it alone is neutral.
+const at={x:a.x+a.width*.85,y:a.y+a.height*.72,id:31};
+await touch('touchStart',[at]);await p.waitForTimeout(130);assert.equal(await arc.getAttribute('aria-valuenow'),'0');
+await touch('touchMove',[{...at,y:at.y-35}]);await p.waitForTimeout(160);const moved=+(await arc.getAttribute('aria-valuenow'));assert(Math.abs(moved)>10);
+await touch('touchEnd',[]);const regrip={x:a.x+a.width*.3,y:a.y+a.height*.12,id:32};await touch('touchStart',[regrip]);await p.waitForTimeout(140);assert(Math.abs(+(await arc.getAttribute('aria-valuenow'))-moved)<2);await touch('touchEnd',[]);result.relativeTouch={initial:0,moved,regrip:moved};
+const station=await p.evaluate(async()=>{const m=await import('/constants.ts');return m.GENERATE_LEVEL(4).exam[7];});await p.evaluate(c=>window.dispatchEvent(new CustomEvent('test-teleport',{detail:{x:c.x,y:c.y,rotation:0,deckHeight:0}})),station);await p.waitForTimeout(600);assert((await exam.innerText()).includes(station.name));result.positionStation=station.name;await p.screenshot({path:'docs/round43/exam-out-of-order.png'});assert.deepEqual(result.errors,[]);result.result='PASS';
+}finally{fs.writeFileSync('docs/round43/exam-steering-ui.json',JSON.stringify(result,null,2));await b.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

@@ -36,7 +36,7 @@ export const WORLD_ROUTES:WorldRoute[]=[
 
  route('new-orbit','环城山脉公路',88,[[42000,29000,1900],[33000,35000,2200],[23000,38000,2500],[10000,34000,2100],[3500,26000,2800],[3000,15000,3200],[10000,6000,2700],[21000,2500,3200],[33000,4500,3400],[39000,13500,3000],[42200,20500,2400]],true),
  route('new-join','北岭联络路',78,[[34200,19500,1880],[34000,17500,2050],[36500,15500,2600],[39000,13500,3000]]),
- route('new-cloud','千米云顶盘山路',65,[[39000,13500,3000],[42000,12700,3500],[40000,11000,4300],[44000,10000,5000],[40500,8300,5800],[43500,6800,6600],[39800,5700,7400],[44000,4100,8300],[40000,2700,9100],[43700,1700,10000]]),
+ route('new-cloud','千米云顶盘山路',65,[[39000,13500,3000],[40500,13000,3300],[43500,13400,3900],[44900,11900,4300],[43800,10500,4700],[41200,11000,5200],[39500,9600,5650],[40000,7900,6000],[42700,7800,6400],[44700,6500,6900],[43300,4800,7500],[40800,5300,7900],[39500,4000,8300],[40200,2600,8800],[42300,3300,9300],[43700,1700,10000]]),
  route('new-cliff','外崖碎石险道',42,[[10000,34000,2100],[11000,31000,2400],[8500,30500,2550],[9000,28400,2700],[6500,27600,2800],[3500,26000,2800]],false,true),
  route('new-summit-pad','云顶停车坪',240,[[43500,1700,10000],[44200,1700,10000]]),
 ];
@@ -160,7 +160,12 @@ function designHeight(x:number,y:number,contacts=roadContacts(x,y)):number {
   sum+=w*(r.height+noise);weight+=w;
  }
  const roadHeight=weight>1e-9?sum/weight:road.height;
- return terrain*(1-blend)+roadHeight*blend;
+ const authored=terrain*(1-blend)+roadHeight*blend;
+ // The summit plaza is a level landing, including the cloud-road junction.
+ // A lower approach shoulder must not protrude through its road triangles.
+ const pad=contacts.find(c=>c.route.id==='new-summit-pad');
+ const padBlend=pad?1-smooth((pad.distance-pad.route.width/2)/60):0;
+ return authored*(1-padBlend)+10000*padBlend;
 }
 // The off-road solver samples the exact terrain triangles, not a smooth
 // approximation above them. A six-metre shoulder joins that mesh to each road.
@@ -179,7 +184,7 @@ function terrainTriangleHeight(x:number,y:number):number {
 }
 export function roadVertexHeight(x:number,y:number):number {
  if(inCity(x,y))return 0;
- const contacts=roadContacts(x,y),r=contacts[0],edge=r?r.distance-r.route.width/2:Infinity;
+ const contacts=roadContacts(x,y),edge=contacts.length?Math.min(...contacts.map(r=>r.distance-r.route.width/2)):Infinity;
  if(edge<=0)return designHeight(x,y,contacts);
  const terrain=terrainTriangleHeight(x,y);
  if(edge>=60)return terrain;
@@ -201,7 +206,7 @@ function triangleHeight(x:number,y:number,a:{x:number;y:number;h:number},b:typeo
 }
 /** Exact same strip triangles as rendering. Analytic road design is used only
  * to author vertices; tyre contacts interpolate their faces, including crests. */
-export function worldHeight(x:number,y:number):number{
+export function worldHeightReference(x:number,y:number):number{
  if(inCity(x,y))return 0;
  let best=-Infinity;
  for(const contact of roadContacts(x,y)){
@@ -216,6 +221,34 @@ export function worldHeight(x:number,y:number):number{
   }
  }
  return Math.max(best,terrainTriangleHeight(x,y));
+}
+// Project both ends of each road cell onto the average normal. If the
+// query projects outside that interval, it cannot be in either triangle.
+// This preserves exact rendered faces while avoiding evaluation of every
+// shoulder vertex (and its nested road/terrain queries) at each tyre sample.
+export function worldHeight(x:number,y:number):number{
+ if(inCity(x,y))return 0;
+ let best=-Infinity;
+ for(const contact of roadContacts(x,y)){
+  const r=contact.route;if(contact.distance>r.width/2+62)continue;
+  const offsets=ribbonOffsets.get(r)!;
+  for(let i=Math.max(0,contact.index-1);i<=Math.min(r.samples.length-2,contact.index+1);i++){
+   const pa=r.samples[i],pb=r.samples[i+1],nx=pa.nx+pb.nx,ny=pa.ny+pb.ny;
+   const ka=pa.nx*nx+pa.ny*ny,kb=pb.nx*nx+pb.ny*ny;
+   const qa=((x-pa.x)*nx+(y-pa.y)*ny)/ka,qb=((x-pb.x)*nx+(y-pb.y)*ny)/kb;
+   const low=Math.min(qa,qb)-1e-4,high=Math.max(qa,qb)+1e-4;
+   for(let j=0;j<offsets.length-1;j++){
+    if(ka>1e-8&&kb>1e-8&&(offsets[j+1]<low||offsets[j]>high))continue;
+    const a=ribbonVertex(r,i,j),b=ribbonVertex(r,i+1,j),c=ribbonVertex(r,i,j+1),d=ribbonVertex(r,i+1,j+1);
+    const h=triangleHeight(x,y,a,b,c)??triangleHeight(x,y,c,b,d);if(h!==null)best=Math.max(best,h);
+   }
+  }
+ }
+ return Math.max(best,terrainTriangleHeight(x,y));
+}
+/** Only at authoring time: leave the full crossing road and its turning margin clear. */
+export function crossingRoadAt(route:WorldRoute,x:number,y:number,height:number,margin=18){
+ return roadContacts(x,y).some(c=>c.route!==route&&c.distance<c.route.width/2+margin&&Math.abs(c.height-height)<35);
 }
 export function worldTreePlacements(){
  const out:{x:number;y:number;h:number;s:number}[]=[];
@@ -235,7 +268,7 @@ export function worldSignPlacements(){
  });
 }
 export function worldSurface(x:number,y:number){
- const r=nearestWorldRoad(x,y);
+ const contacts=roadContacts(x,y),r=contacts.find(c=>c.distance<c.route.width/2)??contacts[0];
  const onRoad=r&&r.distance<r.route.width/2;
  const wet=WORLD_PUDDLES.some(p=>((x-p.x)/p.rx)**2+((y-p.y)/p.ry)**2<1);
  const offRoad=!inCity(x,y)&&!onRoad;
@@ -290,7 +323,7 @@ export function addOpenWorld(level:LevelData):LevelData {
   level.obstacles=level.obstacles.filter(o=>{const dx=o.x-x,dy=o.y-y,c=Math.cos(rot),s=Math.sin(rot);return !(Math.abs(dx*c+dy*s)<1250&&Math.abs(-dx*s+dy*c)<100);});
   level.streetSigns!.push({x:x-1200,y:y-90,rotation:rot,label:'城市快速路 / 居民区',kind:'street'});
  }
- for(let i=0;i<14;i++)level.spots.push({id:'summit-park-'+i,x:43550+i*42,y:1738,width:34,height:70,rotation:Math.PI/2,occupied:false,elevation:10000});
+ for(let i=0;i<8;i++)level.spots.push({id:'summit-park-'+i,x:43550+i*42,y:1738,width:34,height:70,rotation:Math.PI/2,occupied:false,elevation:10000});
  level.training={title:'城市与环城青岚山 · 云顶 1000 m',tips:['CBD、居民区、立交与环城山脉相连；地图为原创北京风格训练世界','西岭碎石外崖无连续护栏，北岭盘山线通向海拔 1000 米停车坪','地图目的地可直接选择山路入口或云顶；事故后按 R 恢复']};
  return level;
 }

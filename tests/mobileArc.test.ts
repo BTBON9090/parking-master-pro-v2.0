@@ -15,7 +15,7 @@ for(const [w,h] of [[200,200],[300,160],[120,240]]){
  assert.equal(steeringArcPosition(left+w,top+h,left,top,w,h),1);
  assert(steeringArcPosition(left+w*1.4,top+h,left,top,w,h)>1);
  const c=new MobileInputController();c.begin('steer',1,left,top,0);c.begin('gas',2,500,200);c.move('gas',2,500,156,540);
- for(const [fraction,expected] of [[0,-540],[.5,0],[1,540]]){
+ for(const [fraction,expected] of [[0,0],[.25,270],[.5,540],[.25,270],[0,0]]){
   const a=fraction*Math.PI/2,x=left+Math.sin(a)*w,y=top+h-Math.cos(a)*h;
   c.steerAt(1,left+steeringArcPosition(x,y,left,top,w,h)*w,left,w,540);
   assert(Math.abs(c.snapshot().steeringWheelAngle!-expected)<1e-8);assert.equal(c.snapshot().throttle,1);
@@ -52,6 +52,7 @@ const keys={w:false,s:false,shift:false,handbrake:false};
 assert(simultaneous.begin('steer',11,100,100));
 assert(simultaneous.begin('brake',22,500,200));
 assert(simultaneous.move('brake',22,500,156,540));
+assert(simultaneous.steerAt(11,100,0,200,540));
 assert(simultaneous.steerAt(11,180,0,200,540));
 let mixed=mergeMobileInput(input,simultaneous.snapshot(),keys);
 assert.equal(mixed.brake,1);assert(mixed.steeringWheelAngle>0,'braking must not cancel steering');

@@ -1,3 +1,10 @@
+import {MountainAdventurePanel} from './components/MountainAdventurePanel';
+import {portalAt} from './utils/mapPortals';
+import {ReleaseNotes} from './components/ReleaseNotes';
+import {SettingsPage} from './components/SettingsPage';
+import {DrivingGuide} from './components/DrivingGuide';
+import {loadProgress,saveProgress,WORLD_REVISION,type GameProgress,type SavedExam} from './utils/progressStorage';
+import {progressStart} from './utils/progressResume';
 import {loadSettings,saveSettings} from './utils/settingsStorage';
 import {DEFAULT_DRIVER_SEAT} from './utils/driverSeat';
 import {isTouchDevice} from './utils/device';
@@ -33,7 +40,31 @@ import {
 import { resolveKeyboardPedals, shouldHandleHandbrakeKey } from './utils/keyboardPedals';
 
 function App() {
+  const [savedGame,setSavedGame]=useState(loadProgress);
+  const savedMaps=useRef(savedGame?.maps??{});
+  const progressPose=useRef(savedGame?.pose??null);
+  const saveMeta=useRef<{active:boolean;level:LevelData|null;car:CarType;money:number;camera:CameraView;spots:Set<string>}|null>(null);
+  const [saveMessage,setSaveMessage]=useState('');
+  const flushProgress=useCallback(()=>{
+    const m=saveMeta.current;if(!m?.active||!m.level||!progressPose.current)return;
+    savedMaps.current[String(m.level.levelId)]={...savedMaps.current[String(m.level.levelId)],completedSpots:[...m.spots]};
+    const next:GameProgress={schema:1,worldRevision:WORLD_REVISION,savedAt:Date.now(),car:m.car,levelId:m.level.levelId,money:m.money,camera:m.camera,pose:{...progressPose.current},maps:{...savedMaps.current},...(m.level.levelId===0?{customLevel:m.level}:{})};
+    if(saveProgress(next)){setSavedGame(next);setSaveMessage('进度已保存在此设备');}
+    else setSaveMessage('暂时无法保存，请检查设备存储空间');
+  },[]);
+  useEffect(()=>{
+    const position=(e:Event)=>{const d=(e as CustomEvent).detail;if(d?.safe&&[d.x,d.y,d.rotation,d.elevation].every(Number.isFinite))progressPose.current={x:d.x,y:d.y,rotation:d.rotation,elevation:d.elevation};};
+    const exam=(e:Event)=>{const d=(e as CustomEvent<{levelId:number;exam:SavedExam}>).detail;savedMaps.current[String(d.levelId)]={...savedMaps.current[String(d.levelId)],completedSpots:savedMaps.current[String(d.levelId)]?.completedSpots??[],exam:d.exam};};
+    const hidden=()=>{if(document.hidden)flushProgress();};
+    const timer=setInterval(flushProgress,5000);
+    window.addEventListener('car-map-position',position);window.addEventListener('exam-progress',exam);
+    window.addEventListener('save-progress',flushProgress);window.addEventListener('pagehide',flushProgress);document.addEventListener('visibilitychange',hidden);
+    return()=>{clearInterval(timer);window.removeEventListener('car-map-position',position);window.removeEventListener('exam-progress',exam);window.removeEventListener('save-progress',flushProgress);window.removeEventListener('pagehide',flushProgress);document.removeEventListener('visibilitychange',hidden);};
+  },[flushProgress]);
   const [isInGame, setIsInGame] = useState(false);
+  const [travelMessage,setTravelMessage]=useState('');
+  const [menuSettings,setMenuSettings]=useState(false),[menuGuide,setMenuGuide]=useState(false);
+  const [menuCapture,setMenuCapture]=useState<keyof KeyBindings|null>(null);
   const [editorMode, setEditorMode] = useState(false);
   // 本次游戏是否由地图编辑器「测试」发起；若是，退出游戏应返回编辑器而非选关页
   const [gameFromEditor, setGameFromEditor] = useState(false);
@@ -41,16 +72,17 @@ function App() {
   const [isPaused, setIsPaused] = useState(false);
   const [lang, setLang] = useState<Language>(Language.CN);
   
-  const [level, setLevel] = useState(1);
-  const [money, setMoney] = useState(100);
+  const [level, setLevel] = useState(savedGame?.levelId||1);
+  const [money, setMoney] = useState(savedGame?.money??100);
   const [levelData, setLevelData] = useState<LevelData | null>(null);
   const [rewardAnimation, setRewardAnimation] = useState<{show: boolean, amount: number, type: ParkingResultType}>({show: false, amount: 0, type: 'good'});
   const [completedSpots, setCompletedSpots] = useState<Set<string>>(new Set());
   
   // Default Weather and Lights OFF
   const weather = WeatherType.SUNNY; // Legacy fallback; explicit rain/snow/fog settings own weather.
-  const [currentCar, setCurrentCar] = useState<CarType>(CarType.SUV);
-  const [cameraView, setCameraView] = useState<CameraView>('HOOD');
+  const [currentCar, setCurrentCar] = useState<CarType>(savedGame?.car??CarType.SUV);
+  const [cameraView, setCameraView] = useState<CameraView>(savedGame?.camera??'HOOD');
+  saveMeta.current={active:isInGame,level:levelData,car:currentCar,money,camera:cameraView,spots:completedSpots};
   const inspectionRef=useRef(false);
   const handleInspectionChange=useCallback((active:boolean)=>{
     inspectionRef.current=active;
@@ -110,6 +142,17 @@ function App() {
       differentialGain: 0.37,
     },
   }));
+  useEffect(()=>{
+    if(isInGame)return;
+    const toggle=()=>setMenuSettings(v=>!v);
+    const key=(e:KeyboardEvent)=>{
+      if(document.body.dataset.releaseNotes)return;
+      if(menuCapture){e.preventDefault();e.stopPropagation();if(e.key!=='Escape')setSettings(v=>({...v,keyBindings:{...DEFAULT_KEY_BINDINGS,...v.keyBindings,[menuCapture!]:e.key.toLowerCase()}}));setMenuCapture(null);return;}
+      if(e.key==='Escape'){setMenuSettings(false);setMenuGuide(false);}
+    };
+    window.addEventListener('toggle-settings',toggle);window.addEventListener('keydown',key,true);
+    return()=>{window.removeEventListener('toggle-settings',toggle);window.removeEventListener('keydown',key,true);};
+  },[isInGame,menuCapture]);
   const settingsToSave=useRef(settings);settingsToSave.current=settings;
   useEffect(()=>{const timer=setTimeout(()=>saveSettings(settings),250);return()=>clearTimeout(timer);},[settings]);
   useEffect(()=>{const flush=()=>saveSettings(settingsToSave.current);
@@ -365,6 +408,9 @@ function App() {
 
   // 应用一个 LevelData 并进入 3D 游戏（编辑器测试 / 自定义关卡 / 内置关卡 共用）
   const playLevelData = (data: LevelData) => {
+    flushProgress();
+    window.dispatchEvent(new Event('free-drive-stop'));
+    progressPose.current={...data.startPos,elevation:data.startPos.elevation??0};
     setLevelData(data);
     const initialInput = {
         throttle: 0, gasPressed: false, shiftPressed: false, brake: 0,
@@ -375,7 +421,7 @@ function App() {
     steeringActivityRef.current.reset();
     carSpeedRef.current = 0;
     setRewardAnimation({show: false, amount: 0, type: 'good'});
-    setCompletedSpots(new Set());
+    setCompletedSpots(new Set((savedMaps.current[String(data.levelId)]?.completedSpots??[]).filter(id=>data.spots.some(p=>p.id===id))));
     setIsPaused(false);
     setEditorMode(false);
     setIsInGame(true);
@@ -397,6 +443,34 @@ function App() {
       setIsPaused(false);
   };
 
+  const continueGame = () => {
+      const saved=loadProgress();if(!saved)return;
+      const data=saved.customLevel??GENERATE_LEVEL(saved.levelId);
+      data.startPos=progressStart(saved,data,CAR_MODELS[saved.car]);
+      savedMaps.current=saved.maps;
+      setCurrentCar(saved.car);setLevel(saved.levelId);setMoney(saved.money);setCameraView(saved.camera);
+      setGameFromEditor(false);playLevelData(data);
+  };
+
+  useEffect(()=>{
+      if(!isInGame||!levelData)return;
+      let armed=false,moving=false,timer:ReturnType<typeof setTimeout>|undefined;
+      const position=(event:Event)=>{
+          if(moving)return;
+          const d=(event as CustomEvent).detail;
+          const portal=portalAt(levelData.levelId,d);
+          if(!portal){armed=true;return;}
+          if(!armed||!d.safe)return;
+          moving=true;flushProgress();window.dispatchEvent(new Event('free-drive-stop'));setIsPaused(true);setTravelMessage('正在进入 '+portal.label);
+          timer=setTimeout(()=>{
+              const next=GENERATE_LEVEL(portal.target);next.startPos={...portal.arrival};
+              setLevel(portal.target);setGameFromEditor(false);playLevelData(next);setTravelMessage('');
+          },450);
+      };
+      window.addEventListener('car-map-position',position);
+      return()=>{window.removeEventListener('car-map-position',position);if(timer)clearTimeout(timer);};
+  },[isInGame,levelData]);
+
   const startGame = () => {
       setGameFromEditor(false);
       setIsInGame(true);
@@ -412,6 +486,7 @@ function App() {
 
   // 退出当前游戏：编辑器测试发起 → 回到编辑器（保留地图状态）；否则 → 选关页
   const exitGame = () => {
+      flushProgress();
       setGlobalOverviewOpen(false);
       setIsPaused(false);
       if (gameFromEditor) {
@@ -1019,7 +1094,9 @@ function App() {
       )}
       {!editorMode && !isInGame && (
         <MainMenu
+            openSettings={()=>setMenuSettings(true)}
             start={startGame}
+            savedGame={savedGame} onContinue={continueGame}
             settings={settings}
             updateSettings={(s) => setSettings(prev => ({...prev, ...s}))}
             currentCar={currentCar}
@@ -1036,6 +1113,14 @@ function App() {
             onPlayCustom={(record) => { setGameFromEditor(false); playLevelData(serializeToLevelData(record)); }}
         />
       )}
+      {travelMessage&&<div className="map-transition" role="status">{travelMessage}<small>已保存上一地图进度 · 到达后松开踏板重新起步</small></div>}
+      {isInGame&&!isPaused&&levelData?.openWorld&&<MountainAdventurePanel/>}
+      <ReleaseNotes/>
+      {!isInGame&&menuSettings&&<SettingsPage inGame={false} onLayout={()=>{}} settings={settings} update={patch=>setSettings(v=>({...v,...patch}))}
+        car={currentCar} level={level} openWorld={false} onCar={handleSetCar} onMap={setLevel} onTravel={()=>{}}
+        close={()=>setMenuSettings(false)} reset={()=>{}} exit={()=>setMenuSettings(false)} lang={lang} setLang={setLang}
+        capture={menuCapture} bind={setMenuCapture} guide={()=>{setMenuSettings(false);setMenuGuide(true);}}/>}
+      {!isInGame&&menuGuide&&<DrivingGuide settings={settings} done={()=>setMenuGuide(false)}/>}
       {isInGame && (
         <ErrorBoundary label="游戏视图" onRecover={exitGame}>
           {levelData && (
@@ -1060,6 +1145,8 @@ function App() {
               />
           )}
           <UIOverlay
+            savedExam={savedMaps.current[String(levelData?.levelId)]?.exam}
+            saveMessage={saveMessage}
             money={money}
             level={level}
             settings={settings}

@@ -1,3 +1,4 @@
+import {liftSurface,mountainTunnelSample} from './mountainAdventure';
 import { garageSurface } from './garage';
 import { worldHeight, worldSurfaceSample, inCity, CITY_OFFSET } from './openWorld';
 import type { LevelData } from '../types';
@@ -45,11 +46,12 @@ export function curbHeightAt(level: LevelData, x: number, y: number): number {
  * and tests. There is deliberately no heading filter: a car turning on a ramp
  * must not lose its support surface.
  */
-export function sampleTerrainSurface(level: LevelData, x: number, y: number, currentHeight = 0, includeCurbs = true): SurfaceSample {
+export function sampleTerrainSurface(level: LevelData, x: number, y: number, currentHeight?: number, includeCurbs = true): SurfaceSample {
+  if(level.openWorld&&currentHeight!==undefined){const special=liftSurface(x,y,currentHeight)??mountainTunnelSample(x,y,currentHeight);if(special)return x<24500&&y>18800&&worldHeight(x,y)<25?worldSurfaceSample(x,y):special;}
   if (level.challengeTerrain) return challengeSample(level,x,y);
-  if (level.garage) return garageSurface(x,y,currentHeight);
+  if (level.garage) return garageSurface(x,y,currentHeight??-48);
   if (level.openWorld && !inCity(x,y)) return worldSurfaceSample(x, y);
-  const elevated = sampleElevatedRoad(level.elevatedRoads, x, y, currentHeight);
+  const elevated = sampleElevatedRoad(level.elevatedRoads, x, y, currentHeight??0);
   if (elevated) return elevated;
   const tx=x-(level.openWorld?CITY_OFFSET:0),ty=y-(level.openWorld?CITY_OFFSET:0);
   if (level.levelId === 1 && isTrainingTerrain(tx, ty)) {
@@ -70,7 +72,7 @@ export function sampleTerrainSurface(level: LevelData, x: number, y: number, cur
   return { height: includeCurbs ? curbHeightAt(level, x, y) : 0, gradeX: 0, gradeY: 0 };
 }
 
-export function sampleWheelSurfaceHeight(level: LevelData, x: number, y: number, currentHeight = 0): number {
-  if(level.openWorld && !inCity(x,y)) return worldHeight(x,y);
+export function sampleWheelSurfaceHeight(level: LevelData, x: number, y: number, currentHeight?: number): number {
+  if(level.openWorld){const special=currentHeight===undefined?null:liftSurface(x,y,currentHeight)??mountainTunnelSample(x,y,currentHeight);if(special)return x<24500&&y>18800&&worldHeight(x,y)<25?worldHeight(x,y):special.height;if(!inCity(x,y))return worldHeight(x,y);}
   return sampleTerrainSurface(level, x, y, currentHeight).height;
 }

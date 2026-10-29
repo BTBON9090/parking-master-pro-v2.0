@@ -8,7 +8,8 @@ import {curbTripRollover} from '../utils/wheelObstacles';
 import {createLateralState,stepLateral} from '../utils/lateralDynamics';
 const input=new MobileInputController();
 assert(input.begin('steer',1,200,10,0));
-for(const [x,expected] of [[-50,-540],[100,-540],[200,0],[300,540],[350,540],[175,-135]] as const){
+input.steerAt(1,200,100,200,540);
+for(const [x,expected] of [[100,-540],[200,0],[300,540],[200,0],[175,-135]] as const){
  assert(input.steerAt(1,x,100,200,540));assert.equal(input.snapshot().steeringWheelAngle,expected);
 }
 assert(input.begin('gas',2,500,100));input.move('gas',2,500,30,540);
@@ -44,4 +45,4 @@ for(let id=8;id<=12;id++){
  assert(level.obstacles.some(o=>o.id.startsWith('challenge-tree-')&&o.collisionOnly));
  if(id===9)assert(level.challengeTerrain!.grip<.4,'snow grip is lower than dry asphalt');
 }
-console.log('Round27 PASS: absolute multi-touch steering, bounded automatic quality and five terrain/contact meshes.');
+console.log('Round27 PASS: anchored relative multi-touch steering, bounded automatic quality and five terrain/contact meshes.');

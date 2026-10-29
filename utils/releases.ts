@@ -6,7 +6,7 @@ export const DOWNLOAD_ORIGIN='https://cdn.btbon.cn';
 export const COS_ORIGIN='https://my-portfolio-1317980685.cos.ap-guangzhou.myqcloud.com';
 export const GITHUB_LATEST='https://api.github.com/repos/BTBON9090/parking-master-pro-v2.0/releases/latest';
 export const RELEASE_SOURCES=[DOWNLOAD_ORIGIN+'/parking-master/latest.json',COS_ORIGIN+'/parking-master/latest.json',GITHUB_LATEST];
-export interface ReleaseInfo {version:string;androidUrl?:string}
+export interface ReleaseInfo {version:string;androidUrl?:string;androidSha256?:string;androidSize?:number;notes?:string}
 export function isNewerVersion(next:string,current:string){
  const parse=(s:string)=>/^v?(\d+)\.(\d+)\.(\d+)$/.exec(s)?.slice(1).map(Number);
  const a=parse(next),b=parse(current);if(!a||!b)return false;
@@ -30,7 +30,11 @@ export function parseRelease(data:unknown):ReleaseInfo {
     androidUrl=u.href;
   }catch{}
  }
- return {version,androidUrl};
+ const digest=asset?.sha256??(typeof asset?.digest==='string'?asset.digest.replace(/^sha256:/,''):undefined);
+ const androidSha256=typeof digest==='string'&&/^[a-fA-F0-9]{64}$/.test(digest)?digest.toLowerCase():undefined;
+ const androidSize=Number.isSafeInteger(asset?.size)&&asset.size>=1024&&asset.size<=250*1024*1024?asset.size:undefined;
+ const notes=typeof (d.notes??d.body)==='string'?String(d.notes??d.body).slice(0,12000):undefined;
+ return {version,androidUrl,androidSha256,androidSize,notes};
 }
 // Older Android WebViews may lack AbortSignal.timeout. Bound the entire
 // request, including body parsing, and keep native HTTP out of WebView CORS.

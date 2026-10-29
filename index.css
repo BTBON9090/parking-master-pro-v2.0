@@ -667,3 +667,22 @@ html,body,#root{overscroll-behavior:none}body{-webkit-touch-callout:none}button,
 
 /* Driver-seat controls share one setting between the start menu and pause page. */
 .driver-seat-controls.compact{padding:14px 0;border-bottom:1px solid #ffffff15}.driver-seat-controls.compact h3{margin:0 0 8px}.driver-seat-row{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:42px;border-bottom:1px solid #ffffff0c}.driver-seat-row strong{font-size:11px}.driver-seat-row>div{display:flex;align-items:center;gap:6px}.driver-seat-row output{min-width:35px;text-align:right;color:#efba58;font:10px monospace}.driver-seat-row input[type=range]{width:78px}.driver-seat-reset{border:1px solid #51616b;border-radius:4px;padding:8px 12px;margin-top:12px;color:#e9c475;min-height:36px}.settings-page .driver-seat-reset{min-height:42px}
+
+/* Exam instructions occupy the centre mirror space, above the road view. */
+.exam-panel,.touch-hud .exam-panel{top:max(6px,env(safe-area-inset-top));width:min(420px,calc(100vw - 340px));min-width:220px;padding:7px 10px;max-height:145px;overflow:auto}
+.exam-panel>div{align-items:baseline;flex-wrap:wrap;gap:4px 8px}.exam-panel>div span{flex:1}.exam-panel p{margin:5px 0;line-height:1.4}
+.exam-panel nav{flex-wrap:wrap}.exam-panel button,.touch-hud .exam-panel button{min-height:32px;padding:5px 8px}
+
+.menu-continue{display:block;margin-top:12px;padding:14px 20px;border:1px solid #7a8b8c;border-radius:8px;text-align:left;color:#e9cd83}.menu-continue small{display:block;color:#b9c4cb;font-size:11px;margin-top:5px}
+
+.menu-header-actions{display:flex;align-items:center;gap:8px}.menu-header-actions button{min-width:44px;min-height:44px}.settings-page button:disabled{opacity:.5;cursor:default}
+.release-notes-backdrop{position:fixed;inset:0;z-index:10000;background:#081119b8;backdrop-filter:blur(12px);display:grid;place-items:center;padding:18px;touch-action:auto}
+.release-notes{width:min(650px,100%);max-height:calc(100dvh - 36px);overflow:auto;background:#f2f0e9;color:#182b32;border-radius:18px;box-shadow:0 20px 80px #0006;padding:24px}
+.release-notes header>span{font-size:12px;letter-spacing:.12em;color:#386372}.release-notes h2{font-size:28px;margin:6px 0}.release-notes p{line-height:1.6;font-size:13px;color:#4d6067;margin:5px 0}
+.release-notes ol{padding-left:24px;display:grid;gap:13px;margin:22px 0}.release-notes strong{font-size:15px}.release-notes footer{border-top:1px solid #c9d2ce;padding-top:16px;display:flex;gap:20px;align-items:center;justify-content:space-between}.release-notes small{font-size:11px;line-height:1.6;max-width:310px;color:#53666b}.release-notes button{flex-shrink:0;min-height:44px;background:#193f46;color:white;border:0;border-radius:8px;padding:10px 18px}
+.release-remote-notes{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;line-height:1.7}.update-progress{display:grid;gap:6px;margin-top:12px}.update-progress progress{width:100%}
+@media(max-height:500px){.release-notes{padding:16px 22px}.release-notes ol{grid-template-columns:1fr 1fr;gap:12px 24px;margin:15px 0}.release-notes h2{font-size:24px}}
+.settings-page{z-index:85}.release-actions{flex-wrap:wrap;gap:12px}
+.map-transition{position:fixed;inset:0;z-index:95;background:#101c23;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;color:#ecdfc1;font-size:23px;animation:map-fade .3s ease}.map-transition small{color:#b6c4c9;font-size:12px}@keyframes map-fade{from{opacity:0}to{opacity:1}}
+.mountain-lift-panel{position:fixed;z-index:46;left:50%;transform:translateX(-50%);top:75px;max-width:370px;display:grid;gap:8px;padding:14px 18px;background:#142731ed;color:#e5e8de;border:1px solid #5b7c83;border-radius:12px;font-size:12px;pointer-events:auto}.mountain-lift-panel strong{color:#e8c57c}.mountain-lift-panel button{min-height:40px;background:#e4c16e;color:#14242e;border-radius:7px}.mountain-lift-panel button:disabled{opacity:.6}
+.exam-panel{width:min(420px,calc(100vw - 480px))}@media(max-width:700px){.exam-panel{top:52px;width:calc(100vw - 350px)}}

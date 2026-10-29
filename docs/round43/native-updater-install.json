@@ -1,0 +1,10 @@
+{
+  "environment": "Android API36.1 local emulator; signed temporary test host with WebView inspection enabled only in its unshipped config",
+  "checks": [],
+  "initial": {
+    "ready": false,
+    "busy": false,
+    "permission": false,
+    "version": ""
+  }
+}

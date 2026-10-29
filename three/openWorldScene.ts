@@ -1,12 +1,16 @@
+import {addMountainAdventure} from './mountainAdventureScene';
+import {cutLiftOpening,MOUNTAIN_LIFT,inMountainLift,mountainAdventureObstacles} from '../utils/mountainAdventure';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import type { LevelData, Obstacle } from '../types';
-import { MOUNTAIN_BOUNDS, WORLD_TERRAIN_STEP, inCity, WORLD_ROUTES, WORLD_PUDDLES, WORLD_PLACES, worldHeight, roadVertexHeight, nearestWorldRoad, terrainVertexHeight, worldTreePlacements, worldSignPlacements } from '../utils/openWorld';
+import { crossingRoadAt, MOUNTAIN_BOUNDS, WORLD_TERRAIN_STEP, inCity, WORLD_ROUTES, WORLD_PUDDLES, WORLD_PLACES, worldHeight, roadVertexHeight, nearestWorldRoad, terrainVertexHeight, worldTreePlacements, worldSignPlacements } from '../utils/openWorld';
 
 /** All surfaces and paint use the same world-height sampler as the four tyres. */
 export function addOpenWorldScene(scene:THREE.Scene,level:LevelData,track:(g:THREE.BufferGeometry)=>THREE.BufferGeometry){
  if(!level.openWorld)return;
+ addMountainAdventure(scene,track);
  const mesh=(positions:number[],indices:number[],material:THREE.Material,colors?:number[])=>{
+  indices=cutLiftOpening(positions,indices,colors);
   const g=track(new THREE.BufferGeometry());g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setIndex(indices);
   if(colors)g.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));g.computeVertexNormals();
   const m=new THREE.Mesh(g,material);m.receiveShadow=true;scene.add(m);return m;
@@ -135,6 +139,8 @@ export function mountainRails():Obstacle[]{
   if(junctions.some(j=>Math.hypot(b.x-j.x,b.y-j.y)<110))continue;
   for(const side of [-1,1]){
    const x1=a.x+a.nx*(r.width/2+3)*side,y1=a.y+a.ny*(r.width/2+3)*side,x2=b.x+b.nx*(r.width/2+3)*side,y2=b.y+b.ny*(r.width/2+3)*side;
+   // Check both ends and the interior: a long rail must not span another road.
+   if([0,.25,.5,.75,1].some(t=>crossingRoadAt(r,x1+(x2-x1)*t,y1+(y2-y1)*t,a.h+(b.h-a.h)*t)))continue;
    const x=(x1+x2)/2,y=(y1+y2)/2,h1=worldHeight(x1,y1),h2=worldHeight(x2,y2);
    out.push({id:`mountain-rail-${r.id}-${i}-${side}`,x,y,width:Math.hypot(x2-x1,y2-y1)+.2,height:1,rotation:Math.atan2(y2-y1,x2-x1),type:'wall',movable:false,weight:0,color:'#aab0ac',elevation:(h1+h2)/2,verticalHeight:7.3,collisionOnly:true});
   }
@@ -146,5 +152,5 @@ export function mountainPropColliders():Obstacle[]{
  const trees=worldTreePlacements().map((p,i)=>({id:`mountain-tree-${i}`,x:p.x,y:p.y,width:5*p.s,height:5*p.s,rotation:0,type:'wall' as const,movable:false,weight:0,color:'#655844',elevation:p.h,verticalHeight:17*p.s,collisionOnly:true,
  collisionFootprint:Array.from({length:6},(_,j)=>({x:2.5*p.s*Math.cos(j*Math.PI/3),y:2.5*p.s*Math.sin(j*Math.PI/3)}))}));
  const signs=worldSignPlacements().map((p,i)=>({id:`mountain-sign-${i}`,x:p.x,y:p.y,width:1.4,height:1.4,rotation:0,type:'wall' as const,movable:false,weight:0,color:'#9aaba0',elevation:p.h,verticalHeight:32,collisionOnly:true}));
- return [...trees,...signs];
+ return [...trees,...signs,...mountainAdventureObstacles()];
 }

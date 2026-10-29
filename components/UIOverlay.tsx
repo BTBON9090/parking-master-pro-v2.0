@@ -1,3 +1,5 @@
+import {isTouchDevice} from '../utils/device';
+import type {SavedExam} from '../utils/progressStorage';
 import {HudLayoutEditor} from './HudLayoutEditor';
 import {HudId,HudLayout,resolveHudLayout,hudStyle,isBus} from '../utils/mobileLayout';
 import {pedalFeedback} from '../utils/mobileInput';
@@ -20,6 +22,8 @@ import { SideMirrorFrame, CentreMirrorFrame, CockpitCluster } from './cockpit/Co
 import { Settings, X, Zap, Pause, Power, Volume2, Gauge, ChevronUp, ChevronDown, RotateCcw, Keyboard, Sliders, Map, Scan, LocateFixed, Camera, MoveUpRight, MoveUpLeft, MoveDownRight, MoveDownLeft, CarFront, Eye, Maximize2, Minimize2, Languages, AlertTriangle } from 'lucide-react';
 
 interface UIOverlayProps {
+  savedExam?:SavedExam;
+  saveMessage?:string;
   money: number;
   level: number;
   settings: UserSettings;
@@ -219,6 +223,7 @@ const Telltale: React.FC<{ on: boolean; color: string; icon: React.ReactNode; la
 );
 
 const UIOverlay: React.FC<UIOverlayProps> = ({
+  savedExam,saveMessage,
   money,
   level,
   settings,
@@ -1059,13 +1064,13 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                       />
                   );
               })}
-              <CentreMirrorFrame
+              {!levelData?.exam && <CentreMirrorFrame
                   layoutStyle={touch?layoutStyle("mirrorCentre"):undefined}
                   pack={cockpitPack}
                   adjustment={settings.mirrorAdjustments.centre}
                   onAdjust={a=>updateSettings({mirrorAdjustments:{...settings.mirrorAdjustments,centre:a}})}
                   label={lang === Language.CN ? '车内后视镜' : 'CENTRE MIRROR'}
-              />
+              />}
           </>
       )}
 
@@ -1395,7 +1400,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
           </>
       )}
 
-      {levelData?.exam && <ExamPanel level={levelData} input={inputState} update={setInputState}/>}
+      {levelData?.exam && <ExamPanel saved={savedExam} level={levelData} input={inputState} update={setInputState}/>}
       {levelData?.training && !levelData.exam && (
           <div className="hud-tips absolute top-[368px] right-4 z-30 flex flex-col items-end gap-1.5 pointer-events-auto"
                style={{ maxWidth: 'calc(100vw - 2rem)' }}>
@@ -1515,14 +1520,14 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
       {/* ===== 设置抽屉（语言 + 按键指南 已迁移至此） ===== */}
       {touch&&<MobileControls absEnabled={settings.absEnabled} toggleAbs={()=>updateSettings({absEnabled:!settings.absEnabled})} speedKmh={Math.abs(liveCarSpeed)*15} input={inputState} update={setInputState} onTouchInput={onTouchInput} readInput={readInput} car={currentCarId} layout={layoutStyle} editing={layoutDraft!==null} disabled={showSettings||showGuide||portrait||layoutDraft!==null} settings={()=>setShowSettings(true)} camera={()=>{const views:CameraView[]=['HOOD','FOLLOW_NEAR','FOLLOW_FAR','TOP','REVERSE'];onCameraViewChange(views[(views.indexOf(cameraView)+1)%views.length]);}} map={()=>setGlobalOverviewOpen(!globalOverviewOpen)} reset={resetLevel}/>}
       {touch&&portrait&&!showSettings&&<div className="rotate-device" role="status"><strong>请横屏驾驶</strong><p>转动手机，展开方向盘和踏板。</p><button onClick={()=>setShowSettings(true)}>打开设置</button></div>}
-      {showSettings && <SettingsPage onLayout={editLayout} settings={settings} update={updateSettings} car={currentCarId} level={level} openWorld={!!levelData?.openWorld} onCar={onChangeCar} onMap={onChangeMap} onTravel={onTravel} close={()=>setShowSettings(false)} reset={resetLevel} exit={exitGame} lang={lang} setLang={setLang} capture={captureBinding} bind={setCaptureBinding} guide={()=>{setShowSettings(false);setShowGuide(true);}}/>}
+      {showSettings && <SettingsPage saveMessage={saveMessage} onLayout={editLayout} settings={settings} update={updateSettings} car={currentCarId} level={level} openWorld={!!levelData?.openWorld} onCar={onChangeCar} onMap={onChangeMap} onTravel={onTravel} close={()=>setShowSettings(false)} reset={resetLevel} exit={exitGame} lang={lang} setLang={setLang} capture={captureBinding} bind={setCaptureBinding} guide={()=>{setShowSettings(false);setShowGuide(true);}}/>}
       {layoutDraft!==null && <HudLayoutEditor rects={hudRects} width={hudViewport.w} height={hudViewport.h}
         change={patch=>setLayoutDraft(v=>({...v,...patch}))} reset={()=>setLayoutDraft({})} cancel={closeLayout}
         save={()=>{updateSettings({mobileHudLayout:layoutDraft});closeLayout();}}/>}
       {showGuide && <DrivingGuide settings={settings} done={()=>setShowGuide(false)}/>}
 
       {/* 首次进入：操控提示（车辆一动或 20 秒后自动收起） */}
-      {showStartHint && !showSettings && !showGuide && (
+      {showStartHint && !isTouchDevice() && !showSettings && !showGuide && (
         <div className="absolute left-1/2 -translate-x-1/2 bottom-[186px] z-40 pointer-events-auto"
              style={{ background: 'rgba(10,12,16,0.94)', border: '1px solid rgba(245,158,11,0.45)', borderRadius: 12, padding: '10px 14px', boxShadow: '0 10px 30px rgba(0,0,0,0.45)' }}>
           <div className="flex items-center gap-3">

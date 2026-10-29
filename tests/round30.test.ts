@@ -52,7 +52,7 @@ for(const steer of [.025,.5]){
 }
 const mobile=new MobileInputController(),lock=540;
 assert(mobile.begin('steer',1,100,50,0));assert(mobile.begin('gas',2,500,100));mobile.move('gas',2,500,56,lock);assert.equal(mobile.snapshot().throttle,1);
-mobile.steerAt(1,0,0,200,lock);assert.equal(mobile.snapshot().steeringWheelAngle,-lock);mobile.steerAt(1,200,0,200,lock);assert.equal(mobile.snapshot().steeringWheelAngle,lock);
+mobile.steerAt(1,100,0,200,lock);mobile.steerAt(1,0,0,200,lock);assert.equal(mobile.snapshot().steeringWheelAngle,-lock);mobile.steerAt(1,200,0,200,lock);assert.equal(mobile.snapshot().steeringWheelAngle,lock);
 mobile.steerAt(1,100,0,200,lock);mobile.steerAt(1,100,0,200,lock,3.5);assert.equal(mobile.snapshot().steeringWheelAngle,0);
 mobile.steerAt(1,200,0,200,lock,3.5);const edge=mobile.snapshot().steeringWheelAngle!;mobile.steerAt(1,350,0,200,lock,3.5);assert(mobile.snapshot().steeringWheelAngle!>edge);
 assert.equal(mobile.snapshot().throttle,1);mobile.end('steer',1);assert.equal(mobile.snapshot().throttle,1);

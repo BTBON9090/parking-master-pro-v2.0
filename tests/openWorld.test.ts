@@ -31,7 +31,7 @@ console.log(JSON.stringify({routes:WORLD_ROUTES.length,lengthKm:total/10000,maxG
 
 // Cast against the actual road triangles, including lane edges and junctions.
 const scene=new THREE.Scene();addOpenWorldScene(scene,level,g=>g);scene.updateMatrixWorld(true);
-const roads=[scene.getObjectByName('MountainAsphalt')!,scene.getObjectByName('CreekGravel')!];
+const roads=[scene.getObjectByName('MountainAsphalt')!,scene.getObjectByName('CreekGravel')!,scene.getObjectByName('mountain-lift-deck')!];
 const ray=new THREE.Raycaster();let maxError=0,maxGravelError=0;
 for(const r of WORLD_ROUTES)for(let i=4;i<r.samples.length;i+=22){
  const p=r.samples[i],prev=r.samples[i-1];
@@ -40,6 +40,7 @@ for(const r of WORLD_ROUTES)for(let i=4;i<r.samples.length;i+=22){
   ray.set(new THREE.Vector3(x,h+50,y),new THREE.Vector3(0,-1,0));ray.far=100;
   const hits=ray.intersectObjects(roads,false);assert(hits.length,`${r.id}: visible road under tyre`);
   const error=Math.abs(hits[0].point.y-h);
+  if(error>.5&&!r.gravel)console.log("road-height mismatch",{route:r.id,i,lane,x,y,physical:h,visual:hits[0].point.y,mesh:hits[0].object.name});
   if(r.gravel)maxGravelError=Math.max(error,maxGravelError);else maxError=Math.max(error,maxError);
  }
 }
