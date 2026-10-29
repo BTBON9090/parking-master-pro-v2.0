@@ -1,0 +1,1 @@
+Severe crash PASS: 24 garage vehicle assets fracture, inherit momentum, stay finite and release bodies.

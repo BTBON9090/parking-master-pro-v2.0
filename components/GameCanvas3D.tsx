@@ -1,3 +1,9 @@
+import {MissileShow} from '../three/missileShow';
+import {SeatClearance} from '../three/seatClearance';
+import {takePreparedScene,peekPreparedScene} from '../three/preparedScene';
+import {aeroGripScale,multiAxleSteer} from '../utils/handling44';
+import {LoadingDrive} from './LoadingDrive';
+import {HintSlot} from './DrivingHints';
 import {inCity} from '../utils/openWorld';
 import {MOUNTAIN_LIFT,inMountainLift,setMountainLiftHeight,mountainTunnelSample} from '../utils/mountainAdventure';
 import {AudioPlaybackGate} from '../utils/audioPlaybackGate';
@@ -164,6 +170,10 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
   onInspectionChange,
 }) => {
   const mountRef = useRef<HTMLDivElement>(null);
+  const [loadStage,setLoadStage]=useState<string|null>('正在准备道路');
+  const retainedRenderer=useRef<THREE.WebGLRenderer|null>(null);
+  useEffect(()=>()=>{const renderer=retainedRenderer.current;retainedRenderer.current=null;queueMicrotask(()=>{renderer?.dispose();renderer?.forceContextLoss();disposeMaterials();});},[]);
+  const transitionFrame=useRef<HTMLCanvasElement|null>(null);
   const wiperRef = useRef<HTMLDivElement>(null);
   const retainedQuality = useRef<{quality:RenderQuality;dpr:number}|null>(null);
   const [wrecked,setWrecked]=useState(false);
@@ -257,7 +267,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
   useEffect(() => {
     carState.current = {
       x: levelData.startPos.x, y: levelData.startPos.y,
-      rotation: levelData.startPos.rotation, speed: 0, steeringAngle: 0,
+      rotation: levelData.startPos.rotation, speed: levelData.entryMotion?.speed??0, steeringAngle: levelData.entryMotion?.steeringAngle??0,
       yawRate: 0, slipAngle: 0, driftSlip: 0, roadHeight: sampleTerrainSurface(levelData,levelData.startPos.x,levelData.startPos.y,levelData.startPos.elevation).height,
     };
     throttleState.current = 0;
@@ -268,7 +278,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     parkingStableRef.current = {};
     parkingReportedRef.current.clear();
     parkingInsideRef.current.clear();
-    carSpeedRef.current = 0;
+    carSpeedRef.current = levelData.entryMotion?.speed??0;
   }, [levelData, carSpeedRef]);
 
   // Clickable navigation entry: teleport only while essentially stopped; no
@@ -457,7 +467,8 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     if (!mount) return;
 
     // ===== Renderer =====
-    const renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true, powerPreference: 'high-performance' });
+    const renderer = retainedRenderer.current??new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true, powerPreference: 'high-performance' });
+    retainedRenderer.current=renderer;let warmed:BuiltScene|null=null;
     let quality=settingsRef.current.renderQuality??'auto';
     let profile=qualityProfile(quality,window.devicePixelRatio,isTouchDevice());
     let dynamicDpr = retainedResolution(retainedQuality.current,quality,profile);
@@ -640,6 +651,8 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     sun.shadow.radius = 1;
     sun.shadow.normalBias = .35;  // PCF 小半径，保持清晰硬边
 
+    const prepared=takePreparedScene(levelData.levelId,currentCarId);
+    if(prepared)obstaclesRef.current=prepared.data.obstacles;
     // ===== 物理世界 =====
     const physics = new PhysicsWorld();
     const vehicleCollisionQuery=new VehicleCollisionQuery();
@@ -659,7 +672,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
 
 	    // ===== 异步加载场景 + 注册物理刚体 =====
 	    let disposed = false;
-	    let built: BuiltScene | null = null;
+	    let built: BuiltScene | null = null;let missile:MissileShow|null=null;let presented=false;
 	    const streamingPending = new Set<string>();
     const streamingLru: string[] = [];
     let lastStreamingCheckAt = 0;
@@ -742,7 +755,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     let playerInteriorMeshes: THREE.Object3D[] = [];
     let driverInterior: DriverInterior | null = null;
     let hasModelSteeringWheel = false;
-    let hoodCameraMount: THREE.Object3D | null = null;
+    let hoodCameraMount: THREE.Object3D | null = null;let seatClearance:SeatClearance|null=null;
     let hoodCameraTarget: THREE.Object3D | null = null;
     const hoodCameraPosition = new THREE.Vector3();
     const hoodCameraLookTarget = new THREE.Vector3();
@@ -790,6 +803,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     let longitudinalPendingFrames = 0;
     let longitudinalHoldFrames = 0;
     let longitudinalStallTimer = 0;
+    let wheelDriveSlip = 0;
     let lastLaneWarningAt = 0;
     let lastMiniMapUpdateAt = 0;
     let lastSkidPosition: {x:number;y:number;rotation:number;height:number} | null = null;
@@ -905,7 +919,11 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     (async () => {
       const ccCur = CAR_MODELS[currentCarId];
       const staticLevelData = { ...levelData, obstacles: obstaclesRef.current, spots:[...levelData.spots], roadSurfaces:[...(levelData.roadSurfaces??[])], curvedRoads:[...(levelData.curvedRoads??[])],streetSigns:[...(levelData.streetSigns??[])] };
-      built = await buildScene(staticLevelData, ccCur, currentCarId);
+      setLoadStage('正在装载车辆与地图');
+      built = prepared?await prepared.promise:await buildScene(staticLevelData, ccCur, currentCarId);
+      if(disposed){disposeResources([built.scene,...(built.streamingChunks?.values()??[])]);return;}
+      if(prepared){staticLevelData.obstacles=prepared.data.obstacles;}
+      if(currentCarId===CarType.DF41&&!disposed)missile=new MissileShow(built.scene,built.playerCarParts.group,levelData);
       obstaclesRef.current=staticLevelData.obstacles;
       resolutionSampler.reset(performance.now());
       if (disposed) {disposeResources([built.scene,...(built.streamingChunks?.values()??[])]);return;}
@@ -1081,6 +1099,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
 
       const nativeCockpit = built.playerCarParts.nativeCockpit;
       if (nativeCockpit) {
+        seatClearance=new SeatClearance(playerBodyTiltPivot,nativeCockpit.eye);
         const baseline = resolveHoodCameraLocalPose(ccCur, DEFAULT_HOOD_CAMERA_ADJUSTMENT);
         cockpitEyeOffset = {
           x: nativeCockpit.eye.x - baseline.x,
@@ -1480,9 +1499,10 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       // The initial weather was applied to the placeholder scene while the
       // world loaded; populate the newly built scene before its first frame.
       applyWeather();
+      setLoadStage('正在准备灯光');
       renderer.compile(scene,camera);
       startRenderLoop();
-    })();
+    })().catch(error=>{if(!disposed){console.error("Scene loading failed",error);setLoadStage("加载失败，请暂停后重新开始");}});
 
     // ===== 天气 / 时间 状态（动态可调） =====
     let rainParticles: PrecipitationField | null = null;
@@ -1918,6 +1938,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       }
       retainedQuality.current={quality,dpr:dynamicDpr};
       renderer.domElement.dataset.renderDpr=dynamicDpr.toFixed(2);
+      const warm=peekPreparedScene();if(warm&&warm!==warmed){warmed=warm;renderer.compile(warm.scene,camera,scene);}
 
       // Only the occupied floor is submitted; decks at the same XY must not
       // cover the view from an external inspection camera on a lower level.
@@ -1946,8 +1967,8 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       const playerParts = built.playerCarParts;
       damageModel ??= new VehicleDamage(playerParts.group);
       const axleGeometry = playerParts.group.userData.axleGeometry;
-      const rigWheelbase = axleGeometry?.wheelbase ?? cc.wheelbase;
-      const rearAxleOffset = axleGeometry?.rearOffset ?? cc.wheelbase / 2;
+      const rigWheelbase = cc.id===CarType.DF41?cc.wheelbase:axleGeometry?.wheelbase ?? cc.wheelbase;
+      const rearAxleOffset = cc.id===CarType.DF41?cc.wheelbase/2:axleGeometry?.rearOffset ?? cc.wheelbase / 2;
       const rigHalfTrack = axleGeometry?.halfTrack ?? cc.width * 0.46;
 
       // This is a render-only diagnostic toggle. Physics, collisions and the
@@ -2116,7 +2137,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           if(Math.hypot(velocity.x,velocity.y)<.035){interruptTrafficForImpact(obs,simulationClockMs);movingParked.delete(id);parkedSettled=true;}
         }
         if(parkedSettled)indexCollisionObstacles();
-        let currentInputReal = (destroyed || rollover || fires.length>0 || liftRide) ? {...inputRef.current,throttle:0,gasPressed:false,brake:1,handbrake:true,engineStarted:false} : inputRef.current;
+        let currentInputReal = (destroyed || rollover || fires.length>0 || liftRide || missile?.locked) ? {...inputRef.current,throttle:0,gasPressed:false,brake:1,handbrake:true,engineStarted:false} : inputRef.current;
         if(destroyed || rollover || fires.length>0){car.speed=0;throttleState.current=0;}
         if(lastSuspensionReset!==suspensionResetRef.current){
           damageModel?.reset();looseDebris.splice(0).forEach(d=>d.dispose());fires.splice(0).forEach(f=>f.dispose());setDamageTier('none');
@@ -2131,7 +2152,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         const terrainResponse = ldCur.challengeTerrain ? {...ldCur.challengeTerrain,grip:challengeGripAt(ldCur,car.x,car.y),gravel:ldCur.challengeTerrain.kind==='mud'||ldCur.challengeTerrain.kind==='quarry'} : ldCur.openWorld ? (mountainTunnelSample(car.x,car.y,car.roadHeight??0)?{grip:1,rolling:1,gravel:false}:worldSurface(car.x, car.y)) : {grip:1,rolling:1,gravel:false};
         // Snow maps already include the snowy surface friction. Multiplying
         // by the snow-weather factor again makes the same snow behave as ice.
-        const weatherGrip = (ldCur.levelId === 6 ? 1 : wCur.snow && ldCur.challengeTerrain?.kind !== 'snow' ? 0.38 : wCur.rain ? 0.62 : 1) * terrainResponse.grip;
+        const weatherGrip = (ldCur.levelId === 6 ? 1 : wCur.snow && ldCur.challengeTerrain?.kind !== 'snow' ? 0.20 : wCur.rain ? 0.62 : 1) * terrainResponse.grip * aeroGripScale(cc,Math.abs(car.speed)*SPEED_UNIT_KMH/3.6);
 
         // —— 换挡选择：离合衔接进度由固定步进纵向模型推进 ——
         if (currentInputReal.gear !== selectedGear && !(cc.automatic&&!isElectricVehicle(cc.id)&&currentInputReal.gear>0&&selectedGear>0)) {
@@ -2191,7 +2212,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         const slopeAlongCar = slope.gradeX * forwardXBeforeMove + slope.gradeY * forwardYBeforeMove;
 
         const frameStartSpeed = car.speed;
-        const longState={speed:car.speed,throttle:throttleState.current,brakePedal,shiftProgress,overRevBlend,ignitionBlend,launchBlend,prevLongAccelMs2,pendingFrames:longitudinalPendingFrames,holdFrames:longitudinalHoldFrames,stallTimer:longitudinalStallTimer};
+        const longState={speed:car.speed,throttle:throttleState.current,brakePedal,shiftProgress,overRevBlend,ignitionBlend,launchBlend,prevLongAccelMs2,pendingFrames:longitudinalPendingFrames,holdFrames:longitudinalHoldFrames,stallTimer:longitudinalStallTimer,driveSlip:wheelDriveSlip};
         const longInputs={gear:currentInputReal.gear,engineStarted:currentInputReal.engineStarted,gasPressed:currentInputReal.gasPressed,shiftPressed:!!currentInputReal.shiftPressed,throttle:currentInputReal.throttle,brake:currentInputReal.brake,handbrake:currentInputReal.handbrake,absEnabled:settingsRef.current.absEnabled!==false,reverseAssist:directionChangeActive};
         const turnBudget=cornerDriveBudget(frameStartSpeed*SPEED_UNIT_KMH/3.6,car.steeringAngle,rigWheelbase/10,cc.dynamics.grip*weatherGrip);
         const longContext={carId:cc.id,cc,pt,vehicleTune,weatherGrip,rollingResistanceScale:terrainResponse.rolling,driveGripBudget:turnBudget,slopeAlongCar,tunedShiftFrames,elapsedFrames:frameScale};
@@ -2221,6 +2242,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         longitudinalPendingFrames = longResult.pendingFrames;
         longitudinalHoldFrames = longResult.holdFrames;
         longitudinalStallTimer = longResult.stallTimer;
+        wheelDriveSlip = longResult.driveSlip ?? 0;
         if (longResult.stalled) {
           // Ask App to switch the ignition off exactly once. The HUD receives
           // the same event and explains N/1 + B instead of silently locking.
@@ -2269,6 +2291,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           const side = Number(mount.userData.vehicleSideX ?? mount.position.x);
           mount.rotation.y = side > 0 ? -fourAngles.rearLeft : -fourAngles.rearRight;
         });
+        if(cc.id===CarType.DF41){const front=Math.max(...wheelBaseZ),rear=Math.min(...wheelBaseZ);playerParts.wheelMounts.forEach((m,i)=>{m.rotation.y=-multiAxleSteer(m.position.x,wheelBaseZ[i],front,rear,car.steeringAngle,rearSteerAngle);});}
         const rigWheels:RigWheel[]=playerParts.wheelMounts.map((mount,i)=>({
           x:mount.position.x,y:wheelBaseY[i],z:wheelBaseZ[i],
           radius:Number(playerParts.wheels[i]?.userData.wheelRadius)||cc.dynamics.transmission.wheelRadiusM*10,
@@ -2287,7 +2310,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         const lateral=stepLateral(lateralState,{speed:car.speed*SPEED_UNIT_KMH/3.6,
           steer:car.steeringAngle,rearSteer:rearSteerAngle,wheelbase:rigWheelbase/10,rearOffset:rearAxleOffset/10,
           frontBias:cc.dynamics.frontWeightBias,grip:cc.dynamics.grip*weatherGrip,layout:cc.dynamics.driveLayout,
-          throttle:throttleState.current,handbrake:currentInputReal.handbrake,frontLocked:longResult.frontLocked,
+          throttle:throttleState.current,driveSlip:longResult.driveSlip,handbrake:currentInputReal.handbrake,frontLocked:longResult.frontLocked,
           dt:frameDelta/1000,understeer:cc.dynamics.understeerGradient*vehicleTune.understeerScale});
         if(!airborneActive){
           car.speed=Math.sign(car.speed)*Math.max(0,Math.abs(car.speed)-lateral.scrubAccel*(frameDelta/1000)/(SPEED_UNIT_KMH/3.6));
@@ -2806,7 +2829,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           road:sCur.soundEnabled?roadSound.gain:0,hz:audioMotor.frequency,driving:drivingMotor};
         const targetEngineRpm = computeRpm(pt, speedAbs, currentInputReal.gear, throttleState.current, currentInputReal.engineStarted);
         const rpmResponse = targetEngineRpm > simulatedEngineRpm ? 0.075 : 0.05;
-        simulatedEngineRpm = approachExponential(simulatedEngineRpm, targetEngineRpm, rpmResponse, frameScale);
+        simulatedEngineRpm = approachExponential(simulatedEngineRpm, Math.max(targetEngineRpm,(longResult.driveSlip??0)*cc.dynamics.transmission.redlineRpm*.4), rpmResponse, frameScale);
         if (sCur.soundEnabled && sCur.engineSoundEnabled && engineNodesRef.current?.lowMix) {
           const { osc1, osc2, osc3, gain, filter, noiseGain, lowMix, midMix, pulseMix } = engineNodesRef.current;
           if (currentInputReal.engineStarted) {
@@ -2897,7 +2920,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           throttle: throttleState.current,
           speedAbs, distanceM:audioDistanceM, insulation,
           surface: (terrainResponse.gravel || isGravelSurface(car.x, car.y)) ? 'gravel' : 'asphalt',
-          skid: isSkiddingNow ? Math.min(1, Math.max(brakeForce * 2.5, Math.abs(car.driftSlip) * 4)) : 0,
+          skid: Math.max(Math.min(1,longResult.driveSlip??0),isSkiddingNow ? Math.min(1, Math.max(brakeForce * 2.5, Math.abs(car.driftSlip) * 4)) : 0),
           volume: sCur.volume,
         });
         if (recordingStatus.ready) {
@@ -3025,7 +3048,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           if(wiperRef.current)wiperRef.current.style.display=cameraViewRef.current==='HOOD'&&currentInputReal.wipers?'block':'none';
           if(ldCur.exam)window.dispatchEvent(new CustomEvent('exam-telemetry',{detail:{x:car.x,y:car.y,rotation:car.rotation,speedKmh:car.speed*15,time:simulationClockMs,gear:currentInputReal.gear,manual:!isAutomaticVehicle(cc.id),width:cc.width,length:cc.length}}));
           window.dispatchEvent(new CustomEvent('car-map-position', {
-            detail: { x: car.x, y: car.y, rotation: car.rotation, floor: carFloor, elevation:car.roadHeight??0, safe:!destroyed&&!rollover&&!liftRide },
+            detail: {level:ldCur.levelId,car:cc.id,speedKmh:car.speed*15,gear:currentInputReal.gear,parkingBrake:currentInputReal.parkingBrake,driveSlip:wheelDriveSlip,steeredWheels:playerParts.wheelMounts.map(w=>w.rotation.y), x: car.x, y: car.y, rotation: car.rotation, floor: carFloor, elevation:car.roadHeight??0, safe:!destroyed&&!rollover&&!liftRide },
           }));
         }
 
@@ -3125,13 +3148,21 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
             // the rotation direction of any front or rear wheel.
             turnFactor = Math.max(0.05, 1 + (geometricRatio - 1) * diffGain);
           }
+          if(cc.id===CarType.DF41){
+            const curvature=(Math.tan(car.steeringAngle)-Math.tan(rearSteerAngle))/rigWheelbase;
+            const lateralVelocity=Math.tan(rearSteerAngle)+(wheelBaseZ[idx]-Math.min(...wheelBaseZ))*curvature;
+            const centreVelocity=Math.tan(rearSteerAngle)+rearAxleOffset*curvature;
+            turnFactor=Math.hypot(1+playerParts.wheelMounts[idx].position.x*curvature,lateralVelocity)/Math.hypot(1,centreVelocity);
+          }
           const wheelRadius = Number(w.userData.wheelRadius) || defaultWheelRadius;
           const isFront = idx < playerParts.frontWheels.length;
           const locked = isFront ? longResult.frontLocked : longResult.rearLocked;
           const dt = frameDelta / 1000;
           const grounded = wheelGroundedFromTelemetry(suspensionTelemetryRef.current.wheelGrounded,idx,airborneActive,Boolean(rollover));
           if (grounded) {
-            const delta = locked ? 0 : (frameTravelSpeed * TRAVEL_PER_SPEED_FRAME / wheelRadius) * turnFactor * frameScale;
+            const powered=isDrivenWheel(cc.dynamics.driveLayout,isFront)&&currentInputReal.engineStarted&&currentInputReal.gear!==0;
+            const spin=powered&&!locked?(longResult.driveSlip??0)*Math.sign(currentInputReal.gear)*16*dt:0;
+            const delta = locked ? 0 : (frameTravelSpeed * TRAVEL_PER_SPEED_FRAME / wheelRadius) * turnFactor * frameScale+spin;
             w.rotation.x += delta;
             w.userData.airborneWheelOmega = dt > 0 ? delta / dt : 0;
           } else {
@@ -3282,9 +3313,9 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         }
         playerParts.nativeCockpit?.updateInstruments?.(car.speed * 15, simulatedEngineRpm);
         roadHeadlights.forEach(light => {
-          light.intensity = lightsOn ? (highBeam?2200:1100) : 0;
-          light.distance=highBeam?800:360;light.angle=highBeam?.70:1.02;
-          light.target.position.y=highBeam?4:-5;light.target.position.z=highBeam?550:180;
+          light.intensity = lightsOn ? (highBeam?14000:6500) : 0;
+          light.distance=highBeam?2600:1000;light.angle=highBeam?.30:.65;light.penumbra=.65;
+          light.target.position.y=highBeam?6:-2;light.target.position.z=highBeam?1800:600;
         });
         roadTaillights.forEach(light => {
           light.intensity = isBraking ? 160 : lightsOn ? 45 : 0;
@@ -3415,6 +3446,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
               const pitch = (playerParts.nativeCockpit.pitchDeg + tune.pitch - DEFAULT_HOOD_CAMERA_ADJUSTMENT.pitch) * Math.PI / 180;
               pose.targetY = pose.y + Math.tan(pitch) * Math.max(80, cc.length * 3.2);
             }
+            if(seatClearance){const old=new THREE.Vector3(pose.x,pose.y,pose.z),safe=seatClearance.constrain(old);pose.targetX+=safe.x-pose.x;pose.targetY+=safe.y-pose.y;pose.targetZ+=safe.z-pose.z;pose.x=safe.x;pose.y=safe.y;pose.z=safe.z;}
             const head=stepDriverMotion(driverMotion,frameDelta/1000,{
               height:playerParts.group.position.y,
               pitch:effectiveRoadPitch+suspensionPitch,roll:suspensionRoll,
@@ -3473,12 +3505,14 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         if(snowParticles)snowParticles.object.visible=!underCover;
         rainParticles?.step(frameDelta / 1000, car.x, renderSlope.height, car.y);
         snowParticles?.step(frameDelta / 1000, car.x, renderSlope.height, car.y);
+        missile?.step(frameDelta/1000,carState.current.speed,camera);
         } // end if (frameDelta > 0)
       }  // end if (!paused)
 
       // The main camera and three mirrors share one world transform snapshot.
       // Cameras update their own local mounts below; visibility/intensity
       // changes do not require re-walking the entire static city each pass.
+
       scene.updateMatrixWorld();
       scene.matrixWorldAutoUpdate = false;
       const renderCpuStart=performance.now();
@@ -3487,6 +3521,8 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
       if (!isPausedRef.current) renderer.shadowMap.needsUpdate = settingsRef.current.shadowsEnabled;
       renderer.render(scene, camera);
+      if(transitionFrame.current){transitionFrame.current.remove();transitionFrame.current=null;}
+      if(!presented){presented=true;setLoadStage(null);}
 
       if (settingsRef.current.rearviewMirrors) {
         // Scissor mirrors share the main canvas: they must be redrawn every
@@ -3728,7 +3764,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       car.roadHeight=sampleTerrainSurface(levelDataRef.current,car.x,car.y,car.roadHeight).height;
       throttleState.current=0;carSpeedRef.current=0;tyreLateralG=0;airborneActive=false;
       brakePedal=0;launchBlend=0;prevLongAccelMs2=0;filteredLongAccelG=0;
-      longitudinalPendingFrames=0;longitudinalHoldFrames=0;longitudinalStallTimer=0;lastMotorDriveForce=0;
+      longitudinalPendingFrames=0;longitudinalHoldFrames=0;longitudinalStallTimer=0;wheelDriveSlip=0;lastMotorDriveForce=0;
       // No level reload and no camera reset. The next simulation frame restores
       // the authored shell, spring rest pose and tyres at this location.
       built?.playerCarParts.trailer?.reset();
@@ -3758,7 +3794,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
 
     // ===== 清理 =====
     return () => {
-      disposed = true;
+      disposed = true;setLoadStage('正在准备道路');
       cancelAnimationFrame(animationId);
       window.removeEventListener('toggle-collision-debug', collisionDebugHandler);
       clearCollisionDebug();
@@ -3768,21 +3804,22 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       window.removeEventListener('mountain-lift-start',startLift);window.removeEventListener('mountain-lift-skip',skipLift);setMountainLiftHeight(null);
       window.removeEventListener('vehicle-recover',recoverInPlace);
       dom.removeEventListener('wheel', onWheel);
+      if(presented){const snapshot=document.createElement('canvas');snapshot.width=renderer.domElement.width;snapshot.height=renderer.domElement.height;
+      // Redraw because WebGL's default drawing buffer may have been cleared.
+      try{renderer.render(scene,camera);snapshot.getContext('2d')?.drawImage(renderer.domElement,0,0);snapshot.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1';transitionFrame.current?.remove();transitionFrame.current=snapshot;mount.appendChild(snapshot);}catch{}}
       // 物理引擎释放
       wreck?.dispose();looseDebris.forEach(d=>d.dispose());fires.forEach(f=>f.dispose());damageModel?.dispose();rollover?.dispose();
-      physics.dispose();
+      missile?.dispose();physics.dispose();
       // 模型缓存释放
-      disposeModelCache();
-      disposeResources([scene,...(built?.streamingChunks?.values()??[])]);
+      // Retain decoded GLBs across map/vehicle changes; renderer resources are disposed below.
+      const keep=peekPreparedScene();disposeResources([scene,...(built?.streamingChunks?.values()??[])],keep?[keep.scene,...(keep.streamingChunks?.values()??[])]:[]);
       skidMarks.forEach(mark => (mark.material as THREE.Material).dispose());
       skidMarks.length = 0;
       skidMarkMat.dispose();
       skidTexture.dispose();
-      disposeMaterials();
       vehicleEnvironment?.dispose();
       mirrorTarget.dispose(); sideMirrorTargetLeft.dispose(); sideMirrorTargetRight.dispose(); mirrorQuadGeo.dispose(); mirrorQuadMat.dispose();
-      renderer.dispose();
-      renderer.forceContextLoss();
+      // Keep the renderer/context across map and car changes; final unmount disposes it.
       overviewTarget?.dispose();
       markerRingMaterial.dispose();
       markerArrowMaterial.dispose();
@@ -3819,11 +3856,12 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
   return <>
     <div ref={wiperRef} style={{display:'none'}} className="windshield-wipers" aria-label="雨刮器运行"><i/><i/></div>
     <div ref={mountRef} className="block w-full h-full touch-none" />
-    {(damagePercent>0 || overturned) && <div role="status" className={`damage-status ${isTouchDevice()?'damage-status-touch':''}`}>
+    {loadStage&&<LoadingDrive stage={loadStage} compact={!!transitionFrame.current}/> }
+    <HintSlot>{(damagePercent>0 || overturned) && <div role="status" className={`damage-status ${isTouchDevice()?'damage-status-touch':''}`}>
       <span className="damage-status-dot"/>
       <span>{overturned?'车辆翻覆':wrecked?'车辆损毁':`车损 ${damagePercent}%`}</span>
       {(wrecked || overturned) && <small>{isTouchDevice()?'点顶部重置图标':'R 重置'}</small>}
-    </div>}
+    </div>}</HintSlot>
   </>;
 });
 

@@ -1,0 +1,312 @@
+[
+  {
+    "command": "tsx tests/driving.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/systems.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/obstacles.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/presentation.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx scripts/probe-curb-start.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/openWorld.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/expansionVehicles.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/round14.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/crashDebris.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/wheelArch.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/chassisSupport.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/vehicleAudio.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/vehicleDamage.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/suspensionDynamics.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx scripts/probe-terrain18.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/round19.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/round20.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/round21.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/round22.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/round23.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/round24.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/round25.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/releases.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/round27.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/round28.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/round29.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/round30.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/round31.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/wheelSpin.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/mobileArc.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/highwaySafety.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/collisionGrid.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/severeCrashFleet.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/trailerWheelRoundness.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/miningWheelClearance.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/weatherOptions.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/trackedSuspension.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/physicsCompoundWalls.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/differentialSolver.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/miningVisibility.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/experimentalDrivetrain.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/experimentalContactBridge.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/driverSeat.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/driverSeatClearance.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/coachWheelEnlargement.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/heavyWheelSize.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/heavyVehicleRuntime.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/curbBroadphase.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/renderPacing.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/heavyTrailerDynamics.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/sceneryAlignment.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/commercialWheelClearance.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/audioPlaybackGate.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/vehicleCollisionQuery.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/trafficImpact.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/precipitation.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/steeringAnchor.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/progress.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/examPosition.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/mountainSampling.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/worldConnections.test.ts",
+    "code": 0,
+    "tail": ""
+  },
+  {
+    "command": "tsx tests/round44.test.ts",
+    "code": 0,
+    "tail": ""
+  }
+]

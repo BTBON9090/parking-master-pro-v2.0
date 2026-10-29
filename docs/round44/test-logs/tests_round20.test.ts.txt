@@ -1,0 +1,14 @@
+Round20 floor projection, no cross-floor radar, clear aisles/bays, smooth bumps, pickup and trail PASS {
+  radar: [
+    { floor: -48, detected: 469, guideElevation: -48 },
+    { floor: -96, detected: 492, guideElevation: -96 },
+    { floor: -144, detected: 457, guideElevation: -144 }
+  ],
+  aisleSweeps: 4374,
+  pickup: { fuel: true, gears: 5 },
+  trail: {
+    samples: 340,
+    lengthM: 608.4930964695778,
+    maxStep: 0.3355984608426752
+  }
+}

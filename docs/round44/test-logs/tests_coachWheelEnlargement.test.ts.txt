@@ -1,0 +1,1 @@
+Coach wheel PASS: realistic-size circular tyres, width retained, physical radius and sampled arch/suspension clearance

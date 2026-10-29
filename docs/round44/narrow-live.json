@@ -1,0 +1,48 @@
+{
+ "data": {
+  "level": 6,
+  "car": "CARGO_TRIKE",
+  "speedKmh": 0,
+  "gear": 0,
+  "parkingBrake": true,
+  "driveSlip": 0,
+  "steeredWheels": [
+   0,
+   0,
+   0
+  ],
+  "x": 300.00233579598205,
+  "y": 1135.327313634602,
+  "rotation": 1.5678216132376204,
+  "floor": 0,
+  "elevation": -48.000000000366946,
+  "safe": true
+ },
+ "stats": {
+  "frames": 185,
+  "maxGap": 96.5,
+  "last": 65073.29999999702,
+  "transitions": [],
+  "level": 6
+ },
+ "physics": {
+  "audio": {
+   "ready": true,
+   "loaded": 17,
+   "total": 17,
+   "failed": "",
+   "active": true
+  },
+  "tyres": [
+   true,
+   true,
+   true
+  ],
+  "contacts": [
+   -47.99998967954232,
+   -48,
+   -48
+  ],
+  "body": -0.26245245336666284
+ }
+}

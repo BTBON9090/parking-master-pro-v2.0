@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {GARAGE_SPIRAL,garageSpiralPoint,GARAGE_LEVELS, garageRampHeight, GARAGE_PILLAR_X, GARAGE_PILLAR_Y, GARAGE_SPEED_TABLES, garageBump} from '../utils/garage';
+import {GARAGE_NARROW_SPIRAL,GARAGE_SPIRAL,garageSpiralPoint,GARAGE_LEVELS, garageRampHeight, GARAGE_PILLAR_X, GARAGE_PILLAR_Y, GARAGE_SPEED_TABLES, garageBump} from '../utils/garage';
 
 /** Shared ramp profile drives both the triangles and the tyre contact surface. */
 export function addGarageArchitecture(scene:THREE.Scene,track:(g:THREE.BufferGeometry)=>THREE.BufferGeometry){
@@ -83,19 +83,22 @@ export function addGarageArchitecture(scene:THREE.Scene,track:(g:THREE.BufferGeo
  }
  // One continuous mesh remains loaded across floor transitions; tyre support
  // uses the same helix and prior height to distinguish its two turns.
- const helix=new THREE.Group();helix.name='garage-spiral';helix.userData.garageRamp=0;
- for(const [left,right,lift,color] of [[-55,55,.12,'#394249'],[-.7,.7,.23,'#edc458'],[-52,-50.8,.23,'#ece9df'],[50.8,52,.23,'#ece9df']] as const){
+ for(const spiral of [GARAGE_SPIRAL,GARAGE_NARROW_SPIRAL]){
+ const helix=new THREE.Group();helix.name=spiral===GARAGE_SPIRAL?'garage-spiral':'garage-spiral-narrow';helix.userData.garageRamp=0;
+ for(const [left,right,lift,color] of [[-spiral.width/2,spiral.width/2,.12,'#394249'],[-spiral.width/2+2,-spiral.width/2+3.2,.23,'#ece9df'],[spiral.width/2-3.2,spiral.width/2-2,.23,'#ece9df']] as const){
   const positions:number[]=[],ids:number[]=[];
-  for(let i=0;i<=360;i++){for(const off of [left,right]){const p=garageSpiralPoint(i/360,off);positions.push(p.x,p.height+lift,p.y);}if(i<360){const n=i*2;ids.push(n,n+2,n+1,n+1,n+2,n+3);}}
+  for(let i=0;i<=360;i++){for(const off of [left,right]){const p=garageSpiralPoint(i/360,off,spiral);positions.push(p.x,p.height+lift,p.y);}if(i<360){const n=i*2;ids.push(n,n+2,n+1,n+1,n+2,n+3);}}
   const geometry=track(new THREE.BufferGeometry());geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setIndex(ids);geometry.computeVertexNormals();
   const m=new THREE.Mesh(geometry,new THREE.MeshStandardMaterial({color,roughness:1,side:THREE.DoubleSide}));m.receiveShadow=true;helix.add(m);
  }
  for(const f of [0,2]){
+  const landing=new THREE.Mesh(track(new THREE.PlaneGeometry(spiral.width+24,70)),new THREE.MeshStandardMaterial({color:'#394249',roughness:.9,side:THREE.DoubleSide}));landing.rotation.x=-Math.PI/2;landing.position.set(spiral.x,GARAGE_LEVELS[f]+.14,spiral.y-spiral.radius);helix.add(landing);
   const sign=makeLabel(f===0?'B3 ↓  螺旋直达  10 km/h':'B1 ↑  螺旋直达  10 km/h','#276977',125,17);
-  sign.position.set(800,GARAGE_LEVELS[f]+31,910);helix.add(sign);
+  sign.position.set(spiral.x,GARAGE_LEVELS[f]+31,910);helix.add(sign);
  }
  // Ring light strips provide depth without additional dynamic lights.
  const lights=new THREE.InstancedMesh(track(new THREE.BoxGeometry(10,1,2)),new THREE.MeshBasicMaterial({color:'#cce4d6'}),40);
- for(let i=0;i<40;i++){const p=garageSpiralPoint((i+.5)/40,54),m=new THREE.Matrix4().makeRotationY(-p.angle-Math.PI/2);m.setPosition(p.x,p.height+17,p.y);lights.setMatrixAt(i,m);}helix.add(lights);
- scene.add(helix);scene.add(ceilingGroup);return ceilingGroup;
+ for(let i=0;i<40;i++){const p=garageSpiralPoint((i+.5)/40,spiral.width/2-1,spiral),m=new THREE.Matrix4().makeRotationY(-p.angle-Math.PI/2);m.setPosition(p.x,p.height+17,p.y);lights.setMatrixAt(i,m);}helix.add(lights);
+ scene.add(helix);}
+ scene.add(ceilingGroup);return ceilingGroup;
 }

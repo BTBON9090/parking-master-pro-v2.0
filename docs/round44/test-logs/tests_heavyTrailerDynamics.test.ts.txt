@@ -1,0 +1,1 @@
+Heavy trailer dynamics PASS: both trucks, flat and ±2% grades, grounded tyres and body clearance through 120 frames

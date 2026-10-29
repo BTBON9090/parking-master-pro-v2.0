@@ -1,0 +1,102 @@
+{
+ "data": {
+  "level": 13,
+  "car": "DF41",
+  "speedKmh": 0,
+  "gear": 0,
+  "parkingBrake": true,
+  "driveSlip": 0,
+  "steeredWheels": [
+   -9.743632212606353e-143,
+   -9.743632212606353e-143,
+   -8.351684812924399e-143,
+   -8.351684812924399e-143,
+   -6.959737413242445e-143,
+   -6.959737413242445e-143,
+   -5.567789857998238e-143,
+   -5.567789857998238e-143,
+   -4.175842354608116e-143,
+   -4.175842354608116e-143,
+   -2.783894799363908e-143,
+   -2.783894799363908e-143,
+   -1.391947399681954e-143,
+   -1.391947399681954e-143,
+   0,
+   0
+  ],
+  "x": 4400.285773015284,
+  "y": 1852.1806193385914,
+  "rotation": 0,
+  "floor": -1,
+  "elevation": 0,
+  "safe": true
+ },
+ "stats": {
+  "frames": 6286,
+  "maxGap": 57056.10000000149,
+  "last": 934723,
+  "transitions": [
+   {
+    "level": 1,
+    "speed": 0,
+    "gear": 0,
+    "parkingBrake": true,
+    "gap": 704.8000000044703
+   },
+   {
+    "level": 13,
+    "speed": 0,
+    "gear": 0,
+    "parkingBrake": true,
+    "gap": 57056.10000000149
+   }
+  ],
+  "level": 13
+ },
+ "physics": {
+  "audio": {
+   "ready": true,
+   "loaded": 17,
+   "total": 17,
+   "failed": "",
+   "active": true
+  },
+  "tyres": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "contacts": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "body": 0
+ }
+}

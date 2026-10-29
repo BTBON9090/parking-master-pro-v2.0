@@ -50,8 +50,8 @@ class Gain extends Node {gain=new Param();}
 class Filter extends Node {frequency=new Param();Q=new Param();type='';}
 class Source extends Node {playbackRate=new Param();buffer:any;loop=false;stopped=false;start(){}stop(){this.stopped=true;}}
 class Oscillator extends Node {frequency=new Param();start(){}stop(){}setPeriodicWave(_wave:unknown){}}
-const sources:Source[]=[],masters:Gain[]=[];
-const context={currentTime:0,destination:new Node(),createGain(){const g=new Gain();masters.push(g);return g;},createBufferSource(){const s=new Source();sources.push(s);return s;},
+const sources:Source[]=[],masters:Gain[]=[],pans:any[]=[],delays:any[]=[];
+const context={createStereoPanner(){const n=Object.assign(new Node(),{pan:new Param()});pans.push(n);return n;},createDelay(){const n=Object.assign(new Node(),{delayTime:new Param()});delays.push(n);return n;},currentTime:0,destination:new Node(),createGain(){const g=new Gain();masters.push(g);return g;},createBufferSource(){const s=new Source();sources.push(s);return s;},
  createOscillator(){return new Oscillator();},createPeriodicWave(){return {};},
  createBiquadFilter(){return new Filter();},createDynamicsCompressor(){return Object.assign(new Node(),{threshold:new Param(),knee:new Param(),ratio:new Param(),attack:new Param(),release:new Param()});},
  decodeAudioData:async()=>({duration:2})} as unknown as AudioContext;
@@ -59,7 +59,10 @@ const realFetch=globalThis.fetch;globalThis.fetch=async()=>({ok:true,arrayBuffer
 await initRecordingAudio(context);globalThis.fetch=realFetch;
 const params:RecordingAudioParams={enabled:true,paused:false,engineOn:true,electric:true,cabin:false,rpm:4000,redlineRpm:10000,throttle:0,speedAbs:2,surface:'asphalt',skid:0,volume:.6,distanceM:3};
 updateRecordingAudio(params);
-const roadFilter=sources[2].next[0] as Filter,roadGain=roadFilter.next[0] as Gain;
+assert.deepEqual(pans.map(p=>p.pan.value),[-.55,.55,-.55,.55],"road and gravel stereo pairs are symmetric");
+assert.deepEqual(delays.map(d=>d.delayTime.value),[.006,.014,.006,.014]);
+assert.equal((masters[0] as any).channelCount,2);
+const roadFilter=sources[8].next[0] as Filter,roadGain=roadFilter.next[0] as Gain;
 assert.equal(roadFilter.type,'lowpass','recording is no longer a highpass hiss');
 const external=roadGain.gain.value,cutoff=roadFilter.frequency.value;
 assert(external>0,'coasting plays actual road recording');

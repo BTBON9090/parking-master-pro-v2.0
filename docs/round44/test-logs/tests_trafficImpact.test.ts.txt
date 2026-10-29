@@ -1,0 +1,1 @@
+Traffic impact PASS: relative closing speed, translating-frame invariance, two-mass momentum/energy, stationary legacy impulse, NPC recovery from rest and lateral Cannon velocity.

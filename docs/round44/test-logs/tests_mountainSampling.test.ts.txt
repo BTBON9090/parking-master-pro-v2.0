@@ -1,0 +1,10 @@
+{
+  probes: 4662,
+  maxError: 0,
+  coldOptimizedMs: 214.98458300000004,
+  beforeMs: 131.36524999999995,
+  afterMs: 40.15600000000006,
+  ratio: 0.3056820582307732,
+  rails: 5600,
+  environment: 'Node CPU sampling, not Android frame-rate'
+}

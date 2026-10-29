@@ -9,7 +9,7 @@ const defaults={renderQuality:'auto',volume:.8,cabinVolume:.7,exteriorVolume:.85
 assert.deepEqual(restoreSettings(defaults,JSON.stringify({})).driverSeatAdjustment,DEFAULT_DRIVER_SEAT,'old settings use neutral seat');
 const chosen={forwardCm:12,heightCm:-8,pitchDeg:6};
 assert.deepEqual(restoreSettings(defaults,JSON.stringify({driverSeatAdjustment:chosen})).driverSeatAdjustment,chosen,'offsets persist across reload');
-assert.deepEqual(normalizeDriverSeat({forwardCm:999,heightCm:-999,pitchDeg:NaN}),{forwardCm:12,heightCm:-8,pitchDeg:0},'out-of-range or invalid values are safe');
+assert.deepEqual(normalizeDriverSeat({forwardCm:999,heightCm:-999,pitchDeg:NaN}),{forwardCm:50,heightCm:-40,pitchDeg:0},'out-of-range or invalid values are safe');
 assert.deepEqual(applyDriverSeatToCamera(tune,undefined),tune,'neutral seat preserves each car baseline');
 for(const id of [CarType.SUV,CarType.US22,CarType.MINING,CarType.TYPE100]){
  const base=resolveHoodCameraLocalPose(CAR_MODELS[id],tune), result=resolveHoodCameraLocalPose(CAR_MODELS[id],applyDriverSeatToCamera(tune,chosen));

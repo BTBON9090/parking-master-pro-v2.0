@@ -324,6 +324,10 @@ export function addOpenWorld(level:LevelData):LevelData {
   level.streetSigns!.push({x:x-1200,y:y-90,rotation:rot,label:'城市快速路 / 居民区',kind:'street'});
  }
  for(let i=0;i<8;i++)level.spots.push({id:'summit-park-'+i,x:43550+i*42,y:1738,width:34,height:70,rotation:Math.PI/2,occupied:false,elevation:10000});
+ const gateway=WORLD_ROUTES.find(r=>r.id==='gateway')!;
+ const blocksGateway=(o:{x:number;y:number;width:number;height:number})=>gateway.samples.filter(p=>p.x<24000).some(p=>Math.abs(o.x-p.x)<o.width/2+85&&Math.abs(o.y-p.y)<o.height/2+85);
+ level.obstacles=level.obstacles.filter(o=>o.id.startsWith('mountain-')||!blocksGateway(o));
+ level.curbSegments=level.curbSegments?.filter(c=>!blocksGateway({...c,width:c.length,height:6}));
  level.training={title:'城市与环城青岚山 · 云顶 1000 m',tips:['CBD、居民区、立交与环城山脉相连；地图为原创北京风格训练世界','西岭碎石外崖无连续护栏，北岭盘山线通向海拔 1000 米停车坪','地图目的地可直接选择山路入口或云顶；事故后按 R 恢复']};
  return level;
 }

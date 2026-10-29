@@ -1,0 +1,1 @@
+Trailer tyre geometry PASS: 8 + 12 wheels remain circular across 0, 45 and 90 degrees.

@@ -1,0 +1,51 @@
+{
+ "data": {
+  "level": 13,
+  "car": "SPORTS",
+  "speedKmh": 26.02759662747502,
+  "gear": 1,
+  "parkingBrake": false,
+  "driveSlip": 1.9999999999999991,
+  "steeredWheels": [
+   0,
+   0,
+   0,
+   0
+  ],
+  "x": 4703.486840420255,
+  "y": 1856,
+  "rotation": 0,
+  "floor": -1,
+  "elevation": 0,
+  "safe": true
+ },
+ "stats": {
+  "frames": 88,
+  "maxGap": 121.20000000298023,
+  "last": 90105.19999999553,
+  "transitions": [],
+  "level": 13
+ },
+ "physics": {
+  "audio": {
+   "ready": true,
+   "loaded": 17,
+   "total": 17,
+   "failed": "",
+   "active": true
+  },
+  "tyres": [
+   true,
+   true,
+   true,
+   true
+  ],
+  "contacts": [
+   0,
+   0,
+   0,
+   0
+  ],
+  "body": -0.0500348435233439
+ }
+}

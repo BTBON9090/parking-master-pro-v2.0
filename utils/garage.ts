@@ -17,25 +17,31 @@ export function garageRampHeight(floor:number,y:number){
 }
 /** Opposite the east ramps: a two-turn south tower connects B1 directly to B3. */
 export const GARAGE_SPIRAL={x:800,y:1300,radius:200,width:110,turns:2};
-export function garageSpiralPoint(t:number,offset=0){
- const s=GARAGE_SPIRAL,a=-Math.PI/2+t*Math.PI*2*s.turns,r=s.radius+offset;
+export const GARAGE_NARROW_SPIRAL={x:300,y:1300,radius:160,width:38,turns:2};
+export function garageSpiralPoint(t:number,offset=0,s=GARAGE_SPIRAL){
+ const a=-Math.PI/2+t*Math.PI*2*s.turns,r=s.radius+offset;
  return {x:s.x+Math.cos(a)*r,y:s.y+Math.sin(a)*r,height:-48-96*t*t*(3-2*t),angle:a};
 }
-export function garageSpiralSurface(x:number,y:number,hint:number){
- const s=GARAGE_SPIRAL,dx=x-s.x,dy=y-s.y,r=Math.hypot(dx,dy);
+export function garageSpiralSurface(x:number,y:number,hint:number,s=GARAGE_SPIRAL){
+ const dx=x-s.x,dy=y-s.y,r=Math.hypot(dx,dy);
  if(Math.abs(r-s.radius)>s.width/2)return null;
  const a=((Math.atan2(dy,dx)+Math.PI/2)%(2*Math.PI)+2*Math.PI)%(2*Math.PI);
  const values=[];
+ // Wheels straddling the north seam must sample the B1/B3 landing, not
+ // the next lap. Extend only beyond each endpoint; preserve the real grade
+ // on the descending/ascending side and on the intermediate B2 lap.
+ if(a>Math.PI*1.8 && hint>-72)values.push({height:-48,gradeX:0,gradeY:0});
+ if(a<Math.PI*.2 && hint<-120)values.push({height:-144,gradeX:0,gradeY:0});
  for(let lap=0;lap<=s.turns;lap++){
   const t=(a/(2*Math.PI)+lap)/s.turns;if(t>1+1e-9)continue;
   const gradient=-96*6*t*(1-t)/(Math.PI*2*s.turns);
-  values.push({height:garageSpiralPoint(t).height,gradeX:gradient*(-dy)/(r*r),gradeY:gradient*dx/(r*r)});
+  values.push({height:garageSpiralPoint(t,0,s).height,gradeX:gradient*(-dy)/(r*r),gradeY:gradient*dx/(r*r)});
  }
  return values.sort((a,b)=>Math.abs(a.height-hint)-Math.abs(b.height-hint))[0];
 }
 /** Select by prior support height, not XY alone: stacked decks never teleport a car. */
 export function garageSurface(x:number,y:number,hint:number){
- const spiral=garageSpiralSurface(x,y,hint);if(spiral)return spiral;
+ const spiral=garageSpiralSurface(x,y,hint)??garageSpiralSurface(x,y,hint,GARAGE_NARROW_SPIRAL);if(spiral)return spiral;
  const candidates:Array<{height:number;gradeX:number;gradeY:number}>=[];
  const r=GARAGE_RAMP;
  if(x>=r.x-r.width/2 && x<=r.x+r.width/2 && y>=r.start && y<=r.end){
@@ -57,8 +63,11 @@ export function buildGarageLevel():LevelData{
  for(let f=0;f<3;f++){
   const e=GARAGE_LEVELS[f],prefix=`garage-${f}`;
   level.roadSurfaces!.push({x:800,y:500,width:1400,height:800,rotation:0,color:['#3c474e','#414b50','#41464e'][f],elevation:e,curbs:false});
-  level.obstacles.push(wall(prefix+'-west',95,500,10,810,e),wall(prefix+'-north',800,95,1420,10,e),...(f===1?[wall(prefix+'-south',800,905,1420,10,e)]:[wall(prefix+'-south-left',412.5,905,645,10,e),wall(prefix+'-south-right',1187.5,905,645,10,e)]));
+  level.obstacles.push(wall(prefix+'-west',95,500,10,810,e),wall(prefix+'-north',800,95,1420,10,e),...(f===1?[wall(prefix+'-south',800,905,1420,10,e)]:[wall(prefix+'-south-left-a',185,905,190,10,e),wall(prefix+'-south-left-b',527.5,905,415,10,e),wall(prefix+'-south-right',1187.5,905,645,10,e)]));
   if(f!==1){
+   level.roadSurfaces!.push({x:300,y:1020,width:50,height:260,rotation:0,color:'#384148',elevation:e,curbs:false});
+   for(const x of [273,327])level.obstacles.push(wall(prefix+'-narrow-bridge-'+x,x,1015,4,210,e,14));
+   level.streetSigns??=[];level.streetSigns.push({x:350,y:885,rotation:0,label:'窄螺旋 · 双向共用单车道 · 会车让行',kind:'street'});
    level.roadSurfaces!.push({x:800,y:1000,width:130,height:220,rotation:0,color:'#384148',elevation:e,curbs:false});
    for(const x of [732,868])level.obstacles.push(wall(prefix+'-spiral-bridge-'+x,x,993,5,185,e,18));
    level.markings.push({...line(800,998,1.2,175,e,'#e6bd54'),type:'line-dashed'});
@@ -98,11 +107,11 @@ export function buildGarageLevel():LevelData{
   for(const x of [1546,1654])level.obstacles.push(wall(`garage-ramp-${f}-${i}-${x}`,x,y,5,10,e,42));
  }
  // Segmented outer/inner walls share the exact helix positions and height.
- for(let i=0;i<360;i++)for(const side of [-1,1]){
+ for(const spiral of [GARAGE_SPIRAL,GARAGE_NARROW_SPIRAL])for(let i=0;i<360;i++)for(const side of [-1,1]){
   // Leave the tangential turning area open at both connecting decks.
   if((i<9||i>350)&&side===1)continue;
-  const a=garageSpiralPoint(i/360,side*57),b=garageSpiralPoint((i+1)/360,side*57);
-  level.obstacles.push(wall(`garage-spiral-${i}-${side}`,(a.x+b.x)/2,(a.y+b.y)/2,Math.hypot(b.x-a.x,b.y-a.y)+.2,3,(a.height+b.height)/2,18,Math.atan2(b.y-a.y,b.x-a.x)));
+  const a=garageSpiralPoint(i/360,side*(spiral.width/2+2),spiral),b=garageSpiralPoint((i+1)/360,side*(spiral.width/2+2),spiral);
+  level.obstacles.push(wall(`garage-spiral-${spiral.x}-${i}-${side}`,(a.x+b.x)/2,(a.y+b.y)/2,Math.hypot(b.x-a.x,b.y-a.y)+.2,3,(a.height+b.height)/2,18,Math.atan2(b.y-a.y,b.x-a.x)));
  }
  return level;
 }

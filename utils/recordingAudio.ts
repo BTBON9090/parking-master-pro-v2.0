@@ -1,11 +1,11 @@
+import {recordingFamily} from './recordingProfiles';
 import {CarType} from '../types';
-import {EngineVoice} from './engineVoice';
+
 import {assetUrl} from './assetUrl';
 import {roadMix} from './motorAudio';
 /**
- * CC0 road/gravel/skid and ignition recording layers. Special mechanical
- * vehicles use low-frequency synthesized firing pulses for distinct character;
- * these are game sounds, not recordings of the named manufacturer's engine.
+ * CC0 road/gravel/skid and ignition recording layers. Combustion vehicles use real
+ * recorded engine families; these are not recordings of each named OEM engine.
  */
 export type RecordingSurface = 'asphalt' | 'gravel';
 
@@ -37,6 +37,7 @@ export interface RecordingAudioParams {
 }
 
 const ASSETS = [
+  ...(['farm','heavy','diesel'] as const).flatMap(f=>[{key:`${f}Idle` as const,url:`/audio/${f}-idle-loop.wav`},{key:`${f}Load` as const,url:`/audio/${f}-load-loop.wav`}]),
   { key: 'engineIdle', url: '/audio/engine-idle-loop.wav' },
   { key: 'engineLoad', url: '/audio/engine-load-loop.wav' },
   { key: 'road', url: '/audio/road-loop.wav' },
@@ -51,9 +52,10 @@ const ASSETS = [
 ] as const;
 
 type AssetKey = typeof ASSETS[number]['key'];
-type LoopKey = 'engineIdle' | 'engineLoad' | 'road' | 'gravel' | 'skid';
+type EngineFamily='engine'|'farm'|'heavy'|'diesel';
+type LoopKey = `${EngineFamily}Idle` | `${EngineFamily}Load` | 'road' | 'gravel' | 'skid';
 
-let voice:EngineVoice|null=null;
+
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
 let initPromise: Promise<RecordingAudioStatus> | null = null;
@@ -133,7 +135,10 @@ function connectLoop(context: AudioContext, key: LoopKey, buffer: AudioBuffer, f
     source.connect(gain);
     loops.set(key, { source, gain });
   }
-  gain.connect(master!);
+  if((key==='road'||key==='gravel')&&context.createStereoPanner){
+    // Balanced L/R ambience with independent short reflections; engine stays centred.
+    for(const side of [-1,1]){const pan=context.createStereoPanner(),delay=context.createDelay(.1),level=context.createGain();pan.pan.value=side*.55;delay.delayTime.value=side<0?.006:.014;level.gain.value=.5;gain.connect(delay);delay.connect(pan);pan.connect(level);level.connect(master!);}
+  }else gain.connect(master!);
   source.start();
 }
 
@@ -149,7 +154,7 @@ export function initRecordingAudio(context: AudioContext): Promise<RecordingAudi
   const signal = abortController.signal;
   ctx = context;
   master = context.createGain();
-  master.gain.value = 0;
+  master.gain.value = 0;master.channelCount=2;master.channelCountMode='explicit';master.channelInterpretation='speakers';
   const limiter = context.createDynamicsCompressor();
   limiter.threshold.value = -10;
   limiter.knee.value = 10;
@@ -181,8 +186,7 @@ export function initRecordingAudio(context: AudioContext): Promise<RecordingAudi
       active: false,
     };
     if (status.ready && shouldCommitAudioLoad(myGeneration) && ctx && master) {
-      connectLoop(context, 'engineIdle', buffers.get('engineIdle')!, 'lowpass', 1700);
-      connectLoop(context, 'engineLoad', buffers.get('engineLoad')!, 'lowpass', 2200);
+      for(const family of ['engine','farm','heavy','diesel'] as const){connectLoop(context, `${family}Idle`, buffers.get(`${family}Idle`)!, 'lowpass', 1700);connectLoop(context, `${family}Load`, buffers.get(`${family}Load`)!, 'lowpass', 2200);}
       connectLoop(context, 'road', buffers.get('road')!, 'lowpass', 1200);
       connectLoop(context, 'gravel', buffers.get('gravel')!, 'lowpass', 1100);
       connectLoop(context, 'skid', buffers.get('skid')!, 'lowpass', 1600);
@@ -216,10 +220,8 @@ export function updateRecordingAudio(params: RecordingAudioParams): void {
   }
   master.gain.setTargetAtTime(audible ? clamp(params.volume, 0, 2) * 0.95 : 0, now, 0.08);
   const rpmNorm = clamp((params.rpm - 700) / Math.max(1, params.redlineRpm - 700), 0, 1);
-  const mechanical=params.carType===CarType.TRACTOR||params.carType===CarType.TRIKE||params.carType===CarType.MINING||params.carType===CarType.TYPE100;
-  if(!voice)voice=new EngineVoice(ctx,master);
-  voice.update(params.carType??CarType.TRUCK,params.rpm,params.throttle,mechanical&&audible&&params.engineOn&&params.engineSoundEnabled!==false,!!params.cabin);
-  const engineActive = !mechanical && audible && params.engineOn && !params.electric && params.engineSoundEnabled!==false;
+  const family=recordingFamily(params.carType);
+  const engineActive = audible && params.engineOn && !params.electric && params.engineSoundEnabled!==false;
   const cabinScale=params.cabin?(params.insulation??.12):1;
   const road=roadMix(params.speedAbs,!!params.cabin,params.distanceM,params.insulation);
   const idleGain = engineActive ? (params.cabin?.14:.22) * (0.45 + rpmNorm * 0.55) : 0;
@@ -233,9 +235,11 @@ export function updateRecordingAudio(params: RecordingAudioParams): void {
     loop.gain.gain.setTargetAtTime(gainValue, now, key==='road'||key==='gravel'?road.smoothing:0.09);
     loop.source.playbackRate.setTargetAtTime(clamp(rate, 0.55, 2.2), now, 0.12);
   };
-  for(const key of ['engineIdle','engineLoad'] as const) loops.get(key)?.filter?.frequency.setTargetAtTime(params.cabin?850:2200,now,.18);
-  setLoop('engineIdle', idleGain, 0.82 + rpmNorm * 0.55);
-  setLoop('engineLoad', loadGain, 0.75 + rpmNorm * 0.95);
+  for(const f of ['engine','farm','heavy','diesel'] as const){
+    for(const key of [`${f}Idle`,`${f}Load`] as const)loops.get(key)?.filter?.frequency.setTargetAtTime(params.cabin?650:2800,now,.18);
+    setLoop(`${f}Idle`,f===family?idleGain:0,.86+rpmNorm*.36);
+    setLoop(`${f}Load`,f===family?loadGain:0,.85+rpmNorm*.60);
+  }
   for(const key of ['road','gravel'] as const) loops.get(key)?.filter?.frequency.setTargetAtTime(road.cutoff,now,.18);
   loops.get('skid')?.filter?.frequency.setTargetAtTime(params.cabin?550:1600,now,.18);
   setLoop('road', roadGain, road.rate);
@@ -300,7 +304,7 @@ export function disposeRecordingAudio(): void {
   buffers.clear();
   master?.disconnect();
   master = null;
-  voice?.dispose();voice=null;
+
   ctx = null;
   initPromise = null;
   status = { ready: false, loaded: 0, total: ASSETS.length, failed: [], active: false };

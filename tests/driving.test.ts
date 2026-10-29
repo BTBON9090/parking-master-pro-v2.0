@@ -154,11 +154,11 @@ for(const cfg of Object.values(CAR_MODELS)) {
   }
   // Trailer has an independent articulated collider; validate tractor here.
   if([CarType.SEMI,CarType.US22].includes(cfg.id))parts.trailer?.root.removeFromParent();
-  assert.equal(parts.wheels.length,cfg.id===CarType.TRIKE?3:cfg.id===CarType.TYPE100?12:[CarType.SEMI,CarType.US22].includes(cfg.id)?6:4,`${cfg.id}: four independently rolling wheels`);
+  assert.equal(parts.wheels.length,[CarType.TRIKE,CarType.CARGO_TRIKE].includes(cfg.id)?3:cfg.id===CarType.DF41?16:cfg.id===CarType.TYPE100?12:[CarType.SEMI,CarType.US22].includes(cfg.id)?6:4,`${cfg.id}: four independently rolling wheels`);
   {
     parts.group.updateWorldMatrix(true,true);
     const bodyBox=new THREE.Box3();
-    if (isAuthoredVehicle(cfg.id) && ![CarType.MINING,CarType.TYPE100].includes(cfg.id)) {
+    if (isAuthoredVehicle(cfg.id) && ![CarType.MINING,CarType.TYPE100,CarType.DF41].includes(cfg.id)) {
       // Manufacturer body width excludes the outboard mirror housings.
       bodyBox.setFromObject(parts.group.getObjectByName('Body')!, true);
       parts.group.traverse(n=>{if(n.userData.detachable)bodyBox.expandByObject(n,true);});
@@ -195,7 +195,7 @@ for(const cfg of Object.values(CAR_MODELS)) {
     assert(new THREE.Box3().setFromObject(wheel, true).min.y > -0.25,
       `${cfg.id}: wheel ${index} bottom must not sink below the ground plane`);
   });
-  assert.equal(parts.wheelMounts.length,cfg.id===CarType.TRIKE?3:cfg.id===CarType.TYPE100?12:[CarType.SEMI,CarType.US22].includes(cfg.id)?6:4,`${cfg.id}: independent suspension mounts`);
+  assert.equal(parts.wheelMounts.length,[CarType.TRIKE,CarType.CARGO_TRIKE].includes(cfg.id)?3:cfg.id===CarType.DF41?16:cfg.id===CarType.TYPE100?12:[CarType.SEMI,CarType.US22].includes(cfg.id)?6:4,`${cfg.id}: independent suspension mounts`);
   if (cfg.id === CarType.SPORTS) {
     const frameNodes = collectConceptCockpitFrameMeshes(parts.group);
     assert.equal(frameNodes.length, 3, `Concept: expected 3 real cockpit boundary meshes after buildCarMeshFromGLB, got ${frameNodes.map(n=>n.name).join(',')}`);
@@ -260,7 +260,7 @@ for(const cfg of Object.values(CAR_MODELS)) {
     assert(!vehicleLayersCompatible({ ...collider, elevation: 18 }, { elevation: 0 }), `${cfg.id}: bridge layer must not collide with ground layer`);
     assert(vehicleLayersCompatible({ ...collider, elevation: 18 }, { elevation: 18 }), `${cfg.id}: same bridge layer collides`);
   }
-  assert.equal(parts.frontWheels.length,cfg.id===CarType.TRIKE?1:2,`${cfg.id}: two front steering knuckles`);
+  assert.equal(parts.frontWheels.length,[CarType.TRIKE,CarType.CARGO_TRIKE].includes(cfg.id)?1:cfg.id===CarType.DF41?8:2,`${cfg.id}: two front steering knuckles`);
   parts.group.updateWorldMatrix(true,true);
   parts.group.traverse(node=>{
     if(!(node instanceof THREE.Mesh))return;
@@ -271,7 +271,7 @@ for(const cfg of Object.values(CAR_MODELS)) {
     assert(mount.getWorldPosition(new THREE.Vector3()).z>0,`${cfg.id}: steering knuckle must be on the FRONT axle`);
     assert.equal(mount.parent,parts.group,`${cfg.id}: normalized parent axes`);
   }
-  if(cfg.id===CarType.TRIKE)assert(Math.abs(parts.frontWheels[0].position.x)<.001);
+  if([CarType.TRIKE,CarType.CARGO_TRIKE].includes(cfg.id))assert(Math.abs(parts.frontWheels[0].position.x)<.001);
   else assert(parts.frontWheels.some(w=>w.position.x>0)&&parts.frontWheels.some(w=>w.position.x<0));
   const frontZ = parts.frontWheels.reduce((sum,w)=>sum+w.position.z,0)/parts.frontWheels.length;
   const rearZ = parts.wheelMounts.filter(w=>!parts.frontWheels.includes(w)).reduce((sum,w)=>sum+w.position.z,0)/(parts.wheelMounts.length-parts.frontWheels.length);

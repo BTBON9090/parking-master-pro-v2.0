@@ -1,0 +1,1 @@
+World connections PASS: both-way spiral, portal direction/layer/safe arrival, separate mountain/tunnel/lift support.

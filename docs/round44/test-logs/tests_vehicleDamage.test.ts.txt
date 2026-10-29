@@ -1,0 +1,37 @@
+Damage tiers, five authored shells, bounded dents/reset, momentum, solid wall and inspection controls PASS [
+  {
+    id: 'SUV',
+    light: 1,
+    moderate: 4,
+    displaced: 1947,
+    maxDisplacement: 1.947426795959431
+  },
+  {
+    id: 'SEDAN',
+    light: 1,
+    moderate: 4,
+    displaced: 1712,
+    maxDisplacement: 2.0031332969665456
+  },
+  {
+    id: 'TAI7',
+    light: 1,
+    moderate: 4,
+    displaced: 1698,
+    maxDisplacement: 2.118241786956775
+  },
+  {
+    id: 'LI_I9',
+    light: 1,
+    moderate: 4,
+    displaced: 1804,
+    maxDisplacement: 2.141482830047575
+  },
+  {
+    id: 'N90',
+    light: 1,
+    moderate: 4,
+    displaced: 1610,
+    maxDisplacement: 2.1201300621032884
+  }
+]

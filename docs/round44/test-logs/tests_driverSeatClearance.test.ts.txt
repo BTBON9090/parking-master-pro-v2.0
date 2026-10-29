@@ -1,0 +1,1 @@
+Driver-seat eye-path clearance PASS: 25 vehicle configurations at eight sampled extremes (near-plane clipping remains a visual check)

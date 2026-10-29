@@ -1,0 +1,1 @@
+Weather options: independent rain / snow / fog, combinations, disable and legacy fallback PASS.

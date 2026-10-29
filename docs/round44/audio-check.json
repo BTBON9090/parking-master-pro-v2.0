@@ -1,0 +1,68 @@
+[
+  {
+    "file": "public/audio/farm-idle-loop.wav",
+    "seconds": 2.92,
+    "channels": 1,
+    "peak": 21000,
+    "rmsDbFS": -17.495685961593264,
+    "endpoints": [
+      0,
+      0
+    ]
+  },
+  {
+    "file": "public/audio/heavy-idle-loop.wav",
+    "seconds": 3.92,
+    "channels": 1,
+    "peak": 21000,
+    "rmsDbFS": -15.038154832619215,
+    "endpoints": [
+      0,
+      0
+    ]
+  },
+  {
+    "file": "public/audio/diesel-load-loop.wav",
+    "seconds": 2.92,
+    "channels": 1,
+    "peak": 21000,
+    "rmsDbFS": -16.951509911750918,
+    "endpoints": [
+      0,
+      0
+    ]
+  },
+  {
+    "file": "public/audio/diesel-idle-loop.wav",
+    "seconds": 1.92,
+    "channels": 1,
+    "peak": 21000,
+    "rmsDbFS": -18.889671781371106,
+    "endpoints": [
+      0,
+      0
+    ]
+  },
+  {
+    "file": "public/audio/heavy-load-loop.wav",
+    "seconds": 3.92,
+    "channels": 1,
+    "peak": 21000,
+    "rmsDbFS": -16.36855660009075,
+    "endpoints": [
+      0,
+      0
+    ]
+  },
+  {
+    "file": "public/audio/farm-load-loop.wav",
+    "seconds": 2.92,
+    "channels": 1,
+    "peak": 21000,
+    "rmsDbFS": -18.16108216660278,
+    "endpoints": [
+      0,
+      0
+    ]
+  }
+]

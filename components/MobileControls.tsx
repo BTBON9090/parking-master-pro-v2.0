@@ -99,7 +99,7 @@ export function MobileControls(p: {input: InputState; update: React.Dispatch<Rea
   });
   return <div className="mobile-controls" data-ui-control>
     <div className="mobile-topbar hud-positioned" style={p.layout?.('topbar')}>
-      <button aria-label="设置" title="设置" {...action(p.settings)}><Settings/></button>
+      <button aria-label="暂停" title="暂停" {...action(p.settings)}><Settings/></button>
       <button aria-label="切换视角" title="切换视角" {...action(p.camera)}><Camera/></button>
       <button aria-label="地图" title="地图" {...action(p.map)}><Map/></button>
       <button aria-label="重置车辆" title="重置车辆" {...action(p.reset)}><RotateCcw/></button>

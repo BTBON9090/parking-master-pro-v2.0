@@ -9,7 +9,7 @@ import {disposeResources} from '../three/disposeResources';
  *    渲染器 / 灯光 / 相机只初始化一次
  */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { CarType } from '../types';
 import { CAR_MODELS } from '../constants';
@@ -24,6 +24,7 @@ interface CarPreview3DProps {
 
 const CarPreview3D: React.FC<CarPreview3DProps> = ({ carType, accentColor = '#f59e0b' }) => {
   const mountRef = useRef<HTMLDivElement>(null);
+  const [loading,setLoading]=useState(true),[error,setError]=useState(false);
   const stageRef = useRef<THREE.Group | null>(null);
   const spinRef = useRef({ target: 0.55, current: 0.55, idleAt: 0, dragging: false });
 
@@ -172,7 +173,7 @@ const CarPreview3D: React.FC<CarPreview3DProps> = ({ carType, accentColor = '#f5
   useEffect(() => {
     const stage = stageRef.current;
     if (!stage) return;
-    let cancelled = false;
+    let cancelled = false;setLoading(true);setError(false);
     let current: THREE.Group | null = null;
     buildVehicleParts(carType, CAR_MODELS[carType]).then(parts => {
       if (cancelled || !stageRef.current) {disposeResources([parts.group]);return;}
@@ -195,8 +196,8 @@ const CarPreview3D: React.FC<CarPreview3DProps> = ({ carType, accentColor = '#f5
       model.position.z -= center.z;
       model.position.y -= box.min.y;
       model.position.y += 0.12; // 胎壁与盘面之间一点呼吸感
-      stageRef.current.add(model);
-    }).catch(() => undefined);
+      stageRef.current.add(model);setLoading(false);
+    }).catch(() => {if(!cancelled){setError(true);setLoading(false);}});
     return () => {
       cancelled = true;
       if (current) {current.removeFromParent();disposeResources([current]);}
@@ -204,7 +205,7 @@ const CarPreview3D: React.FC<CarPreview3DProps> = ({ carType, accentColor = '#f5
   }, [carType]);
 
   return (
-    <div ref={mountRef} className="cockpit-canvas-host w-full h-full cursor-grab active:cursor-grabbing touch-none" aria-label="3D car preview" />
+    <div className="relative w-full h-full"><div ref={mountRef} className="cockpit-canvas-host w-full h-full cursor-grab active:cursor-grabbing touch-none" aria-label="3D car preview" />{(loading||error)&&<div className="stage-loading" role="status">{loading&&<i/>}{error?'车辆装载失败，请重新选择':'正在装载座驾'}</div>}</div>
   );
 };
 

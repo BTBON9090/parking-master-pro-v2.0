@@ -95,6 +95,7 @@ export interface PowertrainSpec {
 // —— 各车型扭矩曲线性格（分段线性：rpmRatio → 扭矩倍率）——
 // 家用车：中段饱满，高转衰减；SUV：涡轮平原；跑车：高转爆发；皮卡：低速大扭矩、高转乏力。
 const TORQUE_CURVES: Record<CarType, [number, number][]> = {
+ [CarType.CARGO_TRIKE]:[[0,.78],[.25,1],[.65,1],[1,.75]],[CarType.DF41]:[[0,.8],[.25,1],[.65,1],[1,.7]],
  [CarType.TYPE100]:[[0,.8],[.25,1],[.65,1],[1,.7]],
  [CarType.MINING]:[[0,.8],[.25,1],[.65,1],[1,.7]],
  [CarType.US22]:[[0,.8],[.25,1],[.65,1],[1,.7]],
@@ -226,6 +227,7 @@ const simulateZeroTo100 = (
 // Game-training shift suggestions, deliberately distinct from redline speeds.
 // They are not manufacturer shift points or universal real-car figures.
 const SHIFT_UP_KMH: Record<CarType, number[]> = {
+ [CarType.CARGO_TRIKE]:[12,22,35,48,60],[CarType.DF41]:[4,8,12,18,26,35,45,56,68,78],
  [CarType.TYPE100]:[5,10,15,22,30,38,45,55,65,70],
  [CarType.MINING]:[8,15,24,35,45,56,67],
  [CarType.US22]:[5,9,14,21,31,44,57,72,85,100],

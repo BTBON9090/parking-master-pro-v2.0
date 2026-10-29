@@ -1,0 +1,2 @@
+{"dry":4.455051710421636,"split":0.7891312220098988,"air":0.035867737691621236,"awdOneAir":2.2776013434179445,"splitOmegas":[2.2650482641457534,15.99999999999995]}
+Differential solver PASS: FWD/RWD/AWD, split grip, airborne wheel, equal shaft torque, fixed-step stability

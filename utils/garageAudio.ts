@@ -1,3 +1,4 @@
+import {recordingIdleFile} from './recordingProfiles';
 import {CarType,type CarConfig} from '../types';
 import {assetUrl} from './assetUrl';
 import {EngineVoice} from './engineVoice';
@@ -14,7 +15,7 @@ export function startGarageAudio(car:CarConfig,options:{enabled?:boolean;volume?
  const gate=new AudioPlaybackGate(context),abort=new AbortController();
  const sources:AudioBufferSourceNode[]=[];let disposed=false;
  const electric=isElectricVehicle(car.id),mechanical=[CarType.TRIKE,CarType.TRACTOR,CarType.TYPE100,CarType.MINING].includes(car.id);
- const voice=mechanical||electric?new EngineVoice(context,context.destination):null;
+ const voice=electric?new EngineVoice(context,context.destination):null;
  const refresh=(event?:Event)=>gate.setActive(!disposed&&!document.hidden&&document.hasFocus(),!!event?.isTrusted);
  const blur=()=>gate.setActive(false);
  window.addEventListener('pointerdown',refresh);window.addEventListener('keydown',refresh);
@@ -32,7 +33,7 @@ export function startGarageAudio(car:CarConfig,options:{enabled?:boolean;volume?
   }catch{/* Leaving the browser cancels in-flight previews. */}
  };
  void sample(electric?'ev-start.wav':'ice-start.wav',false,.32);
- if(!electric&&!mechanical)void sample('engine-idle-loop.wav',true,.15);
+ if(!electric)void sample(recordingIdleFile(car.id),true,.22);
  return()=>{
   disposed=true;abort.abort();gate.dispose();
   window.removeEventListener('pointerdown',refresh);window.removeEventListener('keydown',refresh);

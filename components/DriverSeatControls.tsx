@@ -10,7 +10,7 @@ export function DriverSeatControls({settings,update,compact=false}:{settings:Use
   ['pitchDeg','视线俯仰','正值抬头，负值低头。','°'],
  ] as const;
  return <div className={compact?'driver-seat-controls compact':'driver-seat-controls'}>
-  <h3>驾驶位视角</h3><p className={compact?'':'settings-note'}>调整驾驶舱眼点与视线，座椅模型不移动。进入驾驶后可查看效果。</p>
+  <h3>驾驶位视角</h3><p className={compact?'':'settings-note'}>调整驾驶舱眼点与视线。接近车顶或仪表台时自动限制，避免视点穿入车体。</p>
   {rows.map(([key,label,description,unit])=>{const [min,max]=DRIVER_SEAT_LIMITS[key];const value=seat[key];return <label className={compact?'driver-seat-row':'settings-row range-row'} key={key}>
    <span><strong>{label}</strong>{!compact&&<small>{description}</small>}</span>
    <div><output>{value>0?'+':''}{value}{unit}</output><input aria-label={label} type="range" min={min} max={max} step="1" value={value} onChange={e=>update({driverSeatAdjustment:{...seat,[key]:Number(e.target.value)}})}/></div>

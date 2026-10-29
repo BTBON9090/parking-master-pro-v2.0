@@ -1,4 +1,5 @@
 export enum CarType {
+  CARGO_TRIKE='CARGO_TRIKE', DF41='DF41',
   TYPE100='TYPE100', MINING='MINING', US22='US22',
   TRIKE='TRIKE',
   TRACTOR='TRACTOR',
@@ -367,6 +368,7 @@ export interface ExamStation {
  exit:{x:number;y:number};speedLimit:number;targetHeading?:number;path?:Vector2[];laneWidth?:number;bayWidth?:number;bayLength?:number;
 }
 export interface LevelData {
+  entryMotion?: {speed:number;steeringAngle:number};
  exam?:ExamStation[];
  highway?:boolean;
   garage?: boolean;

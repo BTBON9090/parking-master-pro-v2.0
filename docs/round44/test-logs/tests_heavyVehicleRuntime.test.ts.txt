@@ -1,0 +1,1 @@
+Heavy vehicle runtime PASS: origin/cockpit metadata, both axles and finite flat-ground suspension

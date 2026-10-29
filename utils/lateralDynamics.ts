@@ -4,7 +4,7 @@ const smooth=(a:number,b:number,v:number)=>{const t=clamp((v-a)/(b-a),0,1);retur
 export const createLateralState=()=>({beta:0,yaw:0,previousSteer:0,breakaway:0});
 export type LateralState=ReturnType<typeof createLateralState>;
 export interface LateralInput {speed:number;steer:number;rearSteer:number;wheelbase:number;rearOffset:number;frontBias:number;
- grip:number;layout:DriveLayout;throttle:number;handbrake:boolean;frontLocked:boolean;dt:number;understeer:number}
+ grip:number;layout:DriveLayout;throttle:number;handbrake:boolean;frontLocked:boolean;dt:number;understeer:number;driveSlip?:number}
 /** SI bicycle tyre forces. Rear slip is a state, never switched on at a wheel-angle
  * threshold. Combined longitudinal/lateral grip and post-peak rear grip allow
  * lift/handbrake oversteer. These are game tyre calibrations, not OEM measurements. */
@@ -13,7 +13,7 @@ export function stepLateral(s:LateralState,i:LateralInput){
  const q=(Math.tan(i.steer)-Math.tan(i.rearSteer))/i.wheelbase;
  const parkingBeta=Math.atan(Math.tan(i.rearSteer)+i.rearOffset*q);
  const parkingYaw=i.speed*q*Math.cos(parkingBeta);
- const blend=smooth(3,9,speed),steps=Math.max(1,Math.ceil(i.dt*180)),dt=i.dt/steps;
+ const blend=smooth(i.grip<.45?1:3,i.grip<.45?4:9,speed),steps=Math.max(1,Math.ceil(i.dt*180)),dt=i.dt/steps;
  const a=i.wheelbase*(1-i.frontBias),b=i.wheelbase*i.frontBias;
  const inertia=(i.wheelbase*i.wheelbase+1.8*1.8)/9;
  const steeringRate=Math.abs(i.steer-s.previousSteer)/Math.max(.001,i.dt);s.previousSteer=i.steer;
@@ -29,8 +29,8 @@ export function stepLateral(s:LateralState,i:LateralInput){
   // turn-in. It decays after the input, leaving the sustained grip limit and
   // the normal stability-recovery response intact.
   const turnIn=i.handbrake?0:smooth(.06,.22,Math.abs(i.steer));
-  const frontMu=i.grip*(1+.08*s.breakaway)*(i.frontLocked?.16:1)*(1-(i.layout==='FWD'?.18:.04)*i.throttle);
-  const rearMu=i.grip*(i.handbrake?.26:1)*(1-(i.layout==='RWD'?.16:.04)*i.throttle-.14*smooth(.4,1,i.throttle)*(i.layout==='FWD'?0:1))
+  const frontMu=i.grip*(1-Math.min(.65,(i.driveSlip??0)*(i.layout==='RWD'?.08:.42)))*(1+.08*s.breakaway)*(i.frontLocked?.16:1)*(1-(i.layout==='FWD'?.18:.04)*i.throttle);
+  const rearMu=i.grip*(1-Math.min(.7,(i.driveSlip??0)*(i.layout==='FWD'?.08:.45)))*(i.handbrake?.26:1)*(1-(i.layout==='RWD'?.16:.04)*i.throttle-.14*smooth(.4,1,i.throttle)*(i.layout==='FWD'?0:1))
     *(1-.08*s.breakaway*smooth(.10,.40,Math.abs(rearSlip)));
   const frontLoad=9.80665*i.frontBias,rearLoad=9.80665*(1-i.frontBias);
   const front=frontLoad*frontMu*Math.tanh(frontSlip*((7.5+1.5*turnIn)/(1+i.understeer*.12))/Math.max(.1,frontMu))*direction;
@@ -43,7 +43,7 @@ export function stepLateral(s:LateralState,i:LateralInput){
   const gripYaw=9.80665*i.grip/v;
   const referenceYaw=clamp(parkingYaw,-gripYaw*(1+.1*turnIn),gripYaw*(1+.1*turnIn));
   const slipRecovery=smooth(.05,.28,Math.abs(Math.atan(s.beta)));
-  const yawRecovery=i.handbrake?0:(2.0+slipRecovery*4.8)*(s.yaw-referenceYaw);
+  const yawRecovery=i.handbrake?0:(2.0+slipRecovery*4.8)*Math.min(1,i.grip/.7)*(s.yaw-referenceYaw);
   s.yaw=clamp(s.yaw+(yawAcceleration-.35*s.yaw-yawRecovery)*dt,-2.5,2.5);
   s.beta=clamp(s.beta+(lateral/bodyV-s.yaw)*dt,-1.15,1.15);
   // A smooth low-speed handover preserves accurate parking arcs.

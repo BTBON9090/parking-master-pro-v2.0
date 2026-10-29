@@ -1,7 +1,7 @@
 import {CarType,type CarConfig,type VehicleTuning,type SteeringCurve} from '../types';
 import {FLEET30_CARS} from './fleet30';
 import {frontSteerForTurningRadius} from './driving';
-export const FLEET31_IDS=[CarType.TYPE100,CarType.MINING,CarType.US22] as const;
+export const FLEET31_IDS=[CarType.CARGO_TRIKE,CarType.DF41,CarType.TYPE100,CarType.MINING,CarType.US22] as const;
 const heavy=(id:CarType,name:string,size:number[],mass:number,kw:number,nm:number,wb:number,radius:number,top:number):CarConfig=>{
  const source=structuredClone(FLEET30_CARS[CarType.SEMI]);
  const track=size[1]-(id===CarType.MINING?1.5:.5);
@@ -12,7 +12,13 @@ const heavy=(id:CarType,name:string,size:number[],mass:number,kw:number,nm:numbe
 // Type 100 dimensions/drivetrain and the complete 22-wheel combination are
 // simulation estimates. Mining power is the published Cat 797F gross rating.
 // US22 wheel radius is a representative road-truck game calibration, not an OEM figure.
+const cargo:CarConfig={...structuredClone(FLEET30_CARS[CarType.TRIKE]),id:CarType.CARGO_TRIKE,name:'东风风格 · 大三轮货车（模拟）',length:48,width:18,height:23,wheelbase:30.5,trackWidth:15.3,weight:2100,maxSpeed:65/15,turningRadiusTargetM:5.3};
+cargo.dynamics={...cargo.dynamics,powerKw:42,torqueNm:190,maxSteerAngle:frontSteerForTurningRadius(3.05,1.53,5.3),frontWeightBias:.32,transmission:{...cargo.dynamics.transmission,wheelRadiusM:.40}};
+const tel=heavy(CarType.DF41,'东风 41 · 运输起竖车（游戏演出）',[16.4,3.2,3.8],54000,500,2800,11.2,16,80);
+tel.color='#596b3b';
+tel.dynamics={...tel.dynamics,driveLayout:'AWD',rearSteerMaxDeg:18,rearSteerFadeStartKmh:10,rearSteerFadeEndKmh:50,rearSteerHighSpeedDeg:0,maxSteerAngle:frontSteerForTurningRadius(11.2,2.7,16,18),frontWeightBias:.5,transmission:{...tel.dynamics.transmission,wheelRadiusM:.64}};
 export const FLEET31_CARS={
+ [CarType.CARGO_TRIKE]:cargo,[CarType.DF41]:tel,
  [CarType.TYPE100]:heavy(CarType.TYPE100,'100 式 · 履带驾驶演示',[7.3,4,2.7],42000,1000,4200,5.1,6,70),
  [CarType.MINING]:heavy(CarType.MINING,'巨岩 797 · 矿用自卸车',[14.8,9.53,6.8],260000,2983,18000,8.4,20,67),
  [CarType.US22]:heavy(CarType.US22,'洲际长头 · 22 轮超长半挂',[8.2,2.55,3.85],44000,450,2800,5.4,10,100),

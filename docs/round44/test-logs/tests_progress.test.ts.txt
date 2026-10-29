@@ -1,0 +1,1 @@
+Progress PASS: durable state, backup recovery, storage failure, input-free resume, B2 layer, stale/occupied/invalid spawn, exam retention.

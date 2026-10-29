@@ -1,0 +1,15 @@
+Round21 PASS {
+  campus: { size: [ 5000, 3400 ], spots: 227, curves: 12, slopes: 3 },
+  shoulder: { edgeChecks: 1994, maxEdgeJumpCm: 0.04988282824342605 },
+  roughnessRangeCm: 21.348773038025314,
+  sway: {
+    gentleAtPoint1G: 0.14596046900845147,
+    hardAtPoint8G: 2.594852782372474
+  },
+  disposal: [ 1, 1, 1 ],
+  driver: {
+    recoveryAt: 5.958333333333333,
+    phases: [ '爬起来', '回头看看残骸', '跪下', '抱头痛哭' ]
+  },
+  rollover: { elapsed: 5.000000000000038, travel: 180.61982734928728 }
+}

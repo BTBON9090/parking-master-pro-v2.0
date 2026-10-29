@@ -1,3 +1,8 @@
+import {HighwayNotice} from './HighwayNotice';
+import {MissilePanel} from './MissilePanel';
+import {DrivingHints,HintSlot} from './DrivingHints';
+import {MountainAdventurePanel} from './MountainAdventurePanel';
+import {RouteRadar} from './RouteRadar';
 import {isTouchDevice} from '../utils/device';
 import type {SavedExam} from '../utils/progressStorage';
 import {HudLayoutEditor} from './HudLayoutEditor';
@@ -34,6 +39,7 @@ interface UIOverlayProps {
   readInput: ()=>InputState;
   exitGame: () => void;
   resetLevel: () => void;
+  restartLevel: () => void;
   lang: Language;
   setLang: (l: Language) => void;
   showReward: { show: boolean; amount: number; type: ParkingResultType };
@@ -234,6 +240,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
   readInput,
   exitGame,
   resetLevel,
+  restartLevel,
   lang,
   setLang,
   showReward,
@@ -339,8 +346,8 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
   const [cameraMenuOpen, setCameraMenuOpen] = useState(false);
   const [miniZoom,setMiniZoom]=useState(1);
   const [miniMapExpanded, setMiniMapExpanded] = useState(() => {
-      try { return localStorage.getItem('parking-master-route-map-expanded') !== 'false'; }
-      catch { return true; }
+      try { return false; }
+      catch { return false; }
   });
   useEffect(() => {
       try { localStorage.setItem('parking-master-route-map-expanded', String(miniMapExpanded)); } catch {}
@@ -993,7 +1000,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
 
   return (
     <div className={`game-hud ${touch?'touch-hud':''} absolute inset-0 pointer-events-none flex flex-col justify-between z-10 text-white`}>
-      {cameraView === 'HOOD' && !touch && (
+      <HintSlot>{cameraView === 'HOOD' && !touch && (
         <div className="absolute top-[56px] right-4 z-30 pointer-events-none mono text-[8px] tracking-[0.08em] px-2.5 py-1 rounded"
              style={{ background: 'rgba(6,8,11,0.72)', color: 'var(--text-mute)', border: '1px solid rgba(255,255,255,0.10)' }}>
           {lang === Language.CN
@@ -1043,6 +1050,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
           </div>
       )}
 
+      </HintSlot>
       {/* ===== 后视镜 ×3（样式包外壳，几何参数不变） ===== */}
       {settings.rearviewMirrors && (
           <>
@@ -1105,7 +1113,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
               </button>
               <button
                   onClick={() => { setShowTuning(false); setShowSettings(true); }}
-                  aria-label="Settings [M]"
+                  aria-label="暂停 [M]"
                   className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-150 hover:scale-105"
                   style={{ background: 'rgba(6,7,9,0.45)', border: '1px solid rgba(255,255,255,0.14)', color: 'var(--text-dim)' }}
               >
@@ -1192,7 +1200,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
           </div>
       </div>
 
-      {laneLineWarning && (
+      <HintSlot>{laneLineWarning && (
           <div className="absolute top-24 left-1/2 -translate-x-1/2 z-50 pointer-events-none clip-angle px-7 py-3 font-black tracking-[0.16em] text-sm animate-pulse"
                style={{ background: 'rgba(127,29,29,0.94)', color: '#fff', border: '1px solid #ef4444', boxShadow: '0 0 28px rgba(239,68,68,0.45)' }}>
               {lang === Language.CN ? '压线警告 · 请回正车身' : 'LANE LINE WARNING'}
@@ -1233,6 +1241,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
           </div>
       )}
 
+      </HintSlot>
       {/* ===== 左上角音量开关 ===== */}
       <button
           type="button"
@@ -1285,7 +1294,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                        style={{ background: 'rgba(16,18,22,0.92)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                       <span className="flex items-center gap-2 text-[10px] font-black tracking-[0.14em]" style={{ color: 'var(--text)' }}>
                           <LocateFixed size={13} style={{ color: 'var(--amber)' }} />
-                          {lang === Language.CN ? '车辆俯瞰' : 'VEHICLE OVERHEAD'}
+                          {lang === Language.CN ? '地图' : 'MAP'}
                       </span>
                       <span className="flex items-center gap-1 mono text-[7px] tracking-[0.12em]" style={{ color: 'var(--text-mute)' }}>
                           {lang === Language.CN ? '展开全局' : 'EXPAND'} <Maximize2 size={11} />
@@ -1400,6 +1409,9 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
           </>
       )}
 
+      <DrivingHints/>{levelData&&<RouteRadar level={levelData}/>}
+      <HintSlot>{levelData?.highway&&<HighwayNotice/>}{currentCarId===CarType.DF41&&levelData&&<MissilePanel level={levelData}/>}
+      {levelData?.openWorld&&<MountainAdventurePanel/>}
       {levelData?.exam && <ExamPanel saved={savedExam} level={levelData} input={inputState} update={setInputState}/>}
       {levelData?.training && !levelData.exam && (
           <div className="hud-tips absolute top-[368px] right-4 z-30 flex flex-col items-end gap-1.5 pointer-events-auto"
@@ -1495,7 +1507,8 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
       )}
 
       {/* ===== 底部座舱总成：第一人称只显示仪表，实体方向盘承担转向 ===== */}
-      <div className={`main-instruments absolute bottom-5 left-1/2 -translate-x-1/2 pointer-events-none z-40 ${touch?"hud-positioned":""}`} style={touch?layoutStyle("dashboard"):undefined}>
+      </HintSlot>
+      <div className={`main-instruments absolute bottom-0 left-1/2 -translate-x-1/2 pointer-events-none z-40 ${touch?"hud-positioned":""}`} style={touch?{...layoutStyle("dashboard"),top:"auto",bottom:0}:undefined}>
           <div className="instrument-scale" style={touch?{'--hud-scale-x':hudRects.dashboard.width*hudViewport.w/422,'--hud-scale-y':hudRects.dashboard.height*hudViewport.h/190,transformOrigin:'top left',position:'absolute',top:0,left:0,width:422} as React.CSSProperties:cameraView === 'HOOD'
               ? { transform: `scale(${firstPersonScale})`, transformOrigin: 'bottom center' }
               : undefined}>
@@ -1520,14 +1533,14 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
       {/* ===== 设置抽屉（语言 + 按键指南 已迁移至此） ===== */}
       {touch&&<MobileControls absEnabled={settings.absEnabled} toggleAbs={()=>updateSettings({absEnabled:!settings.absEnabled})} speedKmh={Math.abs(liveCarSpeed)*15} input={inputState} update={setInputState} onTouchInput={onTouchInput} readInput={readInput} car={currentCarId} layout={layoutStyle} editing={layoutDraft!==null} disabled={showSettings||showGuide||portrait||layoutDraft!==null} settings={()=>setShowSettings(true)} camera={()=>{const views:CameraView[]=['HOOD','FOLLOW_NEAR','FOLLOW_FAR','TOP','REVERSE'];onCameraViewChange(views[(views.indexOf(cameraView)+1)%views.length]);}} map={()=>setGlobalOverviewOpen(!globalOverviewOpen)} reset={resetLevel}/>}
       {touch&&portrait&&!showSettings&&<div className="rotate-device" role="status"><strong>请横屏驾驶</strong><p>转动手机，展开方向盘和踏板。</p><button onClick={()=>setShowSettings(true)}>打开设置</button></div>}
-      {showSettings && <SettingsPage saveMessage={saveMessage} onLayout={editLayout} settings={settings} update={updateSettings} car={currentCarId} level={level} openWorld={!!levelData?.openWorld} onCar={onChangeCar} onMap={onChangeMap} onTravel={onTravel} close={()=>setShowSettings(false)} reset={resetLevel} exit={exitGame} lang={lang} setLang={setLang} capture={captureBinding} bind={setCaptureBinding} guide={()=>{setShowSettings(false);setShowGuide(true);}}/>}
+      {showSettings && <SettingsPage saveMessage={saveMessage} onLayout={editLayout} settings={settings} update={updateSettings} car={currentCarId} level={level} openWorld={!!levelData?.openWorld} onCar={onChangeCar} onMap={onChangeMap} onTravel={onTravel} close={()=>setShowSettings(false)} reset={resetLevel} restart={restartLevel} exit={exitGame} lang={lang} setLang={setLang} capture={captureBinding} bind={setCaptureBinding} guide={()=>{setShowSettings(false);setShowGuide(true);}}/>}
       {layoutDraft!==null && <HudLayoutEditor rects={hudRects} width={hudViewport.w} height={hudViewport.h}
         change={patch=>setLayoutDraft(v=>({...v,...patch}))} reset={()=>setLayoutDraft({})} cancel={closeLayout}
         save={()=>{updateSettings({mobileHudLayout:layoutDraft});closeLayout();}}/>}
       {showGuide && <DrivingGuide settings={settings} done={()=>setShowGuide(false)}/>}
 
       {/* 首次进入：操控提示（车辆一动或 20 秒后自动收起） */}
-      {showStartHint && !isTouchDevice() && !showSettings && !showGuide && (
+      <HintSlot>{showStartHint && !isTouchDevice() && !showSettings && !showGuide && (
         <div className="absolute left-1/2 -translate-x-1/2 bottom-[186px] z-40 pointer-events-auto"
              style={{ background: 'rgba(10,12,16,0.94)', border: '1px solid rgba(245,158,11,0.45)', borderRadius: 12, padding: '10px 14px', boxShadow: '0 10px 30px rgba(0,0,0,0.45)' }}>
           <div className="flex items-center gap-3">
@@ -1554,6 +1567,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
         </div>
       )}
 
+      </HintSlot>
       <TuningPanel
           open={showTuning}
           onClose={() => setShowTuning(false)}

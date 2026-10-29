@@ -1,0 +1,46 @@
+Camera: plain left-drag orbit preserves distance, 360° azimuth, 0.16–1.46 rad polar; head look +10/−15° pitch, ±80° yaw.
+Terrain: centre 17.20u, relief 17.37u, max grade 11.8%, 3m gate, gravel entry + pothole field.
+Audio lifecycle: persistent blur/visibility/UI pause, stale-load generation guard.
+Audio assets: 7 local CC0-derived WAV files, zero-crossing loop endpoints, peaks below 0 dBFS.
+Suspension: 15/30/60/120 Hz peaks 0.177/0.119/0.163/0.160/0.162/0.183/0.177/0.164/0.167/0.174/0.173/0.163/0.175/0.174/0.176/0.169/0.165/0.162/0.165/0.173/0.168/0.154/0.172/0.175/0.180/0.176/0.177/0.170/0.166 by car; mesh error <=0.068u.
+Cockpit source audit (hood/frame): CARGO_TRIKE:native-authored DF41:native-authored TYPE100:native-authored MINING:native-authored US22:native-authored TRIKE:native-authored TRACTOR:native-authored SEMI:native-authored CYBERTRUCK:native-authored REVUELTO:native-authored VEYRON:native-authored V800:native-authored MINI:native-authored SEDAN:native-authored SEAL08:native-authored SUV:native-authored TAI7:native-authored LI_I9:native-authored N90:native-authored JEEP:native-authored MIDIBUS:native-authored COACH:native-authored VAN:native-authored LIGHT_TRUCK:native-authored SPORTS:10985/124674 TRUCK:native-authored SU7:152/5907 YU7:152/6238 ZUNJIE:158/6812.
+Keyboard pedals: W=0.15 Shift+W=0.3 S=0.12 Shift+S=1, brake priority; Space handbrake priority.
+Pitch: light<0.025rad, heavy 0.02..0.051rad, 30/60/120 Hz convergent.
+NPC/bridge: 30 fixed cars; deck 65u, 88 profile rails, pier interval 0..65u; reset positions identical.
+Movable props: local terrain floor support enforced above Cannon ground plane.
+Airborne: normal slope stays grounded; front/rear edge pitch signs + ballistic landing.
+Curb: 2.6u top enters wheel sampling; low curb is traversable.
+Parking: all-four-corners, speed<0.5km/h, no NPC, 1s stability.
+Cockpit materials: paint on window-named Concept meshes stays opaque; only Glass is transparent.
+Rear steer: outer-front radius 4.95m at 39.95° lock, ±7° rear; actual trajectory radius tested.
+Steering continuity: exact equal-delay return through zero, no 12-step quantisation, input-release 2.2° centre magnet independent of knob/auto-centre.
+Steering clock: throttle/gear-independent 200ms grace; 0.24s return crawl 105.7°, road 50.5°.
+SEAL08 authored GLB: 23.2x52.1x15.4u, wheelbase 30.3u, curb gaps side 0.00/-0.00/0.00/-0.00 corner 0.00/0.00/0.00/0.00.
+SUV authored GLB: 23.2x52.0x17.6u, wheelbase 31.1u, curb gaps side -0.00/0.00/-0.00/0.00 corner 0.00/0.00/0.00/0.00.
+SEDAN authored GLB: 23.2x52.1x15.4u, wheelbase 30.3u, curb gaps side 0.00/-0.00/0.00/-0.00 corner 0.00/-0.00/-0.00/-0.00.
+Cockpit: source geometry classifies measured hood/frame; lower fascia and floor are discarded.
+Parked wheel: static assembly 2.80x6.40x6.40, open 5-spoke rim, shared geometry/material.
+Marking colour: dark tyre wear/seams keep authored colours; white/yellow paint remain distinct.
+HUD layout: 1153px -> 459.3px gap, 375.6px cluster; no horizontal root minimum.
+Focus guard: input/textarea/select/contenteditable isolated; canvas still drives.
+Time response: exponential/linear steps compose exactly at 30/60/120 fps; pause/gap clock is deterministic.
+Steering: displacement-preserving smoothing, flush, auto-centre and non-conflicting key fallback.
+Steering arcs: right y=16.07, left y=-16.07, reverse-right y=2.24; driver wheel sign correct.
+Gear guard: rolling direction requests accepted; high downshift emits warning without clamping speed.
+Longitudinal throttle 3 s: 15fps=2.8655, 30=2.8655, 60=2.8655, 120=2.8655 speed units
+Travel distance 3 s: 30fps=165.981, 60=165.964, 120=165.467 world units
+Integrated accumulator (12% jitter): 15fps=165.14u, 30fps=165.73u, 60fps=165.79u, 120fps=165.36u; max single-render step 8.25u, max speed step 0.092u.
+Terrain grade: 18% slope, 1st speed 1.607 > 4th 0.971 after 1s.
+Torque take-up: continuous first-gear curve across speed 1.5/2 and throttle-independent force.
+Longitudinal braking 0.6 s from 6 units: 30=4.7872, 60=4.7872, 120=4.7872
+Flat no-creep: 8 s in gear with no throttle stays exactly at 0 speed (30/60/120 fps).
+Throttle: light=0.15, shift=0.30, released=0.15.
+Coast: 2.00 -> 1.675 speed units after 1 s.
+Stall: 4th-gear start stalls after the delay; single-speed EV never stalls.
+3rd gear integration: 7s Shift+W=10.0 km/h, 1s=0.89 km/h, no stall.
+Slope: brake/hold=0, released=-0.287, handbrake=0, neutral rollback=-0.440.
+Climb/brake: 30% 1st=0.206, gentle light brake=0, steep light=-0.154, hard=0.
+NPC: follows path, stops behind player, honks 1 time(s) with cooldown, separates on contact.
+Beijing scene: 31 large buildings (old dense buildings 850 / total wall pieces 853 per review; new building count -96.4%), 0 NPCs, 4 curved roads, 1121 curb segments, 62 targets; building/road SAT clear, roadside bays off carriageway.
+Cannon bridge: speed 1 -> 40.71 u/s, 1/30 s step moves 1.365 units.
+System regressions passed: focus isolation, time-step composition, steering plumbing, gear feedback, slope hold and Cannon units.

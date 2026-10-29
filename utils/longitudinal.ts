@@ -37,6 +37,7 @@ export interface LongitudinalInputs {
 }
 
 export interface LongitudinalState {
+  driveSlip?:number;
   speed: number;
   /** Smoothed throttle 0..1. */
   throttle: number;
@@ -284,7 +285,9 @@ export function stepLongitudinal(
       // multiplier, so there is no jump at 0.05 throttle or 1.5/2 speed.
       a *= lowSpeedTakeupFactor(state.speed, inputs.gear);
       const cap = tractionCapWithTransfer(ctx.cc, state.prevLongAccelMs2) * ctx.weatherGrip;
-      a = Math.min(a, cap);
+      const slipTarget=inputs.brake>.1||inputs.handbrake?0:clamp((a-cap)/Math.max(.0001,cap),0,2);
+      state.driveSlip=approachExponential(state.driveSlip??0,slipTarget,.12,h);
+      a = Math.min(a, cap*(1-(ctx.weatherGrip<.5?Math.min(.18,(state.driveSlip??0)*.12):0)));
       const vMsTraction = Math.max(1.2, Math.abs(state.speed) * 4.1667);
       const powerAccel = (ctx.cc.dynamics.powerKw * 1000 * state.throttle) / Math.max(1, ctx.cc.weight) / vMsTraction;
       a = Math.min(a, powerAccel / FRAME_ACCEL_TO_MS2);
@@ -300,6 +303,7 @@ export function stepLongitudinal(
       a *= pedalDriveEnvelope(state.throttle,Math.max(0,state.speed*Math.sign(inputs.gear))*4.1666666667);
       engineForce = (inputs.gear === -1 ? -1 : 1) * a * clamp(ctx.driveGripBudget??1,0,1);
     } else {
+      state.driveSlip=approachExponential(state.driveSlip??0,0,.18,h);
       state.overRevBlend = 0;
       state.ignitionBlend = 0;
     }
@@ -341,6 +345,7 @@ export function stepLongitudinal(
         state.speed = moveTowardZero(state.speed, engineBrake * h);
       }
     } else {
+      state.driveSlip=approachExponential(state.driveSlip??0,0,.18,h);
       state.overRevBlend = 0;
       state.ignitionBlend = 0;
     }

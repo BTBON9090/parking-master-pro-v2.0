@@ -80,9 +80,9 @@ function flatLineRibbon(points: THREE.Vector3[], halfW: number, y: number, close
   const positions: number[] = [];
   const indices: number[] = [];
   for (let i = 0; i < n; i++) {
-    const a = points[(i - 1 + n) % n];
+    const a = points[closed ? (i - 1 + n) % n : Math.max(0,i-1)];
     const b = points[i];
-    const c = points[(i + 1) % n];
+    const c = points[closed ? (i + 1) % n : Math.min(n-1,i+1)];
     const prev = new THREE.Vector3(b.x - a.x, 0, b.z - a.z);
     const next = new THREE.Vector3(c.x - b.x, 0, c.z - b.z);
     if (prev.lengthSq() < 1e-8) prev.copy(next);
@@ -1160,25 +1160,20 @@ function addRoadLaneMarkings(
     const runs: THREE.Vector3[][] = [];
     if (!dashed) { runs.push(ptsAll); }
     else {
-      const segLen = 20, gapLen = 40; let acc = 0; let cur: THREE.Vector3[] = [ptsAll[0]]; let drawing = true;
-      for (let i = 1; i < ptsAll.length; i++) {
-        const d = ptsAll[i].distanceTo(ptsAll[i - 1]); acc += d;
-        const phase = acc % (segLen + gapLen);
-        const nowDraw = phase < segLen;
-        if (nowDraw !== drawing) { if (drawing && cur.length >= 2) runs.push(cur); cur = nowDraw ? [ptsAll[i - 1]] : []; drawing = nowDraw; }
-        if (drawing) cur.push(ptsAll[i]);
+      const dash=30,period=90;let distance=0;
+      for(let i=1;i<ptsAll.length;i++){
+        const a=ptsAll[i-1],b=ptsAll[i],length=a.distanceTo(b);if(length<1e-6)continue;
+        let offset=0;
+        while(offset<length-1e-6){const phase=(distance+offset)%period;const drawing=phase<dash;const step=Math.min(length-offset,(drawing?dash:period)-phase||period);
+          if(drawing)runs.push([a.clone().lerp(b,offset/length),a.clone().lerp(b,(offset+step)/length)]);offset+=step;
+        }distance+=length;
       }
-      if (drawing && cur.length >= 2) runs.push(cur);
     }
     const mat = yellow ? Mats.lineYellow() : Mats.lineWhite();
     const visibleRuns = runs.flatMap(run => splitPointsByMarkingGaps(run, markingGaps));
-    for (const run of visibleRuns) {
-      if (run.length < 2) continue;
-      const geo = trackGeo(flatLineRibbon(run, yellow ? 0.75 : 0.6, yLine + 0.02, false));
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.renderOrder = 5;
-      scene.add(mesh);
-    }
+    const ribbons=visibleRuns.filter(run=>run.length>=2).map(run=>flatLineRibbon(run,yellow?.75:1.2,yLine+.02,false));
+    if(ribbons.length){const geo=mergeGeometries(ribbons);ribbons.forEach(g=>g.dispose());if(geo){const mesh=new THREE.Mesh(trackGeo(geo),mat);mesh.renderOrder=5;scene.add(mesh);}}
+
   };
   const L = Math.max(1, Math.min(8, lanes));
   // 车道边界(以半宽为单位)

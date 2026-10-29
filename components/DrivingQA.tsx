@@ -1,0 +1,18 @@
+import React,{useEffect,useState,useRef} from 'react';
+import {CarType,type InputState,type UserSettings} from '../types';
+/** Local development acceptance controls, omitted from production builds. */
+export function DrivingQA({locate,input,settings,car,pause}:{locate:(id:number,p:any)=>void;input:(p:Partial<InputState>)=>void;settings:(p:Partial<UserSettings>)=>void;car:(c:CarType)=>void;pause:(b:boolean)=>void}){
+ const [data,setData]=useState<any>({}),[physics,setPhysics]=useState<any>({}),[open,setOpen]=useState(true),[frozen,setFrozen]=useState(false);const stats=useRef({frames:0,maxGap:0,last:0,transitions:[] as any[],level:0});
+ useEffect(()=>{const position=(event:Event)=>{const d=(event as CustomEvent).detail,now=performance.now(),s=stats.current;s.frames++;if(s.last)s.maxGap=Math.max(s.maxGap,now-s.last);s.last=now;if(d.level!==s.level){s.transitions.push({level:d.level,speed:d.speedKmh,gear:d.gear,parkingBrake:d.parkingBrake,gap:s.maxGap});s.level=d.level;}setData(d);};const read=(e:Event)=>{const d=(e as CustomEvent).detail;setPhysics({audio:{ready:d.audioReady,loaded:d.audioLoaded,total:d.audioTotal,failed:d.audioFailed,active:d.audioActive},tyres:d.wheelGrounded,contacts:d.wheelContacts,body:d.bodyPitchDeg});};window.addEventListener('car-map-position',position);window.addEventListener('physics-debug-readout',read);return()=>{window.removeEventListener('car-map-position',position);window.removeEventListener('physics-debug-readout',read);};},[]);
+ const stop=()=>{window.dispatchEvent(new Event('free-drive-stop'));input({throttle:0,brake:0,gear:0,handbrake:true,parkingBrake:true});};
+ return <aside style={{position:'fixed',left:280,top:110,zIndex:120,background:'#111d',color:'white',padding:8,fontSize:11,maxWidth:420,maxHeight:350,overflow:'auto'}}><button onClick={()=>setOpen(v=>!v)}>QA44 {open?'收起':'展开'}</button>{open&&<><div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
+ <button onClick={()=>{stop();locate(1,{x:23300,y:19580,rotation:Math.PI/2,elevation:0});}}>城市地库门前</button>
+ <button onClick={()=>{stop();locate(6,{x:800,y:1045,rotation:Math.PI/2,elevation:-48});}}>宽螺旋入口</button>
+ <button onClick={()=>{stop();locate(6,{x:300,y:1085,rotation:Math.PI/2,elevation:-48});}}>窄螺旋入口</button>
+ <button onClick={()=>{stop();locate(1,{x:24320,y:19400,rotation:-1.2,elevation:0});}}>青岚山隧道</button>
+ <button onClick={()=>{stop();locate(13,{x:4400,y:1856,rotation:0,elevation:0});}}>高速直道</button>
+ <button onClick={()=>{stop();car(CarType.CARGO_TRIKE);}}>大三轮</button><button onClick={()=>{stop();car(CarType.DF41);}}>起竖车</button><button onClick={()=>{stop();car(CarType.SPORTS);}}>跑车</button>
+ <button onClick={()=>{stats.current={frames:0,maxGap:0,last:0,transitions:[],level:data.level??0};input({gear:1,engineStarted:true,parkingBrake:false,handbrake:false,throttle:.25,brake:0,steeringWheelAngle:0});}}>巡航起步</button><button onClick={()=>input({throttle:1})}>全油门</button><button onClick={()=>input({steeringWheelAngle:220})}>右转220</button><button onClick={()=>input({steeringWheelAngle:0})}>回正</button><button onClick={stop}>停稳</button><button onClick={()=>{pause(!frozen);setFrozen(!frozen);}}>QA暂停 {String(frozen)}</button>
+ <button onClick={()=>settings({dayTime:'NIGHT' as any,weatherEnabled:false})}>夜晚</button><button onClick={()=>input({lights:true,headlightMode:1})}>近光</button><button onClick={()=>input({lights:true,headlightMode:2})}>远光</button><button onClick={()=>input({lights:false,headlightMode:0})}>关灯</button><button onClick={()=>settings({weatherEnabled:true,weatherSnow:true,weatherRain:false,weatherFog:false})}>冰雪</button>
+ </div><output aria-label="驾驶验收遥测"><pre style={{whiteSpace:'pre-wrap',fontSize:9}}>{JSON.stringify({data,stats:stats.current,physics},null,1)}</pre></output></>}</aside>;
+}

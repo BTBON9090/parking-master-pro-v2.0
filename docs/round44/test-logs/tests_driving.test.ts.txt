@@ -1,0 +1,114 @@
+TRIKE: road-wheel lock 44.4°, gear redlines 13,24,41,62,78 km/h, shift 10/18/28/40/50 km/h, sim-0-100 63.00s
+TRACTOR: road-wheel lock 40.9°, gear redlines 8,12,17,24,33,47,63,84 km/h, shift 4/7/11/17/24/32/40/48 km/h, sim-0-100 46.03s
+SEMI: road-wheel lock 37.2°, gear redlines 9,12,17,23,32,44,60,81,113,153 km/h, shift 5/9/14/20.36625378024481/27.720734311999887/38.3825552012306/52.523496591157674/71.28188823085685/85/95 km/h, sim-0-100 66.05s
+CYBERTRUCK: road-wheel lock 29.7°, gear redlines 215 km/h, shift 120 km/h, sim-0-100 4.02s
+REVUELTO: road-wheel lock 32.3°, gear redlines 74,113,156,198,251,311,384,467 km/h, shift 45/75/110/150/190/230/280/330 km/h, sim-0-100 2.57s
+VEYRON: road-wheel lock 31.1°, gear redlines 75,106,140,177,217,263,314 km/h, shift 55/90/122.98665977211168/155.7831023780081/191.18835291846452/231.10680023111095/276.71998448725134 km/h, sim-0-100 2.58s
+V800: road-wheel lock 37.0°, gear redlines 237 km/h, shift 120 km/h, sim-0-100 6.55s
+MINI: road-wheel lock 30.6°, gear redlines 51,87,140,202,258,327,403 km/h, shift 25/45/70/100/140/180/220 km/h, sim-0-100 6.12s
+TAI7: road-wheel lock 35.1°, gear redlines 235 km/h, shift 120 km/h, sim-0-100 4.82s
+LI_I9: road-wheel lock 38.6°, gear redlines 257 km/h, shift 120 km/h, sim-0-100 5.30s
+N90: road-wheel lock 36.1°, gear redlines 263 km/h, shift 120 km/h, sim-0-100 6.42s
+JEEP: road-wheel lock 35.5°, gear redlines 46,80,126,191,245 km/h, shift 18/34/53/78/110 km/h, sim-0-100 9.75s
+MIDIBUS: road-wheel lock 39.4°, gear redlines 31,53,84,128,165 km/h, shift 14/26/42/62/85 km/h, sim-0-100 28.85s
+COACH: road-wheel lock 46.1°, gear redlines 37,65,102,156,200 km/h, shift 12/22/36/54/80 km/h, sim-0-100 19.63s
+VAN: road-wheel lock 38.0°, gear redlines 42,74,116,177,227 km/h, shift 16/30/48/72/100 km/h, sim-0-100 14.45s
+LIGHT_TRUCK: road-wheel lock 41.1°, gear redlines 33,57,90,137,176 km/h, shift 13/25/40/60/85 km/h, sim-0-100 33.38s
+CARGO_TRIKE: road-wheel lock 40.5°, gear redlines 16,29,49,73,91 km/h, shift 12/22/35/48/60 km/h, sim-0-100 29.93s
+DF41: road-wheel lock 30.3°, gear redlines 11,15,20,28,38,53,72,98,137,185 km/h, shift 4/8/12/18/26/35/45/56/68/78 km/h, sim-0-100 Infinitys
+TYPE100: road-wheel lock 40.1°, gear redlines 5,7,9,13,17,24,32,44,61,83 km/h, shift 4.211697651218816/5.7967451543656825/7.927901461117774/11.00198570114303/14.974924982111348/20.734511513692635/28.37354207136887/38.50694995400062/53.90972993560085/70 km/h, sim-0-100 27.55s
+MINING: road-wheel lock 30.7°, gear redlines 6,9,13,18,25,35,46 km/h, shift 5.584495101021216/7.732377832183222/11.168990202042432/16.0833458909411/22.337980404084863/30.92951132873289/40.20836472735276 km/h, sim-0-100 48.82s
+US22: road-wheel lock 36.2°, gear redlines 9,12,17,23,32,44,60,81,113,153 km/h, shift 5/9/14/20.36625378024481/27.720734311999887/38.3825552012306/52.523496591157674/71.28188823085685/85/100 km/h, sim-0-100 74.85s
+SEDAN training: 1st 43km/h redline / shift 20; 2nd 79 / shift 38; 20km/h pull 1st=0.0247 vs 2nd=0.0152.
+SEDAN: road-wheel lock 40.0°, gear redlines 43,79,125,170,273 km/h, shift 20/38/58/85/120 km/h, sim-0-100 8.52s
+SEAL08: road-wheel lock 40.0°, gear redlines 271 km/h, shift 120 km/h, sim-0-100 5.78s
+SUV: road-wheel lock 38.4°, gear redlines 317 km/h, shift 120 km/h, sim-0-100 6.92s
+SPORTS: road-wheel lock 37.4°, gear redlines 58,90,129,178,303 km/h, shift 35/65/100/150/200 km/h, sim-0-100 4.37s
+TRUCK: road-wheel lock 32.7°, gear redlines 38,68,103,142,178 km/h, shift 16/32/50/75/95 km/h, sim-0-100 11.07s
+SU7: road-wheel lock 36.8°, gear redlines 299 km/h, shift 120 km/h, sim-0-100 3.92s
+YU7: road-wheel lock 35.3°, gear redlines 304 km/h, shift 120 km/h, sim-0-100 4.22s
+ZUNJIE: road-wheel lock 38.5°, gear redlines 42,75,122,184,371 km/h, shift 28/55/90/130/180 km/h, sim-0-100 4.35s
+TRIKE: exported complete car 4147 triangles (limit 8000)
+TRIKE: body 14.5x36.5 top 18.2 vs cfg 14.5x36.5/18.5; half-track 3.9 (full 7.9)
+TRIKE: 4 wheels / 2 steering pivots bound correctly; axle z=11.8,-11.7,-11.7, spec ±11.8
+TRACTOR: exported complete car 5010 triangles (limit 8000)
+TRACTOR: body 14.4x48.5 top 29.2 vs cfg 24.5x48.5/29.5; half-track 9.2 (full 18.4)
+TRACTOR: 4 wheels / 2 steering pivots bound correctly; axle z=12.4,12.4,-15.3,-15.3, spec ±13.8
+SEMI: exported complete car 6761 triangles (limit 8000)
+SEMI: body 24.7x66.6 top 36.9 vs cfg 25.5x68.5/37.5; half-track 11.0 (full 22.1)
+SEMI: 4 wheels / 2 steering pivots bound correctly; axle z=20.8,20.8,-14.0,-14.0,-27.0,-27.0, spec ±20.8
+CYBERTRUCK: exported complete car 5696 triangles (limit 8000)
+CYBERTRUCK: body 20.3x56.8 top 17.6 vs cfg 20.316000000000003x56.829/17.938000000000002; half-track 8.8 (full 17.6)
+CYBERTRUCK: 4 wheels / 2 steering pivots bound correctly; axle z=18.1,18.1,-18.2,-18.2, spec ±18.2
+REVUELTO: exported complete car 5094 triangles (limit 8000)
+REVUELTO: body 20.3x49.5 top 11.3 vs cfg 20.33x49.47/11.6; half-track 8.8 (full 17.6)
+REVUELTO: 4 wheels / 2 steering pivots bound correctly; axle z=13.9,13.9,-13.9,-13.9, spec ±13.9
+VEYRON: exported complete car 5153 triangles (limit 8000)
+VEYRON: body 20.0x44.6 top 11.7 vs cfg 19.98x44.62/12.04; half-track 8.6 (full 17.3)
+VEYRON: 4 wheels / 2 steering pivots bound correctly; axle z=13.5,13.5,-13.6,-13.6, spec ±13.6
+V800: exported complete car 5740 triangles (limit 8000)
+V800: body 20.1x55.0 top 18.2 vs cfg 20.06x54.95/18.5; half-track 8.7 (full 17.4)
+V800: 4 wheels / 2 steering pivots bound correctly; axle z=17.0,17.0,-17.3,-17.3, spec ±17.2
+MINI: exported complete car 5318 triangles (limit 8000)
+MINI: body 17.4x38.8 top 14.0 vs cfg 17.44x38.76/14.32; half-track 7.4 (full 14.7)
+MINI: 4 wheels / 2 steering pivots bound correctly; axle z=12.4,12.4,-12.6,-12.6, spec ±12.5
+TAI7: exported complete car 7424 triangles (limit 8000)
+TAI7: body 19.9x50.0 top 18.3 vs cfg 19.950000000000003x49.989999999999995/18.65; half-track 8.6 (full 17.2)
+TAI7: 4 wheels / 2 steering pivots bound correctly; axle z=14.8,14.8,-14.4,-14.4, spec ±14.6
+LI_I9: exported complete car 7532 triangles (limit 8000)
+LI_I9: body 19.7x52.3 top 17.2 vs cfg 19.7x52.25/17.52; half-track 8.5 (full 17.0)
+LI_I9: 4 wheels / 2 steering pivots bound correctly; axle z=16.3,16.3,-15.4,-15.4, spec ±15.8
+N90: exported complete car 7506 triangles (limit 8000)
+N90: body 20.0x52.9 top 17.9 vs cfg 19.98x52.85/18.25; half-track 8.6 (full 17.2)
+N90: 4 wheels / 2 steering pivots bound correctly; axle z=15.7,15.7,-15.1,-15.1, spec ±15.4
+JEEP: exported complete car 7362 triangles (limit 8000)
+JEEP: body 18.9x46.6 top 19.1 vs cfg 18.9x46.6/19.099999999999998; half-track 8.0 (full 16.0)
+JEEP: 4 wheels / 2 steering pivots bound correctly; axle z=14.2,14.2,-13.8,-13.8, spec ±14.0
+MIDIBUS: exported complete car 7765 triangles (limit 8000)
+MIDIBUS: body 21.8x64.0 top 26.1 vs cfg 21.8x64/26.5; half-track 9.4 (full 18.7)
+MIDIBUS: 4 wheels / 2 steering pivots bound correctly; axle z=16.3,16.3,-20.2,-20.2, spec ±18.3
+COACH: exported complete car 7668 triangles (limit 8000)
+COACH: body 25.5x122.5 top 36.0 vs cfg 25.5x122.44999999999999/36.5; half-track 11.0 (full 21.9)
+COACH: 4 wheels / 2 steering pivots bound correctly; axle z=28.4,28.4,-32.5,-32.5, spec ±30.4
+VAN: exported complete car 6546 triangles (limit 8000)
+VAN: body 20.5x56.0 top 23.4 vs cfg 20.5x56/23.799999999999997; half-track 8.8 (full 17.6)
+VAN: 4 wheels / 2 steering pivots bound correctly; axle z=14.3,14.3,-18.2,-18.2, spec ±16.3
+LIGHT_TRUCK: exported complete car 7746 triangles (limit 8000)
+LIGHT_TRUCK: body 22.8x72.0 top 28.1 vs cfg 22.799999999999997x72/28.5; half-track 9.8 (full 19.6)
+LIGHT_TRUCK: 4 wheels / 2 steering pivots bound correctly; axle z=18.5,18.5,-22.5,-22.5, spec ±20.5
+CARGO_TRIKE: exported complete car 4536 triangles (limit 8000)
+CARGO_TRIKE: body 18.0x48.0 top 22.7 vs cfg 18x48/23; half-track 5.1 (full 10.2)
+CARGO_TRIKE: 4 wheels / 2 steering pivots bound correctly; axle z=15.3,-15.2,-15.2, spec ±15.3
+DF41: exported complete car 7796 triangles (limit 8000)
+DF41: body 35.4x160.4 top 35.3 vs cfg 32x164/38; half-track 13.7 (full 27.4)
+DF41: 4 wheels / 2 steering pivots bound correctly; axle z=55.7,55.7,39.7,39.7,23.7,23.7,7.7,7.7,-8.3,-8.3,-24.3,-24.3,-40.3,-40.3,-56.3,-56.3, spec ±56.0
+TYPE100: exported complete car 5820 triangles (limit 8000)
+TYPE100: body 40.5x72.5 top 26.2 vs cfg 40x73/27; half-track 16.6 (full 33.2)
+TYPE100: 4 wheels / 2 steering pivots bound correctly; axle z=18.7,18.7,-32.3,-32.3,8.5,-1.7,-11.9,-22.1,8.5,-1.7,-11.9,-22.1, spec ±25.5
+MINING: exported complete car 4248 triangles (limit 8000)
+MINING: body 90.0x149.0 top 68.4 vs cfg 95.3x148/68; half-track 38.0 (full 76.0)
+MINING: 4 wheels / 2 steering pivots bound correctly; axle z=46.0,46.0,-38.0,-38.0, spec ±42.0
+US22: exported complete car 7552 triangles (limit 8000)
+US22: body 24.4x73.3 top 38.6 vs cfg 25.5x82/38.5; half-track 11.0 (full 22.1)
+US22: 4 wheels / 2 steering pivots bound correctly; axle z=27.0,27.0,-14.0,-14.0,-27.0,-27.0, spec ±27.0
+SEDAN: exported complete car 7852 triangles (limit 8000)
+SEDAN: body 20.0x51.5 top 14.8 vs cfg 19.99x51.5/15.05; half-track 8.6 (full 17.2)
+SEDAN: 4 wheels / 2 steering pivots bound correctly; axle z=16.1,16.1,-14.2,-14.2, spec ±15.2
+SEAL08: exported complete car 7852 triangles (limit 8000)
+SEAL08: body 20.0x51.5 top 14.8 vs cfg 19.99x51.5/15.05; half-track 8.6 (full 17.2)
+SEAL08: 4 wheels / 2 steering pivots bound correctly; axle z=16.1,16.1,-14.2,-14.2, spec ±15.2
+SUV: exported complete car 7864 triangles (limit 8000)
+SUV: body 20.0x51.4 top 17.3 vs cfg 19.98x51.45/17.66; half-track 8.6 (full 17.2)
+SUV: 4 wheels / 2 steering pivots bound correctly; axle z=16.0,16.0,-15.1,-15.1, spec ±15.6
+SPORTS: body 23.5x45.7 top 12.0 vs cfg 24.52x45.7/12.05; half-track 10.3 (full 20.5)
+SPORTS: 4 wheels / 2 steering pivots bound correctly; axle z=13.1,13.1,-16.3,-16.3, spec ±14.7
+TRUCK: exported complete car 7365 triangles (limit 8000)
+TRUCK: body 19.7x54.6 top 18.5 vs cfg 19.7x54.6/18.5; half-track 8.4 (full 16.8)
+TRUCK: 4 wheels / 2 steering pivots bound correctly; axle z=16.3,16.3,-16.3,-16.3, spec ±16.3
+SU7: body 21.3x50.1 top 14.4 vs cfg 19.63x49.97/14.4; half-track 8.4 (full 16.8)
+SU7: 4 wheels / 2 steering pivots bound correctly; axle z=15.0,15.0,-15.0,-15.0, spec ±15.0
+YU7: body 21.5x50.1 top 16.1 vs cfg 19.96x49.99/16.08; half-track 8.5 (full 16.9)
+YU7: 4 wheels / 2 steering pivots bound correctly; axle z=15.0,15.0,-15.0,-15.0, spec ±15.0
+ZUNJIE: body 21.7x55.1 top 15.4 vs cfg 20x54.8/15.36; half-track 8.5 (full 17.0)
+ZUNJIE: 4 wheels / 2 steering pivots bound correctly; axle z=16.9,16.9,-16.9,-16.9, spec ±16.9
+Driving, collision, spawn and actual vehicle binding regressions passed.

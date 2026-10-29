@@ -1,0 +1,1 @@
+Precipitation PASS: 30–144 Hz, altitude, bounded vertices, pause, resource reuse/disposal, 8 weather combinations and saved daylight.

@@ -1,3 +1,6 @@
+import {DrivingQA} from './components/DrivingQA';
+import {prepareScene,clearPreparedScene} from './three/preparedScene';
+import {MAP_PORTALS} from './utils/mapPortals';
 import {MountainAdventurePanel} from './components/MountainAdventurePanel';
 import {portalAt} from './utils/mapPortals';
 import {ReleaseNotes} from './components/ReleaseNotes';
@@ -453,23 +456,27 @@ function App() {
   };
 
   useEffect(()=>{
-      if(!isInGame||!levelData)return;
-      let armed=false,moving=false,timer:ReturnType<typeof setTimeout>|undefined;
+      if(!isInGame||!levelData){clearPreparedScene();return;}
+      let prepared="";let armed=false,moving=false;
       const position=(event:Event)=>{
           if(moving)return;
           const d=(event as CustomEvent).detail;
+          const ahead=MAP_PORTALS.find(p=>p.level===levelData.levelId&&Math.hypot(p.x-d.x,p.y-d.y)<1800&&Math.cos(d.rotation-p.heading)>.3&&(p.x-d.x)*Math.cos(d.rotation)+(p.y-d.y)*Math.sin(d.rotation)>0);
+          if(ahead&&prepared!==ahead.id){prepared=ahead.id;const next=GENERATE_LEVEL(ahead.target);next.startPos={...ahead.arrival};prepareScene(next,CAR_MODELS[currentCar],currentCar);}
           const portal=portalAt(levelData.levelId,d);
           if(!portal){armed=true;return;}
           if(!armed||!d.safe)return;
-          moving=true;flushProgress();window.dispatchEvent(new Event('free-drive-stop'));setIsPaused(true);setTravelMessage('正在进入 '+portal.label);
-          timer=setTimeout(()=>{
-              const next=GENERATE_LEVEL(portal.target);next.startPos={...portal.arrival};
-              setLevel(portal.target);setGameFromEditor(false);playLevelData(next);setTravelMessage('');
-          },450);
+          moving=true;flushProgress();
+          const next=GENERATE_LEVEL(portal.target);next.startPos={...portal.arrival};
+          next.entryMotion={speed:carSpeedRef.current,steeringAngle:0};
+          progressPose.current={...portal.arrival};
+          setLevel(portal.target);setGameFromEditor(false);setLevelData(next);
+          setCompletedSpots(new Set(savedMaps.current[String(portal.target)]?.completedSpots??[]));
+
       };
       window.addEventListener('car-map-position',position);
-      return()=>{window.removeEventListener('car-map-position',position);if(timer)clearTimeout(timer);};
-  },[isInGame,levelData]);
+      return()=>{window.removeEventListener('car-map-position',position);};
+  },[isInGame,levelData,currentCar]);
 
   const startGame = () => {
       setGameFromEditor(false);
@@ -1075,11 +1082,13 @@ function App() {
   // 选车时同时载入该车型的专属转向曲线默认值（每辆车都有自己的手感）
   const handleSetCar = useCallback((c: CarType) => {
       setCurrentCar(c);
+      const next={...inputRef.current,gear:Math.min(inputRef.current.gear,getPowertrain(c).gearTops.length)};inputRef.current=next;setInputState(next);
       setSettings(prev => ({ ...prev, steeringCurve: { ...DEFAULT_STEERING_CURVES[c] }, hoodCameraAdjustment: hoodCameraDefaultForCar(c) }));
   }, []);
 
   return (
     <div className="w-full h-full overflow-hidden relative select-none cursor-crosshair" style={{ background: 'var(--bg)' }}>
+      {(import.meta as any).env.DEV&&isInGame&&new URLSearchParams(location.search).has("qa44")&&<DrivingQA car={handleSetCar} input={p=>updateInput(v=>({...v,...p}))} settings={p=>setSettings(v=>({...v,...p}))} pause={setIsPaused} locate={(id,p)=>{if(levelData?.levelId===id)window.dispatchEvent(new CustomEvent("test-teleport",{detail:{...p,deckHeight:p.elevation}}));else{const data=GENERATE_LEVEL(id);data.startPos=p;setLevel(id);playLevelData(data);}}}/>}
       {/* 地图编辑器：编辑中正常显示；测试游玩期间隐藏挂载以保留地图状态（inactive 关闭其全局热键/画布循环） */}
       {(editorMode || gameFromEditor) && (
         <div style={{ display: editorMode && !isInGame ? 'block' : 'none', width: '100%', height: '100%' }}>
@@ -1114,7 +1123,7 @@ function App() {
         />
       )}
       {travelMessage&&<div className="map-transition" role="status">{travelMessage}<small>已保存上一地图进度 · 到达后松开踏板重新起步</small></div>}
-      {isInGame&&!isPaused&&levelData?.openWorld&&<MountainAdventurePanel/>}
+
       <ReleaseNotes/>
       {!isInGame&&menuSettings&&<SettingsPage inGame={false} onLayout={()=>{}} settings={settings} update={patch=>setSettings(v=>({...v,...patch}))}
         car={currentCar} level={level} openWorld={false} onCar={handleSetCar} onMap={setLevel} onTravel={()=>{}}
@@ -1157,6 +1166,7 @@ function App() {
             readInput={()=>inputRef.current}
             exitGame={exitGame}
             resetLevel={resetCurrentLevel}
+            restartLevel={()=>{startLevel(level);savedMaps.current[String(level)]={completedSpots:[]};setCompletedSpots(new Set());}}
             lang={lang}
             setLang={setLang}
             showReward={rewardAnimation}
@@ -1164,7 +1174,6 @@ function App() {
             onSettingsToggle={setIsPaused}
             currentCarId={currentCar}
             onChangeCar={c => {
-              parkForTravel();
               handleSetCar(c);
             }}
             onChangeMap={id => { setLevel(id); startLevel(id); setIsPaused(true); }}

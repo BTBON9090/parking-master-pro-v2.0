@@ -131,9 +131,9 @@ export function buildNativeAuthoredVehicle(source: THREE.Group, cfg: CarConfig):
   };
 
   // ---- four authored wheel assemblies: steer around Y, roll around X ----
-  const labels=cfg.id===CarType.TRIKE?['FrontL','RearL','RearR']:[CarType.SEMI,CarType.US22].includes(cfg.id)?[...WHEEL_LABELS,'Rear2L','Rear2R']:WHEEL_LABELS;
+  const labels=cfg.id===CarType.DF41?['Front','Front2','Front3','Front4','Rear','Rear2','Rear3','Rear4'].flatMap(a=>[a+'L',a+'R']):[CarType.TRIKE,CarType.CARGO_TRIKE].includes(cfg.id)?['FrontL','RearL','RearR']:[CarType.SEMI,CarType.US22].includes(cfg.id)?[...WHEEL_LABELS,'Rear2L','Rear2R']:WHEEL_LABELS;
   group.userData.expectedWheelCount=labels.length;
-  group.userData.expectedFrontWheelCount=cfg.id===CarType.TRIKE?1:2;
+  group.userData.expectedFrontWheelCount=cfg.id===CarType.DF41?8:[CarType.TRIKE,CarType.CARGO_TRIKE].includes(cfg.id)?1:2;
   labels.forEach((label,index)=>{
     const wheelRoot = source.getObjectByName(`Wheel${label}`);
     if (!wheelRoot) throw new Error(`Authored asset missing Wheel${label}`);
@@ -348,5 +348,5 @@ export function buildNativeAuthoredVehicle(source: THREE.Group, cfg: CarConfig):
 }
 
 export function isAuthoredVehicle(carType: CarType): boolean {
-  return [CarType.TYPE100,CarType.MINING,CarType.US22,CarType.TRIKE,CarType.TRACTOR,CarType.SEMI,CarType.CYBERTRUCK,CarType.REVUELTO,CarType.VEYRON,CarType.V800,CarType.MINI,CarType.TRUCK,CarType.TAI7,CarType.LI_I9,CarType.N90,CarType.SEDAN,CarType.SEAL08,CarType.SUV,CarType.JEEP,CarType.MIDIBUS,CarType.COACH,CarType.VAN,CarType.LIGHT_TRUCK].includes(carType);
+  return [CarType.CARGO_TRIKE,CarType.DF41,CarType.TYPE100,CarType.MINING,CarType.US22,CarType.TRIKE,CarType.TRACTOR,CarType.SEMI,CarType.CYBERTRUCK,CarType.REVUELTO,CarType.VEYRON,CarType.V800,CarType.MINI,CarType.TRUCK,CarType.TAI7,CarType.LI_I9,CarType.N90,CarType.SEDAN,CarType.SEAL08,CarType.SUV,CarType.JEEP,CarType.MIDIBUS,CarType.COACH,CarType.VAN,CarType.LIGHT_TRUCK].includes(carType);
 }

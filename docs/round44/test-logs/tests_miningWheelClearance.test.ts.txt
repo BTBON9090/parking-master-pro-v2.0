@@ -1,0 +1,1 @@
+Mining wheel-well PASS: 4 wheel centres × 32 directions clear of body.

@@ -1,0 +1,16 @@
+MINI {
+  sample: 3.4188238188723425,
+  baseline: 3.411253111427605,
+  splitOmega: [ 45.58005221904859, 45.58005221904859 ]
+}
+SEAL08 {
+  sample: 3.408658933143451,
+  baseline: 3.7196443508346295,
+  splitOmega: [ 40.53171332353753, 40.53171332353753 ]
+}
+TRUCK {
+  sample: 2.1589898278858524,
+  baseline: 2.5139338367052355,
+  splitOmega: [ 23.1496914274547, 23.1496914274547 ]
+}
+Experimental integration PASS: bounded dry launch, split-grip slowdown, legacy braking

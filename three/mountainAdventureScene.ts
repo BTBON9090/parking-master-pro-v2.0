@@ -1,6 +1,6 @@
 import {worldHeight} from '../utils/openWorld';
 import * as THREE from 'three';
-import {cutLiftOpening,MOUNTAIN_LIFT,MOUNTAIN_TUNNEL,MOUNTAIN_TUNNEL_WIDTH,inMountainLift} from '../utils/mountainAdventure';
+import {mountainTunnelSideOpen,cutLiftOpening,MOUNTAIN_LIFT,MOUNTAIN_TUNNEL,MOUNTAIN_TUNNEL_WIDTH,inMountainLift} from '../utils/mountainAdventure';
 export function addMountainAdventure(scene:THREE.Scene,track:(g:THREE.BufferGeometry)=>THREE.BufferGeometry){
  const addStrip=(kind:'floor'|'roof'|'left'|'right')=>{
   const positions:number[]=[],ids:number[]=[];
@@ -8,17 +8,24 @@ export function addMountainAdventure(scene:THREE.Scene,track:(g:THREE.BufferGeom
   for(let i=0;i<MOUNTAIN_TUNNEL.length;i++){
    const p=MOUNTAIN_TUNNEL[i],surface=p.x<24500&&p.y>18800?worldHeight(p.x,p.y):0,floor=surface<25?surface:0;
    for(const k of [0,1]){const off=vertical?side*MOUNTAIN_TUNNEL_WIDTH/2:(k-.5)*MOUNTAIN_TUNNEL_WIDTH;positions.push(p.x+p.nx*off,floor+(vertical?k*90:kind==='roof'?90:.12),p.y+p.ny*off);}
-   if(i<MOUNTAIN_TUNNEL.length-1){const n=i*2;ids.push(n,n+2,n+1,n+1,n+2,n+3);}
+   if(i<MOUNTAIN_TUNNEL.length-1&&(!vertical||!mountainTunnelSideOpen(i+1,side))){const n=i*2;ids.push(n,n+2,n+1,n+1,n+2,n+3);}
   }
   const clipped=kind!=='floor'?cutLiftOpening(positions,ids):ids;
   const g=track(new THREE.BufferGeometry());g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setIndex(clipped);g.computeVertexNormals();
-  const mesh=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:kind==='floor'?'#39434a':kind==='roof'?'#26343b':'#51636c',side:THREE.DoubleSide}));mesh.name='mountain-tunnel-'+kind;scene.add(mesh);
+  const mesh=new THREE.Mesh(g,new THREE.MeshStandardMaterial({color:kind==='floor'?'#566068':kind==='roof'?'#59636a':'#89999e',roughness:kind==='floor'?.82:.6,metalness:.08,side:THREE.DoubleSide}));mesh.name='mountain-tunnel-'+kind;scene.add(mesh);
  };
  for(const kind of ['floor','roof','left','right'] as const)addStrip(kind);
  const samples=MOUNTAIN_TUNNEL.filter((_,i)=>i%5===0),matrix=new THREE.Matrix4();
  for(const off of [-69,69,0]){
   const lights=new THREE.InstancedMesh(track(new THREE.BoxGeometry(off===0?14:28,.5,off===0?1.4:2)),new THREE.MeshBasicMaterial({color:off===0?'#e8c16b':'#c5eee5'}),samples.length);
   samples.forEach((p,i)=>{matrix.makeRotationY(-Math.atan2(-p.nx,p.ny));matrix.setPosition(p.x+p.nx*off,off===0?.24:30,p.y+p.ny*off);lights.setMatrixAt(i,matrix);});scene.add(lights);
+ }
+ const chevron=new THREE.Shape();chevron.moveTo(-5,-8);chevron.lineTo(0,-8);chevron.lineTo(7,0);chevron.lineTo(0,8);chevron.lineTo(-5,8);chevron.lineTo(2,0);chevron.closePath();
+ const arrowGeo=track(new THREE.ShapeGeometry(chevron));let lastArrow=-Infinity;
+ for(let i=4;i<MOUNTAIN_TUNNEL.length-4;i++){
+  const p=MOUNTAIN_TUNNEL[i],a=MOUNTAIN_TUNNEL[i-4],b=MOUNTAIN_TUNNEL[i+4];const turn=Math.atan2(a.nx*b.ny-a.ny*b.nx,a.nx*b.nx+a.ny*b.ny);
+  if(Math.abs(turn)<.055||i-lastArrow<(Math.abs(turn)>.35?2:Math.abs(turn)>.15?4:7))continue;lastArrow=i;
+  for(const side of [-1,1]){const panel=new THREE.Mesh(track(new THREE.PlaneGeometry(22,22)),new THREE.MeshStandardMaterial({color:'#183c4b',roughness:.6,side:THREE.DoubleSide}));panel.position.set(p.x+p.nx*side*71,26,p.y+p.ny*side*71);panel.rotation.y=Math.atan2(-p.nx*side,-p.ny*side);const mark=new THREE.Mesh(arrowGeo,new THREE.MeshStandardMaterial({color:'#ffdf82',emissive:'#ad8024',emissiveIntensity:.22,side:THREE.DoubleSide}));mark.position.z=.1;mark.scale.x=Math.sign(turn)*side;panel.add(mark);panel.name='tunnel-bend-chevron';scene.add(panel);}
  }
  const lift=new THREE.Group();lift.name='mountain-vehicle-lift';lift.position.set(MOUNTAIN_LIFT.x,MOUNTAIN_LIFT.top,MOUNTAIN_LIFT.y);
  const platform=new THREE.Mesh(track(new THREE.BoxGeometry(260,3,180)),new THREE.MeshStandardMaterial({color:'#6b8888',roughness:.8}));platform.name='mountain-lift-deck';platform.position.y=-1.5;lift.add(platform);

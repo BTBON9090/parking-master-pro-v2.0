@@ -1,0 +1,1 @@
+Round 23 PASS: independent pointers, continuous drivetrain/brake force, brake priority, release/cancel, 60 Hz resolution recovery and loading/paused exclusions.

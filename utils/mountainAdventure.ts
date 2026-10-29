@@ -1,3 +1,4 @@
+import {WORLD_ROUTES} from './openWorld';
 import {CatmullRomCurve3,Vector3} from 'three';
 import type {Obstacle} from '../types';
 export const MOUNTAIN_LIFT={x:44050,y:1700,width:260,depth:180,bottom:0,top:10000,duration:80};
@@ -28,6 +29,14 @@ export function mountainTunnelSample(x:number,y:number,hint:number){
  for(const i of cells.get(Math.floor(x/cellSize)+','+Math.floor(y/cellSize))??[]){const a=MOUNTAIN_TUNNEL[i-1],b=MOUNTAIN_TUNNEL[i],dx=b.x-a.x,dy=b.y-a.y,t=Math.max(0,Math.min(1,((x-a.x)*dx+(y-a.y)*dy)/(dx*dx+dy*dy||1)));distance=Math.min(distance,Math.hypot(x-a.x-t*dx,y-a.y-t*dy));}
  return distance<=MOUNTAIN_TUNNEL_WIDTH/2+2?{height:0,gradeX:0,gradeY:0}:null;
 }
+/** Shared opening test for rendered walls and collision walls at the city fork. */
+export function mountainTunnelSideOpen(i:number,side:number){
+ const a=MOUNTAIN_TUNNEL[i-1],b=MOUNTAIN_TUNNEL[i],off=side*(MOUNTAIN_TUNNEL_WIDTH/2+2);
+ const x=(a.x+b.x+(a.nx+b.nx)*off)/2,y=(a.y+b.y+(a.ny+b.ny)*off)/2;
+ if(inMountainLift(x,y)||i>MOUNTAIN_TUNNEL.length-5)return true;
+ const gateway=WORLD_ROUTES.find(r=>r.id==='gateway')!;
+ return x<24600&&gateway.samples.some(p=>p.h<60&&Math.hypot(x-p.x,y-p.y)<gateway.width/2+30);
+}
 export function mountainAdventureObstacles():Obstacle[]{
  const out:Obstacle[]=[];
  const wall=(id:string,x:number,y:number,width:number,height:number,rotation:number,elevation:number,verticalHeight:number)=>out.push({id,x,y,width,height,rotation,elevation,verticalHeight,type:'wall',movable:false,weight:0,color:'#586168',collisionOnly:true});
@@ -35,7 +44,7 @@ export function mountainAdventureObstacles():Obstacle[]{
   const a=MOUNTAIN_TUNNEL[i-1],b=MOUNTAIN_TUNNEL[i];
   for(const side of [-1,1]){const off=side*(MOUNTAIN_TUNNEL_WIDTH/2+2),ax=a.x+a.nx*off,ay=a.y+a.ny*off,bx=b.x+b.nx*off,by=b.y+b.ny*off;
    // Lift platform and city mouth have no lateral wall across their connection.
-   if(inMountainLift((ax+bx)/2,(ay+by)/2)||i>MOUNTAIN_TUNNEL.length-5)continue;
+   if(mountainTunnelSideOpen(i,side))continue;
    wall(`mountain-tunnel-${i}-${side}`,(ax+bx)/2,(ay+by)/2,Math.hypot(bx-ax,by-ay)+.2,4,Math.atan2(by-ay,bx-ax),0,90);
   }
   if(!inMountainLift((a.x+b.x)/2,(a.y+b.y)/2,-25))wall(`mountain-tunnel-roof-${i}`,(a.x+b.x)/2,(a.y+b.y)/2,Math.hypot(b.x-a.x,b.y-a.y)+.2,155,Math.atan2(b.y-a.y,b.x-a.x),90,6);

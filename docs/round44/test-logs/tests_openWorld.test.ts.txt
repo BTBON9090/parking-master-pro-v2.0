@@ -1,0 +1,6 @@
+{"routes":10,"lengthKm":23.69164858668817,"maxGrade":0.4606184940388427,"minRadiusM":19.887705800359573,"railColliders":5600}
+{
+  maxAsphaltContactErrorCm: 2.4944951180259523,
+  maxGravelContactErrorCm: 1.6017270281463425
+}
+{ maxShoulderAndOffRoadErrorCm: 1.6004182576602943 }

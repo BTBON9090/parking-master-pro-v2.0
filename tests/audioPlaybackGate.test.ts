@@ -60,7 +60,7 @@ try{
   assert.equal(contexts.length,0,'muted preview allocates no context');assert.equal(fetches,0,'muted preview fetches no clips');
   const stop=startGarageAudio(cfg,{volume:.4});await settle();
   assert.equal(contexts.length,1);assert.equal(sources.length,2);assert.equal(fetches,2);
-  assert(gains.some(g=>Math.abs(g.gain.value-.15*.4)<1e-6),'preview respects the user volume');
+  assert(gains.some(g=>Math.abs(g.gain.value-.22*.4)<1e-6),'preview respects the user volume');
   const ctx=contexts[0];doc.hidden=true;doc.dispatchEvent(new Event('visibilitychange'));await settle();
   assert.equal(ctx.state,'suspended');
   host.dispatchEvent(new Event('pointerdown'));await settle();assert.equal(ctx.resumes,0,'hidden pointer cannot restart audio');

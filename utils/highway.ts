@@ -3,14 +3,18 @@ import {CatmullRomCurve3,Vector3} from 'three';
 import type {LevelData,Vector2,Obstacle} from '../types';
 export function buildHighway():LevelData{
  const loop=[[2600,1800],[6000,1800],[14000,1800],[24000,1800],[27000,2400],[28100,4200],[27000,6400],[28000,8500],[26600,11400],[23600,12200],[21400,10800],[18400,11200],[15600,12500],[11500,12000],[8200,10800],[5300,11860],[2900,11500],[1700,9400],[2600,7500],[1400,4900],[1500,2800]].map(([x,y])=>({x,y}));
+ // Acceleration lanes follow the actual ring tangent for a full 300 metres.
+ const ring=new CatmullRomCurve3(loop.map(p=>new Vector3(p.x,0,p.y)),true,'centripetal');
+ const ringSamples=ring.getSpacedPoints(1200),ringLength=ring.getLength();
+ const merge=(x:number,y:number)=>{let index=0;ringSamples.forEach((p,i)=>{if(Math.hypot(p.x-x,p.z-y)<Math.hypot(ringSamples[index].x-x,ringSamples[index].z-y))index=i;});return [0,1500,3000].map((distance,i)=>{const t=(index/1200+distance/ringLength)%1,p=ring.getPointAt(t),d=ring.getTangentAt(t),off=i===2?138:194;return[p.x-d.z*off,p.z+d.x*off];});};
  const out:LevelData={levelId:13,highway:true,mapWidth:30000,mapHeight:14000,startPos:{x:4000,y:1856,rotation:0},spots:[],obstacles:[],markings:[],curvedRoads:[{points:loop,closed:true,width:320,color:'#3a3a3e',lanes:8,direction:'two-way'}],roadSurfaces:[],slopeZones:[],elevatedRoads:[],streetSigns:[],training:{title:'环线高速 · 双向八车道',tips:['每方向四条车道，主线限速 120 km/h；收费站、匝道降至 30','NPC 会跟车、让行、变道超车，保持安全车距','服务区可停车；互通支线、丘陵坡段与加速车道均可探索']}};
  const road=(p:number[][],width=76)=>out.curvedRoads!.push({points:p.map(([x,y])=>({x,y})),width,color:'#353539',lanes:width>100?4:2,direction:'one-way'});
  // Separate exit, service plaza and acceleration lane, each tangent to mainline.
- road([[6000,1940],[6800,2200],[7500,3100],[9200,3400],[10700,2900],[11500,2100],[12600,1940]],90);
+ road([[3000,1940],[4500,1990],[6000,1990],[6800,2200],[7500,3100],[9200,3400],[10700,2900],[11500,2100],[12600,1990],[14100,1990],[15600,1940]],90);
  out.roadSurfaces!.push({x:8700,y:3370,width:2000,height:650,rotation:0,color:'#414549',curbs:false});
  for(let i=0;i<30;i++)out.spots.push({id:'service-'+i,x:7900+i*48,y:3530,width:34,height:80,rotation:Math.PI/2,occupied:false});
- road([[15800,1940],[17200,3000],[19000,5400],[21800,5600],[25000,3900],[27000,1940]],150);
- road([[19000,5400],[16600,6700],[12000,8000],[7000,10200],[5300,11860]],90);
+ road([[12800,1940],[14300,1990],[15800,1990],[17200,3000],[19000,5400],[21800,5600],[25000,3900],...merge(27000,2400)],150);
+ road([[19000,5400],[16600,6700],[12000,8000],[7000,10200],...merge(5300,11860)],90);
  out.slopeZones!.push({x:21000,y:1800,width:340,length:6500,peakHeight:220,rotation:0});
  // Broad overpass crosses the mainline; its 140 m approaches keep grades sane.
  out.elevatedRoads!.push({id:'motorway-overpass',x:14000,y:1800,width:3400,height:110,rotation:Math.PI/2,deckHeight:65,rampLength:1400});
@@ -19,7 +23,7 @@ export function buildHighway():LevelData{
  out.roadSurfaces!.push({x:8700,y:3090,width:650,height:600,rotation:0,color:'#3a3a3e',curbs:false});
  for(let n=0;n<6;n++){box('toll-island-'+n,8460+n*96,3130,10,160,12);box('toll-booth-'+n,8460+n*96,3090,18,28,29);}
  box('toll-roof',8700,3100,560,160,5,58);
- for(const [x,y,label] of [[5000,1550,'服务区 / 收费站  500m'],[15000,1550,'互通出口  右侧驶出'],[21500,1550,'连续起伏坡  保持车距'],[26000,12300,'环线高速  限速 120'],[9000,3650,'停车休息  服务区']] as const)out.streetSigns!.push({x,y,rotation:0,label,kind:'street'});
+ for(const [x,y,label] of [[3000,1550,'服务区出口  300m · 减速车道'],[5000,1550,'服务区出口  100m'],[12800,1550,'互通出口  300m · 减速车道'],[14800,1550,'互通出口  100m · 右侧驶出'],[21500,1550,'连续起伏坡  保持车距'],[26000,12300,'环线高速  限速 120'],[9000,3650,'停车休息  服务区']] as const)out.streetSigns!.push({x,y,rotation:0,label,kind:'street'});
  // A compact city skyline beyond the northern highway shoulder. These are
  // real colliders using the same authored dimensions as their instanced visuals;
  // road-clearance checks still remove any that overlap a road.

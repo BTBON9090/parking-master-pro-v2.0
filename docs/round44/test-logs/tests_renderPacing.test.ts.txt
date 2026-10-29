@@ -1,0 +1,3 @@
+Render pacing PASS: desktop unbounded, hidden idle, pause refresh, mobile mirror invalidation
+Showroom pacing PASS: bounded touch workload, refresh-independent rotation, hidden/resume and input
+Mobile cadence physics PASS: 24 cars, acceleration/braking at 60/90/120/144 Hz

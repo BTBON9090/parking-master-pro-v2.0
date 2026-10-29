@@ -1,0 +1,1 @@
+Exam position PASS: out-of-order entry, leaving zone, teleport, true stop point, passing, bent path location.

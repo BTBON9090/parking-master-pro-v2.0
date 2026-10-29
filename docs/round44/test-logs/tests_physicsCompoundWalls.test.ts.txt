@@ -1,0 +1,1 @@
+Compound static walls PASS: cone contacts and 90-step trajectories match independent bodies at four rotations and two elevations.

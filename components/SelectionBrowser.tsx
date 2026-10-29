@@ -24,10 +24,11 @@ export function VehicleBrowser(p:{car:CarType;select:(c:CarType)=>void;audioEnab
  </div>;
 }
 export function MapBrowser(p:{level:number;select:(n:number)=>void;training?:React.ReactNode}){
+ const [loaded,setLoaded]=useState<number|null>(null);
  const map=LEVEL_LIST.find(l=>l.id===p.level)??LEVEL_LIST[0];
  return <div className="selection-browser">
   <div className={`selection-stage map-stage ${p.training?'with-training':''}`}>
-   <div className="map-preview"><img src={assetUrl(map.thumbnail)} alt={map.name+'路线全图'}/><div className="selection-caption"><span>DESTINATION</span><h2>{map.name}</h2><p>{map.desc}</p></div></div>
+   <div className="map-preview"><img src={assetUrl(map.thumbnail)} alt={map.name+'路线全图'} onLoad={()=>setLoaded(map.id)} onError={()=>setLoaded(map.id)}/>{loaded!==map.id&&<div className="stage-loading"><i/>正在装载路线图</div>}<div className="selection-caption"><span>DESTINATION</span><h2>{map.name}</h2><p>{map.desc}</p></div></div>
    {p.training&&<aside className="training-options">{p.training}</aside>}
   </div>
   <div className="selection-rail" aria-label="地图列表">{LEVEL_LIST.map(l=><button key={l.id} aria-pressed={p.level===l.id} onClick={()=>p.select(l.id)}><img src={assetUrl(l.thumbnail)} alt=""/><strong>{l.name}</strong></button>)}</div>

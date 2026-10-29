@@ -1,0 +1,1 @@
+Scenery alignment PASS: actual 3 building GLBs × 4 headings, collider bounds, elevation, attached details and shadow plane

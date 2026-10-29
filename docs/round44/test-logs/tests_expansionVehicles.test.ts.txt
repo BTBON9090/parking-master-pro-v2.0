@@ -1,0 +1,15 @@
+TAI7 {
+  zeroTo100Seconds: 4.45,
+  outerTurningRadiusM: 5.799999999999771,
+  uphillKmh: 24.818386417361282
+}
+LI_I9 {
+  zeroTo100Seconds: 4.883333333333334,
+  outerTurningRadiusM: 5.299999999999871,
+  uphillKmh: 23.805050313313618
+}
+N90 {
+  zeroTo100Seconds: 5.916666666666667,
+  outerTurningRadiusM: 5.949999999998603,
+  uphillKmh: 19.479534434448542
+}
