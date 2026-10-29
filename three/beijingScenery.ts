@@ -3,6 +3,9 @@ import type { LevelData } from '../types';
 import { contactShadowTexture } from './materials';
 import { CURB_HEIGHT, CURB_WIDTH } from '../utils/terrainSampling';
 import {mergeCurbVisuals} from '../utils/curbVisuals';
+import {highwayBendMarkers} from '../utils/highway';
+import {sampleTerrainSurface} from '../utils/terrainSampling';
+import {composeSceneryPose} from './obstacleVisuals';
 
 /** Low-poly Beijing courtyard frontage: masonry blocks and shallow grey gables. */
 export function addBeijingScenery(scene:THREE.Scene,level:LevelData,trackGeo:(g:THREE.BufferGeometry)=>THREE.BufferGeometry) {
@@ -17,17 +20,17 @@ export function addBeijingScenery(scene:THREE.Scene,level:LevelData,trackGeo:(g:
   const roofs=new THREE.InstancedMesh(roofGeo,roofMat,buildings.length);
   const windows=new THREE.InstancedMesh(wallGeo,new THREE.MeshLambertMaterial({color:'#414e54'}),buildings.length*4);
   const doors=new THREE.InstancedMesh(wallGeo,new THREE.MeshLambertMaterial({color:'#634c42'}),buildings.length*2);
-  const matrix=new THREE.Matrix4(),q=new THREE.Quaternion(),p=new THREE.Vector3(),scale=new THREE.Vector3();
+  const matrix=new THREE.Matrix4();
   buildings.forEach((o,i)=>{
-   matrix.compose(p.set(o.x,14,o.y),q,scale.set(o.width,28,o.height));walls.setMatrixAt(i,matrix);walls.setColorAt(i,new THREE.Color(o.color));
-   matrix.compose(p.set(o.x,28,o.y),q,scale.set(o.width,16,o.height));roofs.setMatrixAt(i,matrix);
+   composeSceneryPose(matrix,o,0,14,0,o.width,28,o.height);walls.setMatrixAt(i,matrix);walls.setColorAt(i,new THREE.Color(o.color));
+   composeSceneryPose(matrix,o,0,28,0,o.width,16,o.height);roofs.setMatrixAt(i,matrix);
    for(const side of [-1,1]) {
     const sideIndex=side>0?1:0;
     for(const lateral of [-1,1]) {
-      matrix.compose(p.set(o.x+lateral*o.width*.27,16,o.y+side*(o.height/2+.2)),q,scale.set(o.width*.14,7,.5));
+      composeSceneryPose(matrix,o,lateral*o.width*.27,16,side*(o.height/2+.2),o.width*.14,7,.5);
       windows.setMatrixAt(i*4+sideIndex*2+(lateral>0?1:0),matrix);
     }
-    matrix.compose(p.set(o.x,9,o.y+side*(o.height/2+.25)),q,scale.set(11,18,.6));doors.setMatrixAt(i*2+sideIndex,matrix);
+    composeSceneryPose(matrix,o,0,9,side*(o.height/2+.25),11,18,.6);doors.setMatrixAt(i*2+sideIndex,matrix);
    }
   });
   scene.add(windows,doors);
@@ -68,16 +71,15 @@ export function addBeijingScenery(scene:THREE.Scene,level:LevelData,trackGeo:(g:
   const windowCount=specs.length*4;
   const windows=new THREE.InstancedMesh(bodyGeo,new THREE.MeshLambertMaterial({color:'#334049'}),windowCount);
   const windowIndex={value:0};
-  const matrix=new THREE.Matrix4(),q=new THREE.Quaternion(),p=new THREE.Vector3(),scale=new THREE.Vector3();
+  const matrix=new THREE.Matrix4();
   const shadows=new THREE.InstancedMesh(
     trackGeo(new THREE.PlaneGeometry(1,1)),
     new THREE.MeshBasicMaterial({map:contactShadowTexture(),transparent:true,opacity:0.22,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}),
     specs.length,
   );
-  const shadowQuat=new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI/2,0,0));
   specs.forEach((spec,index)=>{
    const {o}=spec;
-   matrix.compose(p.set(o.x,0.14,o.y),shadowQuat,scale.set(o.width*0.96,o.height*0.94,1));
+   composeSceneryPose(matrix,o,0,.14,0,o.width*.96,o.height*.94,1,true);
    shadows.setMatrixAt(index,matrix);
   });
   buckets.forEach(list=>{
@@ -88,14 +90,14 @@ export function addBeijingScenery(scene:THREE.Scene,level:LevelData,trackGeo:(g:
    const roofsF=flat.length?new THREE.InstancedMesh(bodyGeo,flatRoofMat,flat.length):null;
    list.forEach((spec,index)=>{
     const {o}=spec;
-    matrix.compose(p.set(o.x,spec.height/2,o.y),q,scale.set(o.width,spec.height,o.height));
+    composeSceneryPose(matrix,o,0,spec.height/2,0,o.width,spec.height,o.height);
     bodies.setMatrixAt(index,matrix);
     bodies.setColorAt(index,new THREE.Color(o.color));
-    if(spec.roof>0&&roofsG){const gi=gabled.indexOf(spec);matrix.compose(p.set(o.x,spec.height,o.y),q,scale.set(o.width*1.04,spec.roof,o.height*1.04));roofsG.setMatrixAt(gi,matrix);}
-    if(spec.roof<=0&&roofsF){const fi=flat.indexOf(spec);matrix.compose(p.set(o.x,spec.height+0.6,o.y),q,scale.set(o.width*1.02,1.2,o.height*1.02));roofsF.setMatrixAt(fi,matrix);}
+    if(spec.roof>0&&roofsG){const gi=gabled.indexOf(spec);composeSceneryPose(matrix,o,0,spec.height,0,o.width*1.04,spec.roof,o.height*1.04);roofsG.setMatrixAt(gi,matrix);}
+    if(spec.roof<=0&&roofsF){const fi=flat.indexOf(spec);composeSceneryPose(matrix,o,0,spec.height+.6,0,o.width*1.02,1.2,o.height*1.02);roofsF.setMatrixAt(fi,matrix);}
     // Four dark window strips on the long facades.
     for(const side of [-1,1])for(const lateral of [-1,1]){
-     matrix.compose(p.set(o.x+lateral*o.width*.27,spec.height*.44,o.y+side*(o.height/2+.36)),q,scale.set(o.width*.18,spec.height*.18,.55));
+     composeSceneryPose(matrix,o,lateral*o.width*.27,spec.height*.44,side*(o.height/2+.36),o.width*.18,spec.height*.18,.55);
      const wi=windowIndex.value++;windows.setMatrixAt(wi,matrix);
     }
    });
@@ -146,6 +148,28 @@ export function addBeijingScenery(scene:THREE.Scene,level:LevelData,trackGeo:(g:
   const matrix=new THREE.Matrix4();
   trees.forEach((tree,i)=>{trunks.setMatrixAt(i,matrix.makeTranslation(tree.x,15,tree.y));crowns.setMatrixAt(i,matrix.makeTranslation(tree.x,41,tree.y));});
   scene.add(trunks,crowns);
+ }
+ // Curve markers use three instanced batches, not a separate canvas / draw
+ // call for every roadside sign. Boards face their own carriageway.
+ const markers=highwayBendMarkers(level);
+ if(markers.length){
+  const pole=new THREE.InstancedMesh(trackGeo(new THREE.BoxGeometry(1.5,18,1.5)),new THREE.MeshLambertMaterial({color:'#747c79'}),markers.length);
+  const board=new THREE.InstancedMesh(trackGeo(new THREE.PlaneGeometry(18,11)),new THREE.MeshBasicMaterial({color:'#222925',side:THREE.DoubleSide}),markers.length);
+  const shape=new THREE.Shape();shape.moveTo(-7,-4);shape.lineTo(-1,0);shape.lineTo(-7,4);shape.lineTo(-3,4);shape.lineTo(4,0);shape.lineTo(-3,-4);shape.closePath();
+  const arrows=new THREE.InstancedMesh(trackGeo(new THREE.ShapeGeometry(shape)),new THREE.MeshBasicMaterial({color:'#ffe34b',side:THREE.DoubleSide}),markers.length);
+  const m=new THREE.Matrix4(),q=new THREE.Quaternion(),v=new THREE.Vector3(),scale=new THREE.Vector3();
+  markers.forEach((sign,i)=>{
+   const h=sampleTerrainSurface(level,sign.roadX,sign.roadY,0,false).height;
+   q.setFromEuler(new THREE.Euler(0,Math.PI/2-sign.heading,0));
+   m.compose(v.set(sign.x,h+9,sign.y),q,scale.set(1,1,1));pole.setMatrixAt(i,m);
+   m.compose(v.set(sign.x,h+23,sign.y),q,scale.set(1,1,1));board.setMatrixAt(i,m);
+   // Road users approach from behind the tangent; place the arrow on that
+   // face so the opaque board never hides it.
+   const front=new THREE.Vector3(0,0,-.15).applyQuaternion(q);
+   m.compose(v.set(sign.x+front.x,h+23,sign.y+front.z),q,scale.set(sign.arrow,1,1));arrows.setMatrixAt(i,m);
+  });
+  pole.instanceMatrix.needsUpdate=true;board.instanceMatrix.needsUpdate=true;arrows.instanceMatrix.needsUpdate=true;
+  scene.add(pole,board,arrows);
  }
  for(const sign of level.streetSigns??[]) {
   const root=new THREE.Group();root.position.set(sign.x,0,sign.y);root.rotation.y=Math.PI/2-sign.rotation;

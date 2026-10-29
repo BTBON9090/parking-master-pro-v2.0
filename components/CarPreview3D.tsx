@@ -14,6 +14,8 @@ import * as THREE from 'three';
 import { CarType } from '../types';
 import { CAR_MODELS } from '../constants';
 import { buildVehicleParts, applyShowroomPose } from '../three/vehicleModels';
+import { isTouchDevice } from '../utils/device';
+import { PreviewRenderPacer } from '../utils/renderPacing';
 
 interface CarPreview3DProps {
   carType: CarType;
@@ -31,7 +33,8 @@ const CarPreview3D: React.FC<CarPreview3DProps> = ({ carType, accentColor = '#f5
     if (!mount) return;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    const touchPreview = isTouchDevice();
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, touchPreview ? 1.5 : 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFShadowMap;
     mount.appendChild(renderer.domElement);
@@ -107,6 +110,11 @@ const CarPreview3D: React.FC<CarPreview3DProps> = ({ carType, accentColor = '#f5
     resize();
     const observer = new ResizeObserver(resize);
     observer.observe(mount);
+    let inViewport = true;
+    const visibilityObserver = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(entries => {
+      inViewport = entries.some(entry => entry.isIntersecting);
+    });
+    visibilityObserver?.observe(mount);
 
     // 拖拽环视
     const pointers=new Map<number,{x:number;y:number}>();
@@ -126,18 +134,27 @@ const CarPreview3D: React.FC<CarPreview3DProps> = ({ carType, accentColor = '#f5
     dom.addEventListener('pointerdown',down);dom.addEventListener('pointermove',move);dom.addEventListener('pointerup',up);dom.addEventListener('pointercancel',up);dom.addEventListener('lostpointercapture',up);dom.addEventListener('wheel',wheel,{passive:false});orbit();
 
     let raf = 0;
+    const previewPacer = new PreviewRenderPacer();
+    let renderedFrames = 0;
     const tick = () => {
       raf = requestAnimationFrame(tick);
-      if (!spinRef.current.dragging && performance.now() > spinRef.current.idleAt) {
-        stage.rotation.y += 0.0038;
+      const now = performance.now();
+      const dt = previewPacer.sample(now,touchPreview,spinRef.current.dragging,
+        document.hidden || !inViewport || mount.clientWidth < 1 || mount.clientHeight < 1);
+      if (dt === null) return;
+      if (!spinRef.current.dragging && now > spinRef.current.idleAt) {
+        stage.rotation.y += .0038 * 60 * dt;
       }
       renderer.render(scene, camera);
+      if ((import.meta as unknown as {env?:{DEV?:boolean}}).env?.DEV)
+        renderer.domElement.dataset.previewFrames = String(++renderedFrames);
     };
     tick();
 
     return () => {
       cancelAnimationFrame(raf);
       observer.disconnect();
+      visibilityObserver?.disconnect();
       dom.removeEventListener('pointerdown', down);
       dom.removeEventListener('pointermove', move);
       dom.removeEventListener('pointerup', up);

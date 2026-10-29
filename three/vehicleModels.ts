@@ -1360,7 +1360,9 @@ export function validateVehicleBindings(parts: CarMeshParts): VehicleBindingRepo
   require('wheels', parts.group.userData.expectedWheelCount??4, '车轮滚动');
   require('wheelMounts', parts.group.userData.expectedWheelCount??4, '车轮悬挂');
   require('frontWheels', parts.group.userData.expectedFrontWheelCount??2, '前轮转向');
-  require('headlights', 2, '大灯');
+  // Authored GLBs can merge both lamps into one material batch; this counts
+  // live bindings, not physical bulbs. A tricycle may also have one headlamp.
+  require('headlights', 1, '大灯绑定');
   require('taillights', 1, '尾灯');
   require('brakeLights', 1, '刹车灯');
   require('reverseLights', 1, '倒车灯');

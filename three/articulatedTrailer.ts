@@ -8,7 +8,7 @@ export class ArticulatedTrailer {
  readonly root=new THREE.Group(); readonly footprint:Vector2[];
  private axleDistance=94.5;
  private heading:number|undefined;private last=new THREE.Vector3();
- private hitch:THREE.Vector3;private wheels:{node:THREE.Object3D;rest:THREE.Vector3;roll:THREE.Group}[]=[];
+ private hitch:THREE.Vector3;private wheels:{node:THREE.Object3D;rest:THREE.Vector3;roll:THREE.Group;radius:number}[]=[];
  constructor(private vehicle:THREE.Group,node:THREE.Object3D){
   this.axleDistance=10*(node.userData.axle_from_hitch_m??9.45);
   vehicle.updateWorldMatrix(true,true);this.hitch=vehicle.worldToLocal(node.getWorldPosition(new THREE.Vector3()));
@@ -18,9 +18,12 @@ export class ArticulatedTrailer {
   const nodes:THREE.Object3D[]=[];node.traverse(o=>{if(o.name.startsWith('TrailerWheel')&&!o.parent?.name.startsWith('TrailerWheel'))nodes.push(o);});
   this.root.updateWorldMatrix(true,true);
   for(const wheel of nodes){
+   // World-space vertical diameter remains valid regardless of tractor yaw.
+   // Use each authored tyre so different wheel sizes remain grounded and roll correctly.
+   const radius=new THREE.Box3().setFromObject(wheel,true).getSize(new THREE.Vector3()).y/2;
    const rest=this.root.worldToLocal(wheel.getWorldPosition(new THREE.Vector3()));
    const mount=new THREE.Group();this.root.add(mount);mount.position.copy(rest);
-   const roll=new THREE.Group();mount.add(roll);roll.attach(wheel);this.wheels.push({node:mount,rest,roll});
+   const roll=new THREE.Group();mount.add(roll);roll.attach(wheel);this.wheels.push({node:mount,rest,roll,radius:Math.max(.1,radius)});
   }
   this.footprint=collectVehicleFootprint(this.root,true);
  }
@@ -43,9 +46,9 @@ export class ArticulatedTrailer {
   this.root.position.copy(this.root.parent!.worldToLocal(hitch.clone()));this.root.updateWorldMatrix(true,true);
   const signedTravel=travel.x*Math.sin(this.heading)+travel.z*Math.cos(this.heading);
   for(const w of this.wheels){
-   const target=this.root.localToWorld(w.rest.clone());target.y=surface(target.x,target.z)+5.3;
+   const target=this.root.localToWorld(w.rest.clone());target.y=surface(target.x,target.z)+w.radius;
    const local=this.root.worldToLocal(target);w.node.position.copy(w.rest);w.node.position.y+=THREE.MathUtils.clamp(local.y-w.rest.y,-2.5,2.5);
-   w.roll.rotation.x+=signedTravel/5.3;
+   w.roll.rotation.x+=signedTravel/w.radius;
   }
   this.last.copy(hitch);this.root.updateWorldMatrix(true,true);
  }

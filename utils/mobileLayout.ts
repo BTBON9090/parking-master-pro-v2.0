@@ -18,9 +18,10 @@ export function sanitizeHudLayout(saved:unknown):HudLayout{
 export function resolveHudLayout(w:number,h:number,bus:boolean,saved:HudLayout={}):Record<HudId,HudRect>{
  const px=(x:number,y:number,width:number,height:number)=>clampRect({x:x/w,y:y/h,width:width/w,height:height/h});
  const pedal=Math.min(94,Math.max(66,h*.21)),gap=10,cluster=Math.min(300,w*.28),clusterH=cluster*190/422;
+ const steerSize=Math.min(Math.max(136,(w*.5-124)*.75),h*.53-10);
  const sideW=bus?Math.min(72,h*.18):Math.min(158,w*.18),sideH=bus?sideW*1.65:sideW/2.65;
  const result:Record<HudId,HudRect>={
-  steer:px(12,h*.47,Math.max(136,(w*.5-124)*.75),h*.53-10),
+  steer:px(12,h-steerSize-10,steerSize,steerSize),
   gas:px(w-pedal-14,h-pedal-12,pedal,pedal),brake:px(w-pedal*2-gap-14,h-pedal-12,pedal,pedal),
   gears:px(w-pedal*2-gap-14,h-pedal-53,pedal*2+gap,34),
   dashboard:px((w-cluster)/2,h-clusterH-7,cluster,clusterH),

@@ -1,0 +1,2 @@
+{"mode":"steady","walls":1058,"bodies":1065,"contacts":0,"ms":{"median":7.6514,"p95":9.3702,"max":11.4821}}
+{"mode":"impact","walls":1058,"bodies":1065,"contacts":22,"ms":{"median":7.9138,"p95":9.819,"max":14.1094}}

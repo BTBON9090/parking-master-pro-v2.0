@@ -159,6 +159,29 @@ export class PhysicsWorld {
     this.staticBodies.push(body);
   }
 
+  /** Batch nearby immutable wall boxes into static compound bodies. Shape
+   * dimensions, rotations and elevations match addStaticObstacle exactly;
+   * batching reduces broadphase bodies while retaining prop-wall contacts. */
+  addStaticObstacles(obstacles: Obstacle[], cellSize = 800): void {
+    const buckets = new Map<string, { x:number; z:number; items:Obstacle[] }>();
+    for (const obs of obstacles) {
+      const cx=Math.floor(obs.x/cellSize),cz=Math.floor(obs.y/cellSize),key=`${cx}:${cz}`;
+      let bucket=buckets.get(key);
+      if(!bucket){bucket={x:(cx+.5)*cellSize,z:(cz+.5)*cellSize,items:[]};buckets.set(key,bucket);}
+      bucket.items.push(obs);
+    }
+    for(const {x,z,items} of buckets.values()){
+      const body=new CANNON.Body({mass:0,position:new CANNON.Vec3(x,0,z)});
+      for(const obs of items){
+        const shape=new CANNON.Box(new CANNON.Vec3(obs.width/2,15,obs.height/2));
+        const offset=new CANNON.Vec3(obs.x-x,(obs.elevation||0)+15,obs.y-z);
+        const orientation=new CANNON.Quaternion();orientation.setFromEuler(0,obs.rotation,0);
+        body.addShape(shape,offset,orientation);
+      }
+      this.world.addBody(body);this.staticBodies.push(body);
+    }
+  }
+
   /**
    * 添加地图边界墙
    */
@@ -207,7 +230,7 @@ export class PhysicsWorld {
   /**
    * 将交通车运动学结果施加到刚体
    */
-  updateTrafficKinematics(id: string, x: number, z: number, rotY: number, speed: number, rotation: number, elevation=0) {
+  updateTrafficKinematics(id: string, x: number, z: number, rotY: number, speed: number, rotation: number, elevation=0, pushedMps?:{x:number;y:number}) {
     const body = this.trafficBodies.get(id);
     if (!body) return;
     body.position.x = x;
@@ -215,8 +238,8 @@ export class PhysicsWorld {
     body.position.y = 5+elevation;
     body.quaternion.setFromEuler(0, rotY, 0);
     const worldSpeed = gameSpeedToWorldVelocity(speed);
-    const vx = Math.cos(rotation) * worldSpeed;
-    const vz = Math.sin(rotation) * worldSpeed;
+    const vx = pushedMps ? pushedMps.x*10 : Math.cos(rotation) * worldSpeed;
+    const vz = pushedMps ? pushedMps.y*10 : Math.sin(rotation) * worldSpeed;
     body.velocity.x = vx;
     body.velocity.z = vz;
     body.velocity.y = 0;
@@ -266,7 +289,8 @@ export class PhysicsWorld {
    * 清理所有刚体
    */
   dispose() {
-    this.world.bodies.forEach(b => this.world.removeBody(b));
+    // removeBody mutates the array; iterating it directly skips every other body.
+    this.world.bodies.slice().forEach(b => this.world.removeBody(b));
     this.playerBody = null;
     this.trafficBodies.clear();
     this.movableBodies.clear();

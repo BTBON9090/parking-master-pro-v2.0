@@ -47,16 +47,21 @@ for(const id of BASELINE_FLEET){
  }
  assert(Math.abs(parts.wheelMounts[0].position.z-parts.wheelMounts[2].position.z-cfg.wheelbase)<.02,`${id}: authored wheelbase matches physics`);
  const rim=new THREE.Box3().setFromObject(parts.group.getObjectByName('InteriorSteeringWheel')!,true);
- const liner=parts.group.getObjectByName('InteriorCabinLiner')!;
+ const liners:THREE.Object3D[]=[];
+ parts.group.traverse(n=>{if(n instanceof THREE.Mesh&&(n.name==='InteriorCabinLiner'||n.name.startsWith('InteriorWheelCabin')||n.name.startsWith('InteriorWheelHousing')))liners.push(n);});
+ assert(liners.length>0,`${id}: cabin must have a closed interior liner`);
  assert(eye.y-rim.max.y>1.3,`${id}: eye must clear steering rim (${eye.y-rim.max.y})`);
  // Rays towards every part of the cabin floor must hit an opaque interior,
  // before reaching the road. Include side seams and the firewall/footwell.
- const bounds=new THREE.Box3().setFromObject(liner,true);
+ const bounds=new THREE.Box3();
+ // Wheel housings protrude beyond the rectangular cabin; target the actual
+ // footwell perimeter, while allowing a housing to occlude a cut-out.
+ liners.filter(n=>!n.name.startsWith('InteriorWheelHousing')).forEach(liner=>bounds.union(new THREE.Box3().setFromObject(liner,true)));
  for(const x of [-.96,0,.96])for(const z of [-.96,0,.96]){
   const target=new THREE.Vector3(THREE.MathUtils.lerp(bounds.min.x,bounds.max.x,(x+1)/2),bounds.min.y-.5,
    THREE.MathUtils.lerp(bounds.min.z,bounds.max.z,(z+1)/2));
   const ray=new THREE.Raycaster(eye,target.clone().sub(eye).normalize(),0,eye.distanceTo(target));
-  assert(ray.intersectObject(liner).length>0,`${id}: road visible through footwell ${x},${z}; bounds=${JSON.stringify(bounds)}`);
+  assert(ray.intersectObjects(liners).length>0,`${id}: road visible through footwell ${x},${z}; bounds=${JSON.stringify(bounds)}`);
  }
  const tune=hoodCameraDefaultForCar(id);
  const adjusted=eye.clone().add(new THREE.Vector3(tune.lateral-DEFAULT_HOOD_CAMERA_ADJUSTMENT.lateral,tune.height-DEFAULT_HOOD_CAMERA_ADJUSTMENT.height,tune.forward-DEFAULT_HOOD_CAMERA_ADJUSTMENT.forward));
@@ -65,7 +70,7 @@ for(const id of BASELINE_FLEET){
   assert(movingEye.y>rim.max.y+.15,`${id}: configured seat + neck travel must still clear rim`);
   for(const x of [-.95,0,.95])for(const z of [-.95,0,.95]){
    const target=new THREE.Vector3(THREE.MathUtils.lerp(bounds.min.x,bounds.max.x,(x+1)/2),bounds.min.y-.5,THREE.MathUtils.lerp(bounds.min.z,bounds.max.z,(z+1)/2));
-   assert(new THREE.Raycaster(movingEye,target.clone().sub(movingEye).normalize(),0,movingEye.distanceTo(target)).intersectObject(liner).length>0,`${id}: inertial head motion exposes ground through cabin`);
+   assert(new THREE.Raycaster(movingEye,target.clone().sub(movingEye).normalize(),0,movingEye.distanceTo(target)).intersectObjects(liners).length>0,`${id}: inertial head motion exposes ground through cabin`);
   }
  }
  let triangles=0;parts.group.traverse(n=>{if(n instanceof THREE.Mesh&&!hasDriverAncestor(n))triangles+=(n.geometry.index?.count??n.geometry.getAttribute('position').count)/3;});

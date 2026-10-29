@@ -20,25 +20,46 @@ export function buildHighway():LevelData{
  for(let n=0;n<6;n++){box('toll-island-'+n,8460+n*96,3130,10,160,12);box('toll-booth-'+n,8460+n*96,3090,18,28,29);}
  box('toll-roof',8700,3100,560,160,5,58);
  for(const [x,y,label] of [[5000,1550,'服务区 / 收费站  500m'],[15000,1550,'互通出口  右侧驶出'],[21500,1550,'连续起伏坡  保持车距'],[26000,12300,'环线高速  限速 120'],[9000,3650,'停车休息  服务区']] as const)out.streetSigns!.push({x,y,rotation:0,label,kind:'street'});
+ // A compact city skyline beyond the northern highway shoulder. These are
+ // real colliders using the same authored dimensions as their instanced visuals;
+ // road-clearance checks still remove any that overlap a road.
+ for(let row=0;row<3;row++)for(let col=0;col<10;col++){
+  const x=3200+col*860+(row%2)*90,y=350+row*290;
+  out.obstacles.push({id:`bj-building-highway-${row}-${col}`,x,y,width:140,height:130,rotation:0,type:'wall',movable:false,weight:0,color:['#9b9d92','#8d9795','#aaa69a'][col%3],verticalHeight:90+(col*23+row*17)%110});
+ }
  // One barrier per straight run; bends use longer shared segments, not tiny blocks.
  const curve=new CatmullRomCurve3(loop.map(p=>new Vector3(p.x,0,p.y)),true,'centripetal');
  const path=curve.getSpacedPoints(360).slice(0,-1);
- // Shared long rail segments with open acceleration-lane mouths.
+ // Cut precise openings wherever an authored connector joins or crosses the
+ // ring. Coordinate guesses can leave a guardrail across the merge lane.
+ const connectorSamples=out.curvedRoads!.slice(1).map(road=>{
+  const curve=new CatmullRomCurve3(road.points.map(p=>new Vector3(p.x,0,p.y)),false,'centripetal');
+  return {radius:road.width/2+40,points:curve.getSpacedPoints(Math.ceil(curve.getLength()/60))};
+ });
+ const opensForConnector=(ax:number,ay:number,bx:number,by:number)=>{
+  const dx=bx-ax,dy=by-ay,len2=dx*dx+dy*dy;
+  return connectorSamples.some(({radius,points})=>points.some(p=>{
+   const t=Math.max(0,Math.min(1,((p.x-ax)*dx+(p.z-ay)*dy)/len2));
+   const ex=p.x-(ax+dx*t),ey=p.z-(ay+dy*t);return ex*ex+ey*ey<radius*radius;
+  }));
+ };
+ // Shared long rail segments with openings for actual connector geometry.
  for(let i=0;i<path.length;i++)for(const side of [-1,0,1]){
   const a=path[i],b=path[(i+1)%path.length],dx=b.x-a.x,dy=b.z-a.z,d=Math.hypot(dx,dy);
   const x=(a.x+b.x)/2-dy/d*side*165,y=(a.z+b.z)/2+dx/d*side*165;
-  if(side===1 && y<2400 && ((x>5500&&x<13000)||(x>15000&&x<27800)))continue;
+  const ox=-dy/d*side*165,oy=dx/d*side*165;
+  if(opensForConnector(a.x+ox,a.z+oy,b.x+ox,b.z+oy))continue;
   const id=`motorway-rail-${i}-${side}`;
   const elevation=Math.abs(y-1800)<180&&Math.abs(x-21000)<3250?sampleSlopeProfile(x-21000,6500,220).height:0;
-  out.obstacles.push({id,x,y,elevation,width:d+.5,height:side===0?5:3,rotation:Math.atan2(dy,dx),type:'wall',movable:false,weight:0,color:side===0?'#9c9e99':'#a1a8a8',verticalHeight:side===0?7:8});
+  out.obstacles.push({id,x,y,elevation,width:d+.5,height:side===0?5:4,rotation:Math.atan2(dy,dx),type:'wall',movable:false,weight:0,color:side===0?'#9c9e99':'#a1a8a8',verticalHeight:side===0?8:15});
  }
  // Mountain tunnel aligned to a sampled mainline segment. Side walls stay
  // outside all eight lanes; the roof has an explicit clearance layer.
- const tunnelIndex=path.reduce((best,p,i)=>Math.abs(p.x-27100)+Math.abs(p.z-6400)<Math.abs(path[best].x-27100)+Math.abs(path[best].z-6400)?i:best,0);
- for(let j=-2;j<=2;j++){
+ const tunnelIndices=[[27100,6400],[2100,9400]].map(([x,y])=>path.reduce((best,p,i)=>Math.abs(p.x-x)+Math.abs(p.z-y)<Math.abs(path[best].x-x)+Math.abs(path[best].z-y)?i:best,0));
+ for(const [t,tunnelIndex] of tunnelIndices.entries())for(let j=-2;j<=2;j++){
   const p=path[(tunnelIndex+j+path.length)%path.length],q=path[(tunnelIndex+j+1+path.length)%path.length],dx=q.x-p.x,dy=q.z-p.z,len=Math.hypot(dx,dy),rotation=Math.atan2(dy,dx),x=(p.x+q.x)/2,y=(p.z+q.z)/2;
-  for(const side of [-1,1])out.obstacles.push({id:`tunnel-wall-${j}-${side}`,x:x-dy/len*side*190,y:y+dx/len*side*190,width:len+2,height:25,rotation,type:'wall',weight:0,movable:false,color:'#66716b',verticalHeight:100});
-  out.obstacles.push({id:`tunnel-roof-${j}`,x,y,width:len+2,height:405,rotation,type:'wall',weight:0,movable:false,color:'#66716b',elevation:92,verticalHeight:20});
+  for(const side of [-1,1])out.obstacles.push({id:`tunnel-wall-${t}-${j}-${side}`,x:x-dy/len*side*190,y:y+dx/len*side*190,width:len+2,height:25,rotation,type:'wall',weight:0,movable:false,color:'#66716b',verticalHeight:100});
+  out.obstacles.push({id:`tunnel-roof-${t}-${j}`,x,y,width:len+2,height:405,rotation,type:'wall',weight:0,movable:false,color:'#66716b',elevation:92,verticalHeight:20});
  }
  // An incident occupies only the outer lane; traffic can merge around it.
  const incident=path[190],next=path[191],heading=Math.atan2(next.z-incident.z,next.x-incident.x);
@@ -61,3 +82,28 @@ export function buildHighway():LevelData{
  for(const [x,y,w,h] of [[15000,0,30000,10],[15000,14000,30000,10],[0,7000,10,14000],[30000,7000,10,14000]])box('highway-boundary-'+x+'-'+y,x,y,w,h,30);
  return out;
 }
+
+/** Reflective curve-direction boards on both carriageways. A turn is measured
+ * over a neighbourhood, rather than a single noisy segment. */
+export function highwayBendMarkers(level:LevelData):Array<{x:number;y:number;roadX:number;roadY:number;heading:number;arrow:number}>{
+ const road=level.highway?level.curvedRoads?.[0]:undefined;
+ if(!road||road.points.length<4)return [];
+ const points=new CatmullRomCurve3(road.points.map(p=>new Vector3(p.x,0,p.y)),true,'centripetal').getSpacedPoints(360).slice(0,-1);
+ const out:Array<{x:number;y:number;roadX:number;roadY:number;heading:number;arrow:number}>=[];
+ for(let i=0;i<points.length;i+=2){
+  const a=points[(i-3+points.length)%points.length],p=points[i],b=points[(i+3)%points.length];
+  const h0=Math.atan2(p.z-a.z,p.x-a.x),h1=Math.atan2(b.z-p.z,b.x-p.x);
+  const turn=Math.atan2(Math.sin(h1-h0),Math.cos(h1-h0));
+  if(Math.abs(turn)<.14)continue;
+  const heading=Math.atan2(b.z-a.z,b.x-a.x);
+  for(const side of [-1,1]){
+   const direction=side===1?1:-1;
+   out.push({x:p.x-Math.sin(heading)*side*186,y:p.z+Math.cos(heading)*side*186,roadX:p.x,roadY:p.z,
+    heading:heading+(direction<0?Math.PI:0),arrow:-Math.sign(turn)*direction});
+  }
+ }
+ return out;
+}
+
+/** These structures must be rendered from their collider, never as random buildings. */
+export function isHighwayStructure(o:Pick<Obstacle,'id'>):boolean {return /^(tunnel-(wall|roof)-|toll-(roof|booth|island)-|motorway-rail-)/.test(o.id);}

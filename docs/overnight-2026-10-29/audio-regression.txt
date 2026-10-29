@@ -1,0 +1,1 @@
+Audio lifecycle PASS: muted allocation-free preview, volume, hidden/focus suspension, teardown, late decode, latest-demand resume/pause and autoplay retry.

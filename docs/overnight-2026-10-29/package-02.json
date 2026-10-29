@@ -1,0 +1,17 @@
+{
+  "apk": "/Users/aiden/Desktop/工程/Car/parking-master-pro-v2.0/release/Parking-Master-Pro-0.26.0-android-morning-02-test.apk",
+  "bytes": 27052263,
+  "sha256": "2e00c6ee44d11e54e4f1f1b8cba2013e5522ed1fa958e33827f481cf94c42cc0",
+  "webAssetFilesVerified": 96,
+  "excluded": "OS dotfiles",
+  "androidAndIosAssetParity": true,
+  "installed": false,
+  "androidRuntimeVerified": false,
+  "notes": [
+    "Commercial wheel-well assets included",
+    "Audio lifecycle and garage audition changes included",
+    "Collision query optimization included",
+    "Per-wheel drivetrain remains DEV-only"
+  ],
+  "signatureVerified": true
+}

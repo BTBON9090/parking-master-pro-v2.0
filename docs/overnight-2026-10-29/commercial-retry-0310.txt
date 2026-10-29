@@ -1,0 +1,332 @@
+03:07:07 | INFO: Data are loaded, start creating Blender stuff
+03:07:07 | INFO: Blender create Mesh node BodyMesh
+03:07:07 | INFO: Blender create Mesh node Cube.059
+03:07:07 | INFO: Blender create Mesh node Cube.066
+03:07:07 | INFO: Blender create Mesh node Cube.073
+03:07:07 | INFO: Blender create Mesh node Cube.080
+03:07:07 | INFO: Blender create Mesh node IndicatorLMesh
+03:07:07 | INFO: Blender create Mesh node IndicatorRMesh
+03:07:07 | INFO: Blender create Mesh node Cube.026
+03:07:07 | INFO: Blender create Mesh node Cube.034
+03:07:07 | INFO: Blender create Mesh node Cube.031
+03:07:07 | INFO: Blender create Mesh node Cube.032
+03:07:07 | INFO: Blender create Mesh node Cube.033
+03:07:07 | INFO: Blender create Mesh node Cube.030
+03:07:07 | INFO: Blender create Mesh node Cube.088
+03:07:07 | INFO: Blender create Mesh node Cube.039
+03:07:07 | INFO: Blender create Mesh node Cube.087
+03:07:07 | INFO: Blender create Mesh node Cylinder.024
+03:07:07 | INFO: Blender create Mesh node Cube.085
+03:07:07 | INFO: Blender create Mesh node Cube.084
+03:07:07 | INFO: Blender create Mesh node InteriorSteeringWheelMesh
+03:07:07 | INFO: Blender create Mesh node Cube.090
+03:07:07 | INFO: Blender create Mesh node Cube.006
+03:07:07 | INFO: Blender create Mesh node ArchTrim_-1_-1.82Mesh
+03:07:07 | INFO: Blender create Mesh node GlassRearMesh
+03:07:07 | INFO: Blender create Mesh node HeadlightDropLMesh
+03:07:07 | INFO: Blender create Mesh node Cube.093
+03:07:07 | INFO: Blender create Mesh node FrontPlateMesh
+03:07:07 | INFO: Blender create Mesh node ReverseLightLMesh
+03:07:07 | INFO: Blender create Mesh node TaillightBarMesh
+03:07:07 | INFO: Blender create Mesh node WheelFrontL_RimLipMesh
+03:07:07 | INFO: Blender create Mesh node Cylinder.012
+03:07:07 | INFO: Blender create Mesh node Cylinder.014
+03:07:07 | INFO: Blender create Mesh node Cylinder.013
+03:07:07 | INFO: Blender create Mesh node WheelFrontR_RimLipMesh
+03:07:07 | INFO: Blender create Mesh node Cylinder.015
+03:07:07 | INFO: Blender create Mesh node Cylinder.017
+03:07:07 | INFO: Blender create Mesh node Cylinder.016
+03:07:07 | INFO: Blender create Mesh node WheelRearL_RimLipMesh
+03:07:07 | INFO: Blender create Mesh node Cylinder.018
+03:07:07 | INFO: Blender create Mesh node Cylinder.020
+03:07:07 | INFO: Blender create Mesh node Cylinder.019
+03:07:07 | INFO: Blender create Mesh node WheelRearR_RimLipMesh
+03:07:07 | INFO: Blender create Mesh node Cylinder.021
+03:07:07 | INFO: Blender create Mesh node Cylinder.023
+03:07:07 | INFO: Blender create Mesh node Cylinder.022
+03:07:07 | INFO: glTF import finished in 0.04s
+00:01.234  render           | Saved: '/Users/aiden/Desktop/工程/Car/parking-master-pro-v2.0/docs/overnight-2026-10-29/commercial/training-midibus-before-side.png'
+00:01.319  render           | Saved: '/Users/aiden/Desktop/工程/Car/parking-master-pro-v2.0/docs/overnight-2026-10-29/commercial/training-midibus-before-front.png'
+INFO Draco is available, use library at /Applications/Blender.app/Contents/Resources/lib/libbf_intern_draco_bridge.dylib
+INFO MeshOptimizer is available, use library at /Applications/Blender.app/Contents/Resources/lib/libbf_intern_meshopt_bridge.dylib
+03:07:08 | INFO: Starting glTF 2.0 export
+03:07:08 | INFO: Extracting primitive: BodyMesh
+03:07:08 | INFO: Primitives created: 2
+03:07:08 | INFO: Extracting primitive: Cube.059
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cube.066
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cube.073
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cube.080
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: IndicatorLMesh
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: IndicatorRMesh
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cube.026
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cube.034
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cube.031
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cube.032
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cube.033
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cube.030
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cube.088
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cube.039
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cube.003
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cube.004
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cube
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cube.001
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cube.002
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: InteriorWheelHousing
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: InteriorWheelHousing.001
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: InteriorWheelHousing.002
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: InteriorWheelHousing.003
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cube.087
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cylinder.024
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cube.085
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cube.084
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: InteriorSteeringWheelMesh
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cube.090
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cube.006
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | WARNING: Mesh ArchTrim_-1_-1.82Mesh is not valid, and may be exported wrongly
+03:07:08 | INFO: Extracting primitive: ArchTrim_-1_-1.82Mesh
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: GlassRearMesh
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: HeadlightDropLMesh
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cube.093
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: FrontPlateMesh
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: ReverseLightLMesh
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: TaillightBarMesh
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: WheelFrontL_RimLipMesh
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cylinder.012
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cylinder.014
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cylinder.013
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: WheelFrontR_RimLipMesh
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cylinder.015
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cylinder.017
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cylinder.016
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: WheelRearL_RimLipMesh
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cylinder.018
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cylinder.020
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cylinder.019
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: WheelRearR_RimLipMesh
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cylinder.021
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cylinder.023
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Extracting primitive: Cylinder.022
+03:07:08 | INFO: Primitives created: 1
+03:07:08 | INFO: Finished glTF 2.0 export in 0.0594482421875 s
+00:02.439  render           | Saved: '/Users/aiden/Desktop/工程/Car/parking-master-pro-v2.0/docs/overnight-2026-10-29/commercial/training-midibus-after-side.png'
+00:02.516  render           | Saved: '/Users/aiden/Desktop/工程/Car/parking-master-pro-v2.0/docs/overnight-2026-10-29/commercial/training-midibus-after-front.png'
+
+Info: Saved as "training-midibus.blend"
+03:07:08 | INFO: Data are loaded, start creating Blender stuff
+03:07:08 | INFO: Blender create Mesh node BodyMesh
+03:07:08 | INFO: Blender create Mesh node Cube.059
+03:07:08 | INFO: Blender create Mesh node Cube.066
+03:07:08 | INFO: Blender create Mesh node Cube.073
+03:07:08 | INFO: Blender create Mesh node Cube.080
+03:07:08 | INFO: Blender create Mesh node IndicatorLMesh
+03:07:08 | INFO: Blender create Mesh node IndicatorRMesh
+03:07:08 | INFO: Blender create Mesh node Cube.026
+03:07:08 | INFO: Blender create Mesh node Cube.034
+03:07:08 | INFO: Blender create Mesh node Cube.031
+03:07:08 | INFO: Blender create Mesh node Cube.032
+03:07:08 | INFO: Blender create Mesh node Cube.033
+03:07:08 | INFO: Blender create Mesh node Cube.030
+03:07:08 | INFO: Blender create Mesh node Cube.088
+03:07:08 | INFO: Blender create Mesh node Cube.039
+03:07:08 | INFO: Blender create Mesh node Cube.087
+03:07:08 | INFO: Blender create Mesh node Cylinder.024
+03:07:08 | INFO: Blender create Mesh node Cube.085
+03:07:08 | INFO: Blender create Mesh node Cube.084
+03:07:08 | INFO: Blender create Mesh node InteriorSteeringWheelMesh
+03:07:08 | INFO: Blender create Mesh node Cube.090
+03:07:08 | INFO: Blender create Mesh node Cube.006
+03:07:08 | INFO: Blender create Mesh node ArchTrim_-1_-2.05Mesh
+03:07:08 | INFO: Blender create Mesh node GlassRearMesh
+03:07:08 | INFO: Blender create Mesh node HeadlightDropLMesh
+03:07:08 | INFO: Blender create Mesh node Cube.093
+03:07:08 | INFO: Blender create Mesh node FrontPlateMesh
+03:07:08 | INFO: Blender create Mesh node ReverseLightLMesh
+03:07:08 | INFO: Blender create Mesh node TaillightBarMesh
+03:07:08 | INFO: Blender create Mesh node WheelFrontL_RimLipMesh
+03:07:08 | INFO: Blender create Mesh node Cylinder.012
+03:07:08 | INFO: Blender create Mesh node Cylinder.014
+03:07:08 | INFO: Blender create Mesh node Cylinder.013
+03:07:08 | INFO: Blender create Mesh node WheelFrontR_RimLipMesh
+03:07:08 | INFO: Blender create Mesh node Cylinder.015
+03:07:08 | INFO: Blender create Mesh node Cylinder.017
+03:07:08 | INFO: Blender create Mesh node Cylinder.016
+03:07:08 | INFO: Blender create Mesh node WheelRearL_RimLipMesh
+03:07:08 | INFO: Blender create Mesh node Cylinder.018
+03:07:08 | INFO: Blender create Mesh node Cylinder.020
+03:07:08 | INFO: Blender create Mesh node Cylinder.019
+03:07:08 | INFO: Blender create Mesh node WheelRearR_RimLipMesh
+03:07:08 | INFO: Blender create Mesh node Cylinder.021
+03:07:08 | INFO: Blender create Mesh node Cylinder.023
+03:07:08 | INFO: Blender create Mesh node Cylinder.022
+03:07:08 | INFO: glTF import finished in 0.03s
+00:02.667  render           | Saved: '/Users/aiden/Desktop/工程/Car/parking-master-pro-v2.0/docs/overnight-2026-10-29/commercial/training-light-truck-before-side.png'
+00:02.743  render           | Saved: '/Users/aiden/Desktop/工程/Car/parking-master-pro-v2.0/docs/overnight-2026-10-29/commercial/training-light-truck-before-front.png'
+03:07:09 | INFO: Starting glTF 2.0 export
+03:07:09 | INFO: Extracting primitive: BodyMesh
+03:07:09 | INFO: Primitives created: 2
+03:07:09 | INFO: Extracting primitive: Cube.059
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cube.066
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cube.073
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cube.080
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: IndicatorLMesh
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: IndicatorRMesh
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cube.026
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cube.034
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cube.031
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cube.032
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cube.033
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cube.030
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cube.088
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cube.039
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cube.003
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cube.004
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cube
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cube.001
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cube.002
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: InteriorWheelHousing
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: InteriorWheelHousing.001
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: InteriorWheelHousing.002
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: InteriorWheelHousing.003
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cube.087
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cylinder.024
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cube.085
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cube.084
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: InteriorSteeringWheelMesh
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cube.090
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cube.006
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: ArchTrim_-1_-2.05Mesh
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: GlassRearMesh
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: HeadlightDropLMesh
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cube.093
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: FrontPlateMesh
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: ReverseLightLMesh
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: TaillightBarMesh
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: WheelFrontL_RimLipMesh
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cylinder.012
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cylinder.014
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cylinder.013
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: WheelFrontR_RimLipMesh
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cylinder.015
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cylinder.017
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cylinder.016
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: WheelRearL_RimLipMesh
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cylinder.018
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cylinder.020
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cylinder.019
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: WheelRearR_RimLipMesh
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cylinder.021
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cylinder.023
+03:07:09 | INFO: Primitives created: 1
+03:07:09 | INFO: Extracting primitive: Cylinder.022
+03:07:09 | INFO: Primitives created: 1
+03:07:10 | INFO: Finished glTF 2.0 export in 0.0668327808380127 s
+00:03.834  render           | Saved: '/Users/aiden/Desktop/工程/Car/parking-master-pro-v2.0/docs/overnight-2026-10-29/commercial/training-light-truck-after-side.png'
+00:03.920  render           | Saved: '/Users/aiden/Desktop/工程/Car/parking-master-pro-v2.0/docs/overnight-2026-10-29/commercial/training-light-truck-after-front.png'
+
+Info: Saved as "training-light-truck.blend"
+Blender 5.4.0 Alpha (hash 93eeecf73c12 built 2026-10-23 01:52:25)
+
+Blender quit

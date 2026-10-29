@@ -5,6 +5,7 @@ type Id=typeof FLEET30_IDS[number];
 type Row={id:Id;name:string;size:number[];wb:number;mass:number;kw:number;nm:number;speed:number;tire:number;grip:number;cg:number;radius:number;layout:'RWD'|'AWD'|'FWD';color:string;ratios:number[];fd:number;rpm:number;idle:number;rear?:number;automatic?:boolean;zero:number;bias:number;drag:number};
 // Documented manufacturer figures and explicitly estimated simulator values are
 // separated in docs/round30/vehicle-references.md. No OEM suspension curves implied.
+// SEMI wheel radius is a representative road-truck game calibration, not an OEM specification.
 const rows:Row[]=[
  {id:CarType.TRIKE,name:'农用三轮货车 · 手动',size:[3.65,1.45,1.85],wb:2.35,mass:970,kw:18,nm:85,speed:55,tire:.34,grip:.74,cg:.80,radius:3.8,layout:'RWD',color:'#497d9e',ratios:[4.6,2.55,1.5,1,.8],fd:6.2,rpm:3000,idle:850,zero:99,bias:.32,drag:1.05},
  {id:CarType.TRACTOR,name:'农场 145 · 大小轮四驱',size:[4.85,2.45,2.95],wb:2.765,mass:7800,kw:106.6,nm:650,speed:50,tire:.9086,grip:.84,cg:1.18,radius:5.1,layout:'AWD',color:'#4d7740',ratios:[8,5.4,3.7,2.6,1.9,1.35,1,.75],fd:12,rpm:2200,idle:800,zero:99,bias:.41,drag:2.7},

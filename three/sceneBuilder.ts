@@ -1,4 +1,6 @@
+import {isHighwayStructure} from '../utils/highway';
 import {clearRoadBuildings} from '../utils/roadClearance';
+import {fitBuildingToObstacle} from './obstacleVisuals';
 import {assignParkedFleet} from '../utils/fleetParking';
 import {addExamSignals} from './examSignals';
 import {CITY_OFFSET} from '../utils/openWorld';
@@ -195,6 +197,19 @@ export async function buildScene(
   ground.receiveShadow = true;
   ground.visible = !levelData.garage;
   scene.add(ground);
+  if(levelData.highway){
+    // Distant, non-interactive mountain backdrop is entirely outside the
+    // collision boundary: no driveable road is hidden behind fake hills.
+    const geo=trackGeo(new THREE.ConeGeometry(1,1,7));
+    const material=new THREE.MeshLambertMaterial({color:'#788979',flatShading:true});
+    const hills=new THREE.InstancedMesh(geo,material,12),m=new THREE.Matrix4();
+    for(let i=0;i<12;i++){
+      const radius=420+(i*73)%200,height=620+(i*113)%500;
+      m.compose(new THREE.Vector3(30700+(i%2)*280,height/2,1100+i*1150),new THREE.Quaternion(),new THREE.Vector3(radius,height,radius));
+      hills.setMatrixAt(i,m);hills.setColorAt(i,new THREE.Color(i%3===0?'#849486':i%3===1?'#718376':'#96a395'));
+    }
+    hills.instanceMatrix.needsUpdate=true;if(hills.instanceColor)hills.instanceColor.needsUpdate=true;scene.add(hills);
+  }
   if(levelData.challengeTerrain){
     const trees=levelData.obstacles.filter(o=>o.id.startsWith('challenge-tree-'));
     const trunks=new THREE.InstancedMesh(trackGeo(new THREE.CylinderGeometry(1.4,1.8,17,6)),flatMat('#655945'),trees.length);
@@ -778,7 +793,8 @@ export async function buildScene(
       const isBoundary = obs.width > 2000 || obs.height > 2000;
       const minSide = Math.min(obs.width, obs.height);
       const maxSide = Math.max(obs.width, obs.height);
-      const isRoadStructure = minSide <= 40 || maxSide / Math.max(1, minSide) > 4;
+      const isRoadStructure = minSide <= 40 || maxSide / Math.max(1, minSide) > 4
+        || isHighwayStructure(obs);
       if (isBoundary || isRoadStructure) {
         // Boundaries, guard rails, garage walls and bridge supports must stay
         // aligned with their collision footprint; treating every wall as a
@@ -786,7 +802,7 @@ export async function buildScene(
         const isUnderground = levelData.levelId === 6;
         const wallH = isUnderground
           ? (obs.verticalHeight ?? 42)  // 地库墙体直达楼顶，封闭整个空间
-          : obs.id.includes('pillar') ? 20 : minSide <= 8 ? 4 : 10;
+          : (obs.verticalHeight ?? (obs.id.includes('pillar') ? 20 : minSide <= 8 ? 4 : 10));
         wallInstances.push({
           obstacle: obs,
           height: wallH,
@@ -798,23 +814,14 @@ export async function buildScene(
           const bld = buildingGroups[Math.floor(Math.random() * buildingGroups.length)].clone(true);
           // Match the visible footprint to the collision footprint. This
           // removes empty-looking areas that used to contain a large collider.
-          const sourceBox = new THREE.Box3().setFromObject(bld);
-          const sourceSize = sourceBox.getSize(new THREE.Vector3());
-          const targetHeight = 24 + (Math.abs(obs.id.length * 17) % 20);
-          bld.scale.multiply(new THREE.Vector3(
-            obs.width / Math.max(1, sourceSize.x),
-            targetHeight / Math.max(1, sourceSize.y),
-            obs.height / Math.max(1, sourceSize.z),
-          ));
-          bld.rotation.y = -obs.rotation;
-          const fittedBox = new THREE.Box3().setFromObject(bld);
-          bld.position.set(obs.x, -fittedBox.min.y, obs.y);
+          const targetHeight = obs.verticalHeight ?? (24 + (Math.abs(obs.id.length * 17) % 20));
+          fitBuildingToObstacle(bld,obs,targetHeight);
           scene.add(bld);
         } else {
           // fallback 代码几何体
           const bld = buildBuildingMesh(obs.width, obs.height, obs.id);
-          bld.position.set(obs.x, 0, obs.y);
-          bld.rotation.y = -obs.rotation;
+          const height=obs.verticalHeight??new THREE.Box3().setFromObject(bld).getSize(new THREE.Vector3()).y;
+          fitBuildingToObstacle(bld,obs,height);
           scene.add(bld);
         }
       }
@@ -848,7 +855,11 @@ export async function buildScene(
     const floor = levelData.levelId === 6
       ? garageFloorAt(entry.obstacle.elevation ?? -48)
       : 0;
-    const key = `${entry.kind}:${floor}`;
+    // Split the huge highway's instanced walls into coarse spatial batches;
+    // otherwise one world-sized bound makes every rail submit in every mirror.
+    const region=levelData.highway&&entry.kind!=='boundary'
+      ? `:${Math.floor(entry.obstacle.x/5000)}:${Math.floor(entry.obstacle.y/4000)}` : '';
+    const key = `${entry.kind}:${floor}${region}`;
     const bucket = wallInstanceBuckets.get(key);
     if (bucket) bucket.push(entry);
     else wallInstanceBuckets.set(key, [entry]);

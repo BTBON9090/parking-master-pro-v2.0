@@ -1,6 +1,19 @@
 const clamp = (v: number, min = 0, max = 1) => Math.max(min, Math.min(max, v));
+import type {InputState} from '../types';
+import {resolveKeyboardPedals} from './keyboardPedals';
+import {parkingBrakeApplied} from './parkingBrake';
 export const PEDAL_TRAVEL_PX = 44;
 export type HeldControl = 'steer' | 'gas' | 'brake' | 'handbrake';
+/** Map the upper-left to lower-right quadrant of an elliptical control to a
+ * linear steering position. Width and height may differ in the HUD editor. */
+export function steeringArcPosition(x:number,y:number,left:number,top:number,width:number,height:number){
+ if(width<=0||height<=0)return .5;
+ const horizontal=Math.max(0,(x-left)/width),vertical=Math.max(0,(top+height-y)/height);
+ if(horizontal===0&&vertical===0)return .5;
+ const position=Math.atan2(horizontal,vertical)/(Math.PI/2);
+ // Drag past either end to allow the high-speed zoomed ruler to pan to lock.
+ return position+Math.max(0,(x-left-width)/width)-Math.max(0,(top-y)/height);
+}
 type Contact = { id: number; x: number; y: number; value: number; start: number };
 /** Each control owns its pointer; releasing another finger never cancels it. */
 export class MobileInputController {
@@ -41,6 +54,16 @@ export class MobileInputController {
     this.rulerX=x;this.rulerZoom=zoom;
     return true;
   }
+  /** Continue panning a zoomed ruler while a finger rests beyond its end.
+   * This makes full lock reachable without dragging beyond the physical screen. */
+  panSteering(id:number,direction:number,dt:number,lock:number,zoom:number){
+    const c=this.contacts.get('steer');
+    if(!c||c.id!==id||!direction||zoom<=1.001)return false;
+    const half=lock/zoom,sign=Math.sign(direction);
+    this.rulerCentre=clamp(this.rulerCentre+sign*lock*.75*clamp(dt,0,.1),-lock+half,lock-half);
+    c.value=clamp(this.rulerCentre+sign*half,-lock,lock);
+    return true;
+  }
   end(control: HeldControl, id: number) {
     if (this.contacts.get(control)?.id !== id) return false;
     this.contacts.delete(control); if(control==='steer')this.rulerX=undefined; return true;
@@ -57,13 +80,27 @@ export class MobileInputController {
     };
   }
 }
+export type MobileSnapshot=ReturnType<MobileInputController['snapshot']>;
+export type KeyboardHeld={w:boolean;s:boolean;shift:boolean;handbrake:boolean};
+/** Pedals retain independent ownership; releasing a touch never clears a
+ * keyboard brake or handbrake, and applying a brake never loses steering. */
+export function mergeMobileInput(prev:InputState,snapshot:MobileSnapshot,keys:KeyboardHeld):InputState{
+ const keyboard=resolveKeyboardPedals(keys.w,keys.s,keys.shift);
+ return {...prev,throttle:keyboard.brake>0?0:snapshot.throttle,gasPressed:keyboard.gasPressed&&snapshot.brake===0&&snapshot.throttle<keyboard.throttle,
+  shiftPressed:keyboard.shiftPressed,brake:Math.max(snapshot.brake,keyboard.brake),
+  handbrake:parkingBrakeApplied(!!prev.parkingBrake,snapshot.handbrakeHeld||keys.handbrake),
+  ...(snapshot.steeringWheelAngle===undefined?{}:{steeringWheelAngle:snapshot.steeringWheelAngle})};
+}
 export function pedalFeedback(throttle: number, brake: number) {
   return {kind: brake > 0 ? 'brake' : 'gas', force: clamp(brake > 0 ? brake : throttle)};
 }
 
 /** Forty-eight equal mechanical divisions; zoom affects only finger travel. */
 export function steeringRulerZoom(speedKmh:number){
- const t=clamp((Math.abs(speedKmh)-15)/105);return 1+2.5*t*t*(3-2*t);
+ const speed=Math.abs(speedKmh),t=clamp((speed-15)/105),fast=clamp((speed-120)/120);
+ // Preserve the familiar low-speed travel, then smoothly magnify further
+ // above 120 km/h; cap at 10x so the guide never becomes unbounded.
+ return 1+4*t*t*(3-2*t)+5*fast*fast*(3-2*fast);
 }
 export function steeringRulerTicks(lock:number,centre:number,zoom:number){
  return Array.from({length:49},(_,n)=>({n,angle:(n/24-1)*lock,

@@ -96,7 +96,17 @@ function tiltedCurbSupport(world:{x:number;y:number},wheel:WheelShape,curbs:Curb
 /** Broad phase once per movement; long curbs are tested as oriented boxes. */
 export function nearbyWheelCurbs(curbs: CurbSegment[], pose: VehiclePose, range: number): CurbSegment[] {
   return curbs.filter(curb => {
-    const dx = pose.x-curb.x, dy = pose.y-curb.y, c=Math.cos(curb.rotation), s=Math.sin(curb.rotation);
+    const dx = pose.x-curb.x, dy = pose.y-curb.y;
+    // A rotated rectangle fits inside the circle through its corners. Most
+    // authored kerbs are far away, so reject them before computing sin/cos.
+    // Keep a small relative tolerance: points on the boundary must still
+    // reach the original oriented-box test, including for long angled kerbs.
+    const halfLength=curb.length/2+range, halfWidth=CURB_WIDTH/2+range;
+    if (halfLength>=0 && halfWidth>=0) {
+      const bound2=halfLength*halfLength+halfWidth*halfWidth;
+      if (dx*dx+dy*dy > bound2+(bound2+1)*1e-12) return false;
+    }
+    const c=Math.cos(curb.rotation), s=Math.sin(curb.rotation);
     return Math.abs(dx*c+dy*s) <= curb.length/2+range && Math.abs(-dx*s+dy*c) <= CURB_WIDTH/2+range;
   });
 }

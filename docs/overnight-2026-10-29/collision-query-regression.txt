@@ -1,0 +1,1 @@
+Vehicle collision query PASS: 1215 actual-map/vehicle/height/articulation poses match brute-force SAT, live NPC/pushed car, cache invalidation, displaced hull, contact edge rules.

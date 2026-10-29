@@ -6,6 +6,21 @@ export class VehicleDamage {
  private originals=new Map<THREE.Mesh,THREE.BufferGeometry>();
  private owned=new Set<THREE.BufferGeometry>();
  private hits=0;
+ // Detachable batches are unchanged between most contacts. Cache their
+ // connected islands and local centroids until the index/positions change.
+ private islandCache=new WeakMap<THREE.BufferGeometry,{index:THREE.BufferAttribute|THREE.InterleavedBufferAttribute|null;indexVersion:number;position:THREE.BufferAttribute|THREE.InterleavedBufferAttribute;positionVersion:number;items:Array<{indices:number[];center:THREE.Vector3}>}>();
+ private islands(geometry:THREE.BufferGeometry){
+  const position=geometry.getAttribute('position'),index=geometry.index;
+  const version=(attr:THREE.BufferAttribute|THREE.InterleavedBufferAttribute|null)=>attr instanceof THREE.BufferAttribute?attr.version:attr?.data.version??0;
+  const cached=this.islandCache.get(geometry);
+  if(cached&&cached.index===index&&cached.indexVersion===version(index)&&cached.position===position&&cached.positionVersion===version(position))return cached.items;
+  const items=triangleIslands(geometry).map(indices=>{
+   const unique=new Set(indices),center=new THREE.Vector3();
+   for(const i of unique)center.add(new THREE.Vector3().fromBufferAttribute(position,i));
+   center.divideScalar(unique.size);return {indices,center};
+  });
+  this.islandCache.set(geometry,{index,indexVersion:version(index),position,positionVersion:version(position),items});return items;
+ }
  constructor(private source:THREE.Group){}
  private editable(mesh:THREE.Mesh){
   if(!this.originals.has(mesh)){
@@ -19,14 +34,21 @@ export class VehicleDamage {
   this.source.updateWorldMatrix(true,true);
   const detached:THREE.Mesh[]=[];
   const candidates:Array<{mesh:THREE.Mesh;indices:number[];score:number}>=[];
+  const boundsCenter=new THREE.Vector3();
+  const intersectsHit=(node:THREE.Mesh,radius:number)=>{
+   if(!node.geometry.boundingSphere)node.geometry.computeBoundingSphere();
+   const sphere=node.geometry.boundingSphere;if(!sphere)return true;
+   boundsCenter.copy(sphere.center).applyMatrix4(node.matrixWorld);
+   const extent=radius+sphere.radius*node.matrixWorld.getMaxScaleOnAxis();
+   return boundsCenter.distanceToSquared(contact)<=extent*extent;
+  };
   this.source.traverse(node=>{
    if(!(node instanceof THREE.Mesh)||node.userData.nativeWheelPart||/Interior|frame-clone/.test(node.name))return;
    const mats=Array.isArray(node.material)?node.material:[node.material];
    if(mats.length!==1||!(/Headlight|Taillight|ReverseLight|Indicator|MirrorGlass/.test(mats[0].name)||(tier==='moderate'&&(mats[0].name==='Glass'||(closing>12&&node.userData.detachable)))))return;
-   const pos=node.geometry.getAttribute('position');
-   for(const indices of triangleIslands(node.geometry)){
-    const center=new THREE.Vector3();for(const i of new Set(indices))center.add(new THREE.Vector3().fromBufferAttribute(pos,i));center.divideScalar(new Set(indices).size).applyMatrix4(node.matrixWorld);
-    const score=center.distanceTo(contact);
+   if(!intersectsHit(node,20))return;
+   for(const {indices,center} of this.islands(node.geometry)){
+    const score=boundsCenter.copy(center).applyMatrix4(node.matrixWorld).distanceTo(contact);
     if(score<20)candidates.push({mesh:node,indices,score});
    }
   });
@@ -46,19 +68,20 @@ export class VehicleDamage {
     if(!(node instanceof THREE.Mesh)||node.userData.nativeWheelPart||/Interior|frame-clone/.test(node.name))return;
     const mats=Array.isArray(node.material)?node.material:[node.material];
     if(!mats.some(m=>/Paint|Cladding|BlackTrim|Chrome|Plate/.test(m.name)))return;
+    if(!intersectsHit(node,radius))return;
     const pos=node.geometry.getAttribute('position'),inverse=node.matrixWorld.clone().invert();
-    const world=new THREE.Vector3();let geometry:THREE.BufferGeometry|undefined;
+    const world=new THREE.Vector3(),rest=new THREE.Vector3(),offset=new THREE.Vector3();let geometry:THREE.BufferGeometry|undefined;
     for(let i=0;i<pos.count;i++){
      world.fromBufferAttribute(pos,i).applyMatrix4(node.matrixWorld);
-     const distance=world.distanceTo(contact);if(distance>=radius)continue;
-     const falloff=Math.pow(1-distance/radius,2);
+     const distanceSq=world.distanceToSquared(contact);if(distanceSq>=radius*radius)continue;
+     const falloff=Math.pow(1-Math.sqrt(distanceSq)/radius,2);
      if(!geometry)geometry=this.editable(node);
      // A smooth dent, confined to the impacted face; wheels and opposite
      // panels keep their authored positions and the shell remains whole.
      const original=this.originals.get(node)!.getAttribute('position');
-     const rest=new THREE.Vector3().fromBufferAttribute(original,i).applyMatrix4(node.matrixWorld);
+     rest.fromBufferAttribute(original,i).applyMatrix4(node.matrixWorld);
      world.addScaledVector(normal,depth*falloff);
-     const offset=world.clone().sub(rest);if(offset.length()>6)world.copy(rest).add(offset.setLength(6));
+     offset.copy(world).sub(rest);if(offset.length()>6)world.copy(rest).add(offset.setLength(6));
      world.applyMatrix4(inverse);(geometry.getAttribute('position') as THREE.BufferAttribute).setXYZ(i,world.x,world.y,world.z);
     }
     if(geometry){geometry.getAttribute('position').needsUpdate=true;geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.computeBoundingSphere();}

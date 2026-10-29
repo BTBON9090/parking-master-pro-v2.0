@@ -5,7 +5,7 @@ import bpy
 from mathutils import Vector
 import build_round30_fleet as f
 b=f.b
-b.OUT_DOCS=os.path.join(b.ROOT,'docs','round31','vehicles');os.makedirs(b.OUT_DOCS,exist_ok=True)
+b.OUT_DOCS=os.environ.get('FLEET31_OUTPUT_DIR',os.path.join(b.ROOT,'docs','round31','vehicles'));os.makedirs(b.OUT_DOCS,exist_ok=True)
 base_batch=b.batch_static_parts
 # Keep detachable exterior assemblies separate while batching interior trims.
 def batch(root):
@@ -65,9 +65,16 @@ def custom(s):
    if o:o.location=pos
   trailer=bpy.data.objects['TrailerRoot'];trailer.location.y=2.2
   for o in list(trailer.children_recursive):
-   if o.type=='MESH':
+   # Stretch the trailer shell along its length, never the wheel's circular
+   # local geometry. The previous loop elongated eight tyres and their rims.
+   parent=o.parent;wheel_part=False
+   while parent is not None and parent != trailer:
+    if parent.name.startswith('TrailerWheel'):wheel_part=True;break
+    parent=parent.parent
+   if o.type=='MESH' and not wheel_part:
     for v in o.data.vertices:v.co.y*=1.42
-   elif o.name.startswith('TrailerWheel'):o.location.y*=1.42
+   elif o.type!='MESH' and o.name.startswith('TrailerWheel'):
+    o.location.y*=1.42
   for side in [-1,1]:
    for inner in [0,1]:f.wheel('TrailerWheelExtra'+str(side)+str(inner),.295,.285,.53,6,m['Rim'],m['Tyre'],m['BrakeDisc'],m['Hub'],(side*(1.03-inner*.31),11.2,.53),trailer,side)
   for o in trailer.children_recursive:
@@ -80,6 +87,15 @@ def custom(s):
  if s['name']=='MINING':
   # Chassis and sloped steel dump bed are continuous section meshes, not boxes.
   body=f.original_loft('Body',[(-7.4,3.2,2.9,1.1,3.2,3.55),(-6.6,3.8,3.4,1.05,3.4,3.7),(5.9,3.8,3.45,1.2,3.4,3.65),(7.4,3.2,2.9,1.6,3.4,3.6)],m['Paint'],step=.8);body.parent=root
+  # The original solid chassis intersects the upper half of the 4.04 m
+  # wheels, including inner dual tyres. Cut matching transverse wheel wells
+  # through both side shells, leaving 0.18 m of radial clearance at rest.
+  for side in [-1,1]:
+   for axle in [-4.6,3.8]:
+    bpy.ops.mesh.primitive_cylinder_add(vertices=32,radius=2.20,depth=3.10,
+      location=(side*3.15,axle,2.02),rotation=(0,math.pi/2,0))
+    cutter=bpy.context.object;cutter.name='MiningWheelWell'
+    b.apply_boolean(body,cutter)
   # Hollow six-sided tray with tapered side walls and a sloping bulkhead.
   pts=[(-3.55,-2.8,3.6),(3.55,-2.8,3.6),(3.65,7.1,3.7),(-3.65,7.1,3.7),(-4.5,-3.7,6.5),(4.5,-3.7,6.5),(4.5,7.25,6.8),(-4.5,7.25,6.8)]
   tray=b.mesh_object('DumpBed',pts,[(0,3,2,1),(0,1,5,4),(0,4,7,3),(1,2,6,5)],m['Paint'],False,root)
@@ -88,11 +104,11 @@ def custom(s):
   cab=f.original_loft('CabShell',[(-6.4,1.25,1.1,3.7,4.75,6.4),(-3.35,1.25,1.1,3.7,4.75,6.4)],m['Paint'],step=.5);cab.parent=root;cab.location.x=2.0
   mod=cab.modifiers.new('HollowCab','SOLIDIFY');mod.thickness=.035;mod.offset=-1;bpy.context.view_layer.objects.active=cab;bpy.ops.object.modifier_apply(modifier=mod.name)
   for side in [-1,1]:
-   b.apply_boolean(cab,b.box('CabWindow',(.7,2.2,1.0),(side*1.16+2,-4.85,5.65),None))
+   b.apply_boolean(cab,b.box('CabWindow',(.7,2.28,1.0),(side*1.16+2,-4.89,5.65),None))
    b.box('SideMirrorPod',(.25,.18,.8),(side*4.25,-6.1,5.9),m['BlackTrim'],parent=root)
    b.box('SideMirrorLens',(.21,.02,.72),(side*4.25,-5.99,5.9),m['Chrome'],parent=root)
-  b.apply_boolean(cab,b.box('FrontWindow',(2.15,.7,1.0),(2,-6.36,5.65),None))
-  b.quad('GlassWindshield',[(.95,-6.42,5.15),(3.05,-6.42,5.15),(3.05,-6.42,6.15),(.95,-6.42,6.15)],m['Glass'],parent=root)
+  b.apply_boolean(cab,b.box('FrontWindow',(2.25,.7,1.0),(2,-6.36,5.65),None))
+  b.quad('GlassWindshield',[(.90,-6.42,5.15),(3.10,-6.42,5.15),(3.10,-6.42,6.15),(.90,-6.42,6.15)],m['Glass'],parent=root)
   for side,label in [(1,'L'),(-1,'R')]:
    for y,ax in [(-4.6,'Front'),(3.8,'Rear')]:
     w[ax+label]=f.wheel('Wheel'+ax+label,1.15,.85,2.02,8,m['Rim'],m['Tyre'],m['BrakeDisc'],m['Hub'],(side*3.8,y,2.02),root,side)
@@ -111,7 +127,21 @@ def custom(s):
    b.mesh_object('TrackBelt'+label,verts,[(i,(i+1)%6,(i+1)%6+6,i+6) for i in range(6)],m['BlackTrim'],False,root)
    for j in range(6):
     y=-2.55+j*1.02;key=('Front' if j==0 else 'Rear' if j==5 else 'Road'+str(j))+label
-    wheel=f.wheel('Wheel'+key,.45,.30,.50,6,m['Rim'],m['Tyre'],m['BrakeDisc'],m['Hub'],(side*1.66,y,.57),root,side)
+    # Generic tracked vehicle road wheel: a solid, muted cast-metal disk
+    # with a raised hub and fasteners, not the open six-spoke car rim.
+    # This is an artistic approximation, not a claim about a specific tank.
+    name='Wheel'+key
+    wheel=bpy.data.objects.new(name,None);b.link_object(wheel);wheel.parent=root;wheel.location=(side*1.66,y,.57)
+    steel=b.material('RoadWheelSteel',(.30,.33,.27),metallic=.65,roughness=.78)
+    plate=b.material('RoadWheelPlate',(.39,.42,.35),metallic=.55,roughness=.8)
+    # Retain this historical object name for the wheel animation bindings.
+    b.disc_x(name+'_Tyre',.50,.45,0,steel,wheel,segments=24)
+    b.disc_x(name+'_Plate',.37,.035,side*.235,plate,wheel,segments=24)
+    b.disc_x(name+'_Hub',.12,.075,side*.26,steel,wheel,segments=16)
+    for bolt in range(4):
+     angle=math.tau*bolt/4
+     head=b.disc_x(name+'_Bolt',.026,.025,side*.263,m['BlackTrim'],wheel,segments=8)
+     head.location.y=.25*math.cos(angle);head.location.z=.25*math.sin(angle)
     if j in [0,5]:w[key]=wheel
    for y in [-2.5,-1.5,-.5,.5,1.5,2.5]:b.box('SideSkirt',(.07,.94,.48),(side*1.99,y,1.20),m['Paint'],bevel=.025,parent=root)
   b.apply_boolean(body,b.box('DriverVisionOpening',(1.45,1.6,.60),(.55,-2.85,1.55),None))

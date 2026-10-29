@@ -1,0 +1,2 @@
+{"id":"SUV","eye":[3.6499999463558197,14.800000259449426,-1.1997973173856735],"shells":["BodyMesh","BodyMesh_1"],"blockedYawDeg":[[-54,-51],[22,27]],"blockedCount":10,"sampleStepDeg":1}
+{"id":"MINING","eye":[20,58.499999046325684,45],"shells":["CabShellMesh","CabShellMesh_1"],"blockedYawDeg":[[-38,-30],[30,38]],"blockedCount":18,"sampleStepDeg":1}

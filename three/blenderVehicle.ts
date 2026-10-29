@@ -34,24 +34,28 @@ export function buildNativeAuthoredVehicle(source: THREE.Group, cfg: CarConfig):
   // interior faces stay inside the body and leave all real windows open.
   const suv = cfg.height > 16;
   const calibration = source.getObjectByName('CarRoot')?.userData ?? {};
-  const halfCabin = cfg.width / 10 * .425;
-  const floor = calibration.liner_floor_m ?? (suv ? .36 : .29);
-  const belt = calibration.liner_belt_m ?? (suv ? 1.15 : .96);
-  const rear = calibration.liner_rear_m ?? (suv ? -2.15 : -1.70);
-  const front = calibration.liner_front_m ?? 1.02;
-  const corners = [
-    [-halfCabin,floor,rear],[halfCabin,floor,rear],[halfCabin,floor,front],[-halfCabin,floor,front],
-    [-halfCabin,belt-.10,rear],[halfCabin,belt-.10,rear],[halfCabin,belt-.10,front],[-halfCabin,belt-.10,front],
-  ];
-  const linerGeometry = new THREE.BufferGeometry();
-  linerGeometry.setAttribute('position', new THREE.Float32BufferAttribute(corners.flat(),3));
-  linerGeometry.setIndex([0,1,2,0,2,3, 0,3,7,0,7,4, 1,5,6,1,6,2, 3,2,6,3,6,7, 0,4,5,0,5,1]);
-  linerGeometry.computeVertexNormals();
-  const liner = new THREE.Mesh(linerGeometry, new THREE.MeshStandardMaterial({
-    color: '#252b2f', roughness: 1, metalness: 0, side: THREE.DoubleSide,
-  }));
-  liner.name = 'InteriorCabinLiner';
-  (source.getObjectByName('CarRoot') ?? source).add(liner);
+  // Exported wheel-well liners already clear the complete suspension travel.
+  // Adding the fallback flat floor would fill those cavities again.
+  if (!calibration.authored_wheel_cabin_liner) {
+    const halfCabin = cfg.width / 10 * .425;
+    const floor = calibration.liner_floor_m ?? (suv ? .36 : .29);
+    const belt = calibration.liner_belt_m ?? (suv ? 1.15 : .96);
+    const rear = calibration.liner_rear_m ?? (suv ? -2.15 : -1.70);
+    const front = calibration.liner_front_m ?? 1.02;
+    const corners = [
+      [-halfCabin,floor,rear],[halfCabin,floor,rear],[halfCabin,floor,front],[-halfCabin,floor,front],
+      [-halfCabin,belt-.10,rear],[halfCabin,belt-.10,rear],[halfCabin,belt-.10,front],[-halfCabin,belt-.10,front],
+    ];
+    const linerGeometry = new THREE.BufferGeometry();
+    linerGeometry.setAttribute('position', new THREE.Float32BufferAttribute(corners.flat(),3));
+    linerGeometry.setIndex([0,1,2,0,2,3, 0,3,7,0,7,4, 1,5,6,1,6,2, 3,2,6,3,6,7, 0,4,5,0,5,1]);
+    linerGeometry.computeVertexNormals();
+    const liner = new THREE.Mesh(linerGeometry, new THREE.MeshStandardMaterial({
+      color: '#252b2f', roughness: 1, metalness: 0, side: THREE.DoubleSide,
+    }));
+    liner.name = 'InteriorCabinLiner';
+    (source.getObjectByName('CarRoot') ?? source).add(liner);
+  }
 
   // Player-specific material instances (the model cache shares materials).
   const materialMap = new Map<THREE.Material, THREE.Material>();
@@ -95,7 +99,7 @@ export function buildNativeAuthoredVehicle(source: THREE.Group, cfg: CarConfig):
         if(cloned.name==='InteriorLeather'){cloned.vertexColors=true;cloned.color.set('#b49873');cloned.roughness=.95;cloned.metalness=0;}
         if(cloned.name==='InteriorTrim'){cloned.color.set('#515b62');cloned.roughness=.85;cloned.metalness=0;}
         if(cloned.name==='InteriorDark'){cloned.color.set('#263139');cloned.roughness=.92;}
-        if(cloned.name==='Tyre'){cloned.color.set('#343b41');cloned.roughness=.95;cloned.metalness=0;}
+        if(cloned.name==='Tyre'){cloned.color.set(cfg.id===CarType.TYPE100?'#666b5c':'#343b41');cloned.roughness=cfg.id===CarType.TYPE100?.82:.95;cloned.metalness=cfg.id===CarType.TYPE100?.5:0;}
         if(cloned.name==='Rim'){cloned.color.set('#8b969d');cloned.roughness=.68;cloned.metalness=.12;}
       }
       if (cloned.name === 'Glass') {
@@ -190,7 +194,7 @@ export function buildNativeAuthoredVehicle(source: THREE.Group, cfg: CarConfig):
     });
     // A narrow matte leather stripe, not a self-lit dot. Local -Z points
     // radially up the wheel; its long side runs across the rim at 12 o'clock.
-    const centreMark=new THREE.Mesh(new THREE.BoxGeometry(.006,.006,.029),new THREE.MeshStandardMaterial({color:'#bbaa76',roughness:1,metalness:0}));
+    const centreMark=new THREE.Mesh(new THREE.BoxGeometry(.008,.006,.033),new THREE.MeshStandardMaterial({color:'#c8b889',roughness:1,metalness:0}));
     centreMark.name='steering-centre-reference';
     // Authored column uses local +Y; local -Z is the rim's 12 o'clock.
     centreMark.position.set(0,.022,-.185);spin.add(centreMark);

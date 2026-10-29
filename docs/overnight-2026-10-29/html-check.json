@@ -1,0 +1,13 @@
+{
+  "errors": [],
+  "checks": [
+    "F041 search PASS",
+    "F042 search PASS",
+    "F043 search PASS",
+    "No page overflow 390",
+    "No page overflow 768",
+    "No page overflow 1396",
+    "Strategic report links to latest progress"
+  ],
+  "result": "PASS"
+}

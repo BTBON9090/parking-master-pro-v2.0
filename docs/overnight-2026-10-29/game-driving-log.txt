@@ -1,0 +1,95 @@
+PAUSE −
+＋
+桥
+全局俯瞰地图
+
+青色圆环与白色箭头为本车位置及朝向
+
+X 0 · Y 0
+0
+1
+2
+3
+4
+5
+6
+7
+RPM
+转速 x1000
+DRIVE TRAINING
+0
+KM/H
+GEAR
+P
+0
+40
+80
+120
+160
+200
+240
+SPEED
+KM/H
+DRIVING ACADEMY / PAUSED
+驾驶设置
+继续驾驶 ESC
+01
+座驾
+车库与性能
+02
+出发地
+地图与目的地
+03
+操控布局
+位置与大小
+04
+操控
+按键与驾驶辅助
+05
+声音
+车内、车外与提示
+06
+画面
+光影与驾驶视野
+07
+驾驶学院
+操作引导与语言
+08
+关于我的介绍
+作者与版本更新
+当前座驾
+MINI Cooper S · Sport
+环线高速
+MINI
+GARAGE / 11
+MINI Cooper S · Sport
+
+燃油 · 自动挡 · FWD · 150 kW
+
+动力试听 · 关
+拖动环视 · 双指 / 滚轮缩放
+100 式 · 履带驾驶演示
+巨岩 797 · 矿用自卸车
+洲际长头 · 22 轮超长半挂
+农用三轮货车 · 手动
+农场 145 · 大小轮四驱
+洲际重卡 · 18 轮半挂
+Tesla Cybertruck · AWD
+Lamborghini Revuelto
+Bugatti Veyron 16.4
+尊界 V800 · 尊享版
+MINI Cooper S · Sport
+乐道 L80 Ultra+
+海豹 08 EV 905 旗舰
+方程豹 钛7 四驱 Ultra
+理想 i9
+小米澎程 N90 Max
+荒野 2.4T · 燃油皮卡
+山地吉普 · 手动四驱
+远行中巴 · 手动
+长途大巴 · 手动
+短轴接驳车 · 手动
+长轴接驳车 · 手动
+设置即时生效 · 游戏已暂停
+原地重置车辆返回主菜单
+{"errors":[],"audio":["running → suspended"],"note":"Desktop headless Chrome, touch layout. No Android or temperature verification.","muteToggle":"disabled → running","sourcePreference":"preserved","acceleratedKmh":1,"brakedKmh":0,"body":"−\n＋\n桥\n全局俯瞰地图\n\n青色圆环与白色箭头为本车位置及朝向\n\nX 3966 · Y 1736\n0\n1\n2\n3\n4\n5\n6\n7\nRPM\n转速 x1000\nDRIVE TRAINING\n0\nKM/H\nGEAR\nD\n0\n40\n80\n120\n160\n200\n240\nSPEED\nKM/H\nR\nN\nD\n刹车\n上滑加力\n油门\n上滑加力\nABS","result":"PASS"}

@@ -1,0 +1,19 @@
+
+> parking-master-pro-v2.0@0.26.0 build:client
+> node scripts/build-client.mjs
+
+vite v6.4.5 building for production...
+transforming...
+✓ 1826 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                     1.22 kB │ gzip:   0.63 kB
+dist/assets/index-Dlgzf_hQ.css     64.54 kB │ gzip:  15.03 kB
+dist/assets/web-xrBpvdrg.js         0.19 kB │ gzip:   0.17 kB
+dist/assets/index-a7gD-qs1.js   1,658.32 kB │ gzip: 499.32 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 3.06s

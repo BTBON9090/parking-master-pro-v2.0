@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {WeatherType} from '../types';
+import {resolveWeatherOptions} from '../utils/weatherOptions';
+const s={weatherEnabled:true,weatherRain:false,weatherSnow:false,weatherFog:false};
+assert.deepEqual(resolveWeatherOptions(s,WeatherType.RAINY),{rain:false,snow:false,fog:false});
+assert.deepEqual(resolveWeatherOptions({...s,weatherRain:true},WeatherType.SUNNY),{rain:true,snow:false,fog:false});
+assert.deepEqual(resolveWeatherOptions({...s,weatherRain:true,weatherSnow:true,weatherFog:true},WeatherType.SUNNY),{rain:true,snow:true,fog:true});
+assert.deepEqual(resolveWeatherOptions({...s,weatherRain:true,weatherFog:true,weatherEnabled:false},WeatherType.RAINY),{rain:false,snow:false,fog:false});
+assert.deepEqual(resolveWeatherOptions({weatherEnabled:true},WeatherType.SNOWY),{rain:false,snow:true,fog:false});
+console.log('Weather options: independent rain / snow / fog, combinations, disable and legacy fallback PASS.');

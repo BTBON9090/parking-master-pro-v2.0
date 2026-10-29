@@ -254,10 +254,10 @@ export const SteeringWheel: React.FC<SteeringWheelProps> = ({ pack, angleDeg, si
         className="absolute left-1/2 -translate-x-1/2 rounded-sm z-20"
         style={{
           top: 0,
-          width: size * 0.027,
+          width: size * 0.035,
           height: ringWidth * 1.12,
-          background: '#bbaa76',
-          opacity: .86,
+          background: '#d4bd7e',
+          opacity: .92,
         }}
       />
     </div>

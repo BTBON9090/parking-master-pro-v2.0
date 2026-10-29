@@ -1,0 +1,17 @@
+{
+  "errors": [],
+  "audio": [
+    "running → suspended",
+    "running → suspended",
+    "running → suspended",
+    "running → suspended",
+    "running → suspended",
+    "running → suspended",
+    "running → suspended",
+    "running → suspended"
+  ],
+  "note": "Desktop headless Chrome, touch layout. No Android or temperature verification.",
+  "muteToggle": "disabled → running",
+  "body": "−\n＋\n桥\n全局俯瞰地图\n\n青色圆环与白色箭头为本车位置及朝向\n\nX 3965 · Y 1736\n0\n1\n2\n3\n4\n5\n6\n7\nRPM\n转速 x1000\nDRIVE TRAINING\n0\nKM/H\nGEAR\nP\n0\n40\n80\n120\n160\n200\n240\nSPEED\nKM/H\nR\nN\nD\n刹车\n上滑加力\n油门\n上滑加力\nABS\nD\n挂挡\nW\n油门\nS\n刹车\nSPACE\n手刹\nF\n视角\n知道了",
+  "result": "PASS"
+}

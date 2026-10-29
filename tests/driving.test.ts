@@ -154,7 +154,7 @@ for(const cfg of Object.values(CAR_MODELS)) {
   }
   // Trailer has an independent articulated collider; validate tractor here.
   if([CarType.SEMI,CarType.US22].includes(cfg.id))parts.trailer?.root.removeFromParent();
-  assert.equal(parts.wheels.length,cfg.id===CarType.TRIKE?3:[CarType.SEMI,CarType.US22].includes(cfg.id)?6:4,`${cfg.id}: four independently rolling wheels`);
+  assert.equal(parts.wheels.length,cfg.id===CarType.TRIKE?3:cfg.id===CarType.TYPE100?12:[CarType.SEMI,CarType.US22].includes(cfg.id)?6:4,`${cfg.id}: four independently rolling wheels`);
   {
     parts.group.updateWorldMatrix(true,true);
     const bodyBox=new THREE.Box3();
@@ -195,7 +195,7 @@ for(const cfg of Object.values(CAR_MODELS)) {
     assert(new THREE.Box3().setFromObject(wheel, true).min.y > -0.25,
       `${cfg.id}: wheel ${index} bottom must not sink below the ground plane`);
   });
-  assert.equal(parts.wheelMounts.length,cfg.id===CarType.TRIKE?3:[CarType.SEMI,CarType.US22].includes(cfg.id)?6:4,`${cfg.id}: independent suspension mounts`);
+  assert.equal(parts.wheelMounts.length,cfg.id===CarType.TRIKE?3:cfg.id===CarType.TYPE100?12:[CarType.SEMI,CarType.US22].includes(cfg.id)?6:4,`${cfg.id}: independent suspension mounts`);
   if (cfg.id === CarType.SPORTS) {
     const frameNodes = collectConceptCockpitFrameMeshes(parts.group);
     assert.equal(frameNodes.length, 3, `Concept: expected 3 real cockpit boundary meshes after buildCarMeshFromGLB, got ${frameNodes.map(n=>n.name).join(',')}`);

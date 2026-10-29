@@ -464,6 +464,9 @@ export interface UserSettings {
   wheelGhost: boolean; // 车轮透视：车身 30% 半透明，便于观察车轮与转向几何
   autoTurnSignal: boolean;
   weatherEnabled: boolean;
+  weatherRain?: boolean;
+  weatherSnow?: boolean;
+  weatherFog?: boolean;
   /** 光影效果（实时阴影）。默认关闭以节省显存；开启后阴影可投射到地面与相邻物体。 */
   shadowsEnabled: boolean;
   absEnabled?: boolean; // Service brake only; rear handbrake always locks.
@@ -476,6 +479,8 @@ export interface UserSettings {
   mirrorSwapSides: boolean;
   mirrorAdjustments: Record<MirrorId, MirrorAdjustment>;
   hoodCameraAdjustment: HoodCameraAdjustment;
+  /** User eye and aim offsets; does not move the actual seat mesh. */
+  driverSeatAdjustment?: import("./utils/driverSeat").DriverSeatAdjustment;
   /** Controllable body-height offset in mm, clamped to the current car's
    *  published total range. It moves the sprung body only; wheels stay on
    *  their contact patches. 0 = nominal. */

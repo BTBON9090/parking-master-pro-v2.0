@@ -1,0 +1,10 @@
+{
+  "version": "0.27.0",
+  "versionCode": 2700,
+  "apkBytes": 27052535,
+  "sha256": "42793fe0b8748795ec6150f29d5ca22877378964a40da0498c5ad0064692b419",
+  "webResourcesVerified": 96,
+  "androidSignatureVerified": true,
+  "iosProjectAssetsVerified": true,
+  "androidRuntimeTested": false
+}

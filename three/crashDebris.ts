@@ -58,7 +58,17 @@ export class CrashDebris {
     });
     const materialIndex=geom.groups.find(g=>i>=g.start&&i<g.start+g.count)?.materialIndex??0;
     const original=matArray[materialIndex]??matArray[0];
+    // Reject regions that cannot intersect the triangle before polygon
+    // clipping. Heavy vehicles contain many authored triangles; needlessly
+    // clipping each against all 12 fracture cells caused a long crash hitch.
+    const minX=Math.min(...vertices.map(v=>v.local.x)),maxX=Math.max(...vertices.map(v=>v.local.x));
+    const minY=Math.min(...vertices.map(v=>v.local.y)),maxY=Math.max(...vertices.map(v=>v.local.y));
+    const minZ=Math.min(...vertices.map(v=>v.local.z)),maxZ=Math.max(...vertices.map(v=>v.local.z));
     for(let region=0;region<12;region++) {
+      const band=Math.floor((region%6)/2);
+      if((region%2===1 ? maxX < -1e-7 : minX > 1e-7)
+        ||(region>=6 ? maxY < 9-1e-7 : minY > 9+1e-7)
+        ||(band===0 ? maxZ < 8-1e-7 : band===1 ? maxZ < -8-1e-7 || minZ > 8+1e-7 : minZ > -8+1e-7))continue;
       let polygon=vertices.slice();
       // Clip crossing triangles at actual fracture planes. Assigning a whole
       // long bonnet/window triangle by its centre creates metre-long spikes.
@@ -76,7 +86,6 @@ export class CrashDebris {
         polygon=result;
       };
       clip('x',0,region%2===1);
-      const band=Math.floor((region%6)/2);
       if(band===0)clip('z',8,true);
       else if(band===1){clip('z',-8,true);clip('z',8,false);}
       else clip('z',-8,false);
@@ -173,6 +182,15 @@ export class CrashDebris {
      if(mesh instanceof THREE.Mesh)mesh.geometry.translate(-centre.x,-centre.y,-centre.z);
      else mesh.children.forEach(n=>n.position.sub(centre));
      mesh.position.add(centre);
+    }
+    // QuickHull may return nearly coplanar faces whose winding is reversed
+    // after recentering. Ensure each face points away from the interior so
+    // Cannon receives valid support planes for every vehicle asset.
+    for(const face of faces){
+     const a=vertices[face[0]],b=vertices[face[1]],c=vertices[face[2]];
+     const ux=b.x-a.x,uy=b.y-a.y,uz=b.z-a.z,vx=c.x-a.x,vy=c.y-a.y,vz=c.z-a.z;
+     const nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx;
+     if(nx*a.x+ny*a.y+nz*a.z<0)face.reverse();
     }
     shape=new CANNON.ConvexPolyhedron({vertices,faces});
    }

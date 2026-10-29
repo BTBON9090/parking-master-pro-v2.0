@@ -1,0 +1,22 @@
+[
+  {
+    "file": "training-midibus",
+    "triangles": 7770,
+    "wheelRadiusM": 0.43,
+    "bumpM": 0.2,
+    "interiorBatches": [
+      "Interior_CarRoot_InteriorDark",
+      "Interior_CarRoot_InteriorLeather"
+    ]
+  },
+  {
+    "file": "training-light-truck",
+    "triangles": 7746,
+    "wheelRadiusM": 0.46,
+    "bumpM": 0.24,
+    "interiorBatches": [
+      "Interior_CarRoot_InteriorDark",
+      "Interior_CarRoot_InteriorLeather"
+    ]
+  }
+]

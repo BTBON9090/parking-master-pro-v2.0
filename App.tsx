@@ -1,5 +1,7 @@
 import {loadSettings,saveSettings} from './utils/settingsStorage';
+import {DEFAULT_DRIVER_SEAT} from './utils/driverSeat';
 import {isTouchDevice} from './utils/device';
+import {mergeMobileInput} from './utils/mobileInput';
 import {parkingBrakeApplied} from './utils/parkingBrake';
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { CarType, DayTime, LevelData, UserSettings, WeatherType, InputState, Language, ParkingResultType, CameraView, KeyBindings } from './types';
@@ -7,6 +9,7 @@ import { serializeToLevelData } from './utils/polyline';
 import { GENERATE_LEVEL, CAR_MODELS, DEFAULT_MIRROR_ADJUSTMENTS, DEFAULT_VEHICLE_TUNING, DEFAULT_STEERING_CURVES, DEFAULT_HOOD_CAMERA_ADJUSTMENT, DEFAULT_KEY_BINDINGS, hoodCameraDefaultForCar } from './constants';
 import GameCanvas3D from './components/GameCanvas3D';
 import UIOverlay from './components/UIOverlay';
+import type {MobileSnapshot} from './components/MobileControls';
 import MainMenu from './components/MainMenu';
 import MapEditor from './components/MapEditor';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -73,6 +76,7 @@ function App() {
     wheelGhost: false,
     autoTurnSignal: true,
     weatherEnabled: false,
+    weatherRain: false, weatherSnow: false, weatherFog: false,
     shadowsEnabled: true,    // 近范围硬边太阳阴影默认开启；远端不投射
     steeringSensitivity: 1,
     // 默认载入当前车型（海豹 08）的专属转向曲线
@@ -88,6 +92,7 @@ function App() {
       centre: { ...DEFAULT_MIRROR_ADJUSTMENTS.centre },
     },
     hoodCameraAdjustment: { ...DEFAULT_HOOD_CAMERA_ADJUSTMENT },
+    driverSeatAdjustment: { ...DEFAULT_DRIVER_SEAT },
     // 驾驶舱样式包（components/cockpit/stylePacks.ts）。缺省 = 默认包 APEX GT，
     // 后续会开放多车型样式包选择。
     cockpitPackId: 'apex-gt',
@@ -161,22 +166,32 @@ function App() {
   const steeringAtLockRef = useRef(false);
 
   const inputRef = useRef<InputState>(inputState);
+  const touchSnapshotRef=useRef<MobileSnapshot>({throttle:0,brake:0,gasPressed:false,handbrakeHeld:false,steeringWheelAngle:undefined});
+  const touchUiTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
   
   // Centralized Input Update
   const updateInput = useCallback((updater: (prev: InputState) => InputState) => {
       if (isPaused) return; 
-      setInputState(prev => {
-          const next = updater(prev);
-          if (next.gear !== prev.gear && !canSelectGear(getPowertrain(currentCar), carSpeedRef.current, next.gear)) next.gear = prev.gear;
-          next.handbrake = parkingBrakeApplied(!!next.parkingBrake, next.handbrake || keyboardPedalHeldRef.current.handbrake);
-          inputRef.current = next;
-          return next;
-      });
+      const prev=inputRef.current,next=updater(prev);
+      if (next.gear !== prev.gear && !canSelectGear(getPowertrain(currentCar), carSpeedRef.current, next.gear)) next.gear = prev.gear;
+      next.handbrake = parkingBrakeApplied(!!next.parkingBrake, next.handbrake || keyboardPedalHeldRef.current.handbrake || touchSnapshotRef.current.handbrakeHeld);
+      inputRef.current=next;
+      if(touchUiTimer.current!==null){clearTimeout(touchUiTimer.current);touchUiTimer.current=null;}
+      if(next!==prev)setInputState(next);
   }, [isPaused, currentCar]);
 
-  useEffect(() => {
-      inputRef.current = inputState;
-  }, [inputState]);
+  // Touch pointer events can exceed the display refresh rate. Physics reads
+  // the ref immediately; React reconciles the expensive dashboard at most
+  // every 66 ms while fingers move. Down/up/cancel flush synchronously.
+  const updateTouchInput=useCallback((snapshot:MobileSnapshot,immediate:boolean)=>{
+    touchSnapshotRef.current=snapshot;
+    if(isPaused)return;
+    const next=mergeMobileInput(inputRef.current,snapshot,keyboardPedalHeldRef.current);
+    inputRef.current=next;
+    if(immediate){if(touchUiTimer.current!==null)clearTimeout(touchUiTimer.current);touchUiTimer.current=null;setInputState(next);}
+    else if(touchUiTimer.current===null)touchUiTimer.current=setTimeout(()=>{touchUiTimer.current=null;setInputState(inputRef.current);},66);
+  },[isPaused]);
+  useEffect(()=>()=>{if(touchUiTimer.current!==null)clearTimeout(touchUiTimer.current);},[]);
 
   // Input handlers are bound once per game session; a ref keeps the plain
   // left-drag decision (orbit vs. head look) on the current camera mode
@@ -197,11 +212,10 @@ function App() {
 
   useEffect(() => {
     const releaseControls = () => {
-      setInputState(prev => {
-        const next = {...prev, gasPressed:false, shiftPressed:false, throttle:0, brake:0,
-          handbrake:!!prev.parkingBrake};
-        inputRef.current=next; return next;
-      });
+      if(touchUiTimer.current!==null){clearTimeout(touchUiTimer.current);touchUiTimer.current=null;}
+      touchSnapshotRef.current={throttle:0,brake:0,gasPressed:false,handbrakeHeld:false,steeringWheelAngle:undefined};
+      const prev=inputRef.current,next={...prev,gasPressed:false,shiftPressed:false,throttle:0,brake:0,handbrake:!!prev.parkingBrake};
+      inputRef.current=next;setInputState(next);
       draggingRef.current = false;
       rightButtonDownRef.current = false;
       lookDragRef.current.active = false;
@@ -765,9 +779,10 @@ function App() {
         );
         updateInput(prev => ({
             ...prev,
-            gasPressed: intent.gasPressed,
+            gasPressed: intent.gasPressed && touchSnapshotRef.current.brake===0 && touchSnapshotRef.current.throttle<intent.throttle,
             shiftPressed: intent.shiftPressed,
-            brake: intent.brake,
+            throttle: intent.brake>0 ? 0 : touchSnapshotRef.current.throttle,
+            brake: Math.max(intent.brake,touchSnapshotRef.current.brake),
         }));
     };
 
@@ -1057,6 +1072,8 @@ function App() {
             updateSettings={(s) => setSettings(prev => ({...prev, ...s}))}
             inputState={inputState}
             setInputState={value => updateInput(prev => typeof value === 'function' ? value(prev) : value)}
+            onTouchInput={updateTouchInput}
+            readInput={()=>inputRef.current}
             exitGame={exitGame}
             resetLevel={resetCurrentLevel}
             lang={lang}

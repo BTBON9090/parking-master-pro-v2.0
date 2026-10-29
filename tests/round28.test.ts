@@ -53,7 +53,8 @@ for(const id of [CarType.MIDIBUS,CarType.COACH,CarType.VAN,CarType.LIGHT_TRUCK])
  const vertices:number[]=[];glass.traverse(node=>{if(node instanceof THREE.Mesh){const p=node.geometry.getAttribute('position');for(let i=0;i<p.count;i++)vertices.push(new THREE.Vector3().fromBufferAttribute(p,i).applyMatrix4(node.matrixWorld).x);}});
  assert(Math.max(...vertices)>cfg.width/2&&Math.min(...vertices)<-cfg.width/2,`${id}: both mirrors outside body`);
  if(id===CarType.COACH){
-  assert(Math.abs(parts.wheels[0].userData.wheelRadius/10-.52175)<.003,'coach tyre radius matches 295/80 R22.5');
+  // Restore the simulated 295/80 R22.5 tyre radius after the oversized trial.
+  assert(Math.abs(parts.wheels[0].userData.wheelRadius/10-.52175)<.003,'coach tyre radius matches simulated 295/80 R22.5');
   const eye=parts.nativeCockpit!.eye,camera=new THREE.PerspectiveCamera(65,1280/720,.1,1000);
   camera.position.copy(eye);camera.lookAt(eye.clone().add(new THREE.Vector3(0,-.09,1)));camera.updateMatrixWorld();
   for(const y of [0,.5,.9]){

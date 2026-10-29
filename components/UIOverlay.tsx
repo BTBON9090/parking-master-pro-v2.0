@@ -2,7 +2,7 @@ import {HudLayoutEditor} from './HudLayoutEditor';
 import {HudId,HudLayout,resolveHudLayout,hudStyle,isBus} from '../utils/mobileLayout';
 import {pedalFeedback} from '../utils/mobileInput';
 import {ExamPanel} from './ExamPanel';
-import {MobileControls} from './MobileControls';
+import {MobileControls, type MobileSnapshot} from './MobileControls';
 import {useTouchControls} from '../utils/device';
 import {SettingsPage} from './SettingsPage';
 import {DrivingGuide,GUIDE_VERSION} from './DrivingGuide';
@@ -26,6 +26,8 @@ interface UIOverlayProps {
   updateSettings: (s: Partial<UserSettings>) => void;
   inputState: InputState;
   setInputState: React.Dispatch<React.SetStateAction<InputState>>;
+  onTouchInput: (snapshot:MobileSnapshot,immediate:boolean)=>void;
+  readInput: ()=>InputState;
   exitGame: () => void;
   resetLevel: () => void;
   lang: Language;
@@ -223,6 +225,8 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
   updateSettings,
   inputState,
   setInputState,
+  onTouchInput,
+  readInput,
   exitGame,
   resetLevel,
   lang,
@@ -1231,13 +1235,10 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
             const newState = !settings.soundEnabled;
             updateSettings({
               soundEnabled: newState,
-              radarSoundEnabled: newState,
-              engineSoundEnabled: newState,
-              steeringSoundEnabled: newState,
             });
           }}
           aria-label={settings.soundEnabled ? (lang === Language.CN ? '关闭所有声音' : 'Mute All') : (lang === Language.CN ? '开启所有声音' : 'Unmute All')}
-          className="absolute left-4 top-[60px] z-40 w-10 h-10 pointer-events-auto rounded-xl flex items-center justify-center transition-all duration-150 hover:scale-105"
+          className="absolute left-4 top-[60px] z-[49] w-10 h-10 pointer-events-auto rounded-xl flex items-center justify-center transition-all duration-150 hover:scale-105"
           style={{
               background: settings.soundEnabled ? 'rgba(16,185,129,0.18)' : 'rgba(239,68,68,0.22)',
               border: settings.soundEnabled ? '1px solid rgba(16,185,129,0.5)' : '1px solid rgba(239,68,68,0.5)',
@@ -1512,7 +1513,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
       </div>
 
       {/* ===== 设置抽屉（语言 + 按键指南 已迁移至此） ===== */}
-      {touch&&<MobileControls absEnabled={settings.absEnabled} toggleAbs={()=>updateSettings({absEnabled:!settings.absEnabled})} speedKmh={Math.abs(liveCarSpeed)*15} input={inputState} update={setInputState} car={currentCarId} layout={layoutStyle} editing={layoutDraft!==null} disabled={showSettings||showGuide||portrait||layoutDraft!==null} settings={()=>setShowSettings(true)} camera={()=>{const views:CameraView[]=['HOOD','FOLLOW_NEAR','FOLLOW_FAR','TOP','REVERSE'];onCameraViewChange(views[(views.indexOf(cameraView)+1)%views.length]);}} map={()=>setGlobalOverviewOpen(!globalOverviewOpen)} reset={resetLevel}/>}
+      {touch&&<MobileControls absEnabled={settings.absEnabled} toggleAbs={()=>updateSettings({absEnabled:!settings.absEnabled})} speedKmh={Math.abs(liveCarSpeed)*15} input={inputState} update={setInputState} onTouchInput={onTouchInput} readInput={readInput} car={currentCarId} layout={layoutStyle} editing={layoutDraft!==null} disabled={showSettings||showGuide||portrait||layoutDraft!==null} settings={()=>setShowSettings(true)} camera={()=>{const views:CameraView[]=['HOOD','FOLLOW_NEAR','FOLLOW_FAR','TOP','REVERSE'];onCameraViewChange(views[(views.indexOf(cameraView)+1)%views.length]);}} map={()=>setGlobalOverviewOpen(!globalOverviewOpen)} reset={resetLevel}/>}
       {touch&&portrait&&!showSettings&&<div className="rotate-device" role="status"><strong>请横屏驾驶</strong><p>转动手机，展开方向盘和踏板。</p><button onClick={()=>setShowSettings(true)}>打开设置</button></div>}
       {showSettings && <SettingsPage onLayout={editLayout} settings={settings} update={updateSettings} car={currentCarId} level={level} openWorld={!!levelData?.openWorld} onCar={onChangeCar} onMap={onChangeMap} onTravel={onTravel} close={()=>setShowSettings(false)} reset={resetLevel} exit={exitGame} lang={lang} setLang={setLang} capture={captureBinding} bind={setCaptureBinding} guide={()=>{setShowSettings(false);setShowGuide(true);}}/>}
       {layoutDraft!==null && <HudLayoutEditor rects={hudRects} width={hudViewport.w} height={hudViewport.h}
