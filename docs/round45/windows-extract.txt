@@ -1,0 +1,46 @@
+
+7-Zip (z) 24.09 (arm64) : Copyright (c) 1999-2024 Igor Pavlov : 2024-11-28
+ 64-bit arm_v:8.5-A locale=C.UTF-8 Threads:8 OPEN_MAX:1048575, ASM
+
+Scanning the drive for archives:
+1 file, 150247830 bytes (144 MiB)
+
+Extracting archive: release/Parking-Master-Pro-0.29.1-win-x64.exe
+--
+Path = release/Parking-Master-Pro-0.29.1-win-x64.exe
+Type = Nsis
+Physical Size = 150247830
+Method = Deflate
+Solid = -
+Headers Size = 214050
+Embedded Stub Size = 296448
+SubType = NSIS-3 Unicode
+
+Everything is Ok
+
+Files: 10
+Size:       150348289
+Compressed: 150247830
+
+7-Zip (z) 24.09 (arm64) : Copyright (c) 1999-2024 Igor Pavlov : 2024-11-28
+ 64-bit arm_v:8.5-A locale=C.UTF-8 Threads:8 OPEN_MAX:1048575, ASM
+
+Scanning the drive for archives:
+1 file, 149202672 bytes (143 MiB)
+
+Extracting archive: release/win-0291-check/$PLUGINSDIR/app-64.7z
+--
+Path = release/win-0291-check/$PLUGINSDIR/app-64.7z
+Type = 7z
+Physical Size = 149202672
+Headers Size = 1371
+Method = LZMA2:20 BCJ
+Solid = -
+Blocks = 73
+
+Everything is Ok
+
+Folders: 2
+Files: 73
+Size:       465234573
+Compressed: 149202672

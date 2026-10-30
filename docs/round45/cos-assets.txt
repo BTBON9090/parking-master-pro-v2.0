@@ -1,0 +1,6 @@
+Uploaded and verified parking-master/releases/0.29.1/Parking-Master-Pro-0.29.1-mac-arm64.dmg 168318900
+Uploaded and verified parking-master/releases/0.29.1/Parking-Master-Pro-0.29.1-mac-x64.dmg 172569981
+Uploaded and verified parking-master/releases/0.29.1/Parking-Master-Pro-0.29.1-win-x64.exe 150247830
+Uploaded and verified parking-master/releases/0.29.1/Parking-Master-Pro-0.29.1-android.apk 30922974
+Uploaded and verified parking-master/releases/0.29.1/Parking-Master-Pro-0.29.1-iOS-Project.zip 29055976
+Uploaded and verified parking-master/releases/0.29.1/SHA256SUMS.txt 526
