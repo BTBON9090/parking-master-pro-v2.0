@@ -923,7 +923,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       built = prepared?await prepared.promise:await buildScene(staticLevelData, ccCur, currentCarId);
       if(disposed){disposeResources([built.scene,...(built.streamingChunks?.values()??[])]);return;}
       if(prepared){staticLevelData.obstacles=prepared.data.obstacles;}
-      if(currentCarId===CarType.DF41&&!disposed)missile=new MissileShow(built.scene,built.playerCarParts.group,levelData);
+      if(currentCarId===CarType.DF41&&!disposed)missile=new MissileShow(built.scene,built.playerCarParts.group,levelData,kind=>{const ctx=audioContextRef.current,settings=settingsRef.current;if(!ctx||ctx.state==='closed'||!settings.soundEnabled)return;const oscillator=ctx.createOscillator(),gain=ctx.createGain(),now=ctx.currentTime,duration=kind==='deploy'?3:kind==='launch'?2:1.5;oscillator.type=kind==='deploy'?'sawtooth':'triangle';oscillator.frequency.setValueAtTime(kind==='deploy'?75:kind==='launch'?95:65,now);oscillator.frequency.exponentialRampToValueAtTime(kind==='deploy'?110:30,now+duration);gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(Math.max(.0002,settings.volume*(kind==='deploy'?.045:.12)),now+.08);gain.gain.exponentialRampToValueAtTime(.0001,now+duration);oscillator.connect(gain).connect(ctx.destination);oscillator.start(now);oscillator.stop(now+duration);});
       obstaclesRef.current=staticLevelData.obstacles;
       resolutionSampler.reset(performance.now());
       if (disposed) {disposeResources([built.scene,...(built.streamingChunks?.values()??[])]);return;}
@@ -993,7 +993,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       playerBodyRigRoots = [];
       built.playerCarParts.group.traverse((node) => {
         const role = node.userData?.partRole as string | undefined;
-        if (role === 'articulated-trailer' || role === 'door-hinge' || role === 'active-spoiler-pivot' || role === 'steering-wheel-pivot') {
+        if (role === 'articulated-trailer' || role === 'door-hinge' || role === 'active-spoiler-pivot' || role === 'steering-wheel-pivot' || node === missile?.launcher || missile?.legs.includes(node)) {
           playerBodyRigRoots.push(node);
         }
       });
@@ -1094,6 +1094,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         if (!insideRig(node)) playerBodyTiltPivot!.attach(node);
       });
       playerBodyRigRoots.forEach(root => playerBodyTiltPivot!.attach(root));
+      missile?.rebase();
       playerBodyTiltPivot.rotation.order = 'YXZ';
       nativeMirrors=measuredMirrorMounts(built.playerCarParts.group);
 

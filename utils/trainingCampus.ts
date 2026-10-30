@@ -15,7 +15,7 @@ export function buildTrainingCampus(_legacy?:(id:number)=>LevelData):LevelData{
  for(const y of [900,1570,2290])road([[200,y],[4750,y]],90);
  for(const x of [1200,2500,3700])road([[x,330],[x,3150]],90);
  // Distinct practical routes, all open-ended and connected to their aisles.
- road([[2500,900],[2700,720],[2850,850],[3040,640],[3250,820],[3440,680],[3700,900]],48);
+ road([[2500,900],[2650,900],[2800,810],[2950,810],[3100,900],[3250,990],[3400,990],[3550,900],[3700,900]],48);
  road([[3700,900],[4000,900],[4000,1200],[4390,1200],[4390,1570]],52);
  road([[3700,2290],[3970,2110],[4230,2200],[4380,1990],[4110,1800],[3920,1890],[3700,1570]],60);
  road([[1200,1570],[1430,1790],[1620,1690],[1780,1950],[2020,1800],[2220,2040],[2500,2290]],58);
@@ -47,7 +47,7 @@ export function buildTrainingCampus(_legacy?:(id:number)=>LevelData):LevelData{
  task('culvert','涵洞灯光','lowbeam',1450,330,1810,330,'进入涵洞前打开近光，限速 30');
  task('hill','坡道定点停车起步','hill',2155,330,2520,330,'停止 2 秒后起步，溜车超过 0.5 米扣分',20);
  task('signal-left','右转向灯','right',3700,330,3700,640,'先打右转向灯，再进入场内',25);
- task('s-curve','S 形连续曲线','drive',3440,680,2500,900,'保持在白线内，低速通过连续 S 弯',20);
+ task('s-curve','S 形连续曲线','drive',3700,900,2500,900,'保持在白线内，低速通过连续 S 弯',20);
  task('parallel','侧方停车','park',1800,836,1450,900,'在侧方车位内停稳 2 秒',15,0);
  task('reverse-left','左侧倒车入库','reverse',1414,1160,1200,1570,'倒挡进入左侧车位并停稳 2 秒',15,Math.PI/2);
  task('obstacle','交错路障与凸坡','drive',1810,1570,2220,1570,'低速越障，避开锥桶',20);
@@ -64,6 +64,12 @@ export function buildTrainingCampus(_legacy?:(id:number)=>LevelData):LevelData{
  task('uturn','掉头与考试结束','uturn',200,2900,200,2500,'打转向灯，完成约 180 度掉头',20);
  for(const [id,curve] of [['s-curve',7],['right-angle',8],['garage',9],['merge',11]] as const){
   const station=out.exam!.find(s=>s.id===id)!;const r=out.curvedRoads![curve];station.path=mapCurveSamples(r);station.laneWidth=r.width;
+ }
+ // Place each sign clear of every actual curved pavement, including intersections.
+ const sampledRoads=out.curvedRoads!.map(r=>({width:r.width,points:mapCurveSamples(r)}));
+ for(const sign of out.streetSigns!){const origin={x:sign.x,y:sign.y};let placed=false;
+  for(let radius=0;radius<=300&&!placed;radius+=20)for(let k=0;k<16&&!placed;k++){const angle=k*Math.PI/8,x=origin.x+radius*Math.cos(angle),y=origin.y+radius*Math.sin(angle);if(x<25||y<25||x>out.mapWidth-25||y>out.mapHeight-25)continue;
+   if(sampledRoads.every(r=>r.points.every(p=>Math.hypot(x-p.x,y-p.y)>r.width/2+22))){sign.x=x;sign.y=y;placed=true;}}
  }
  for(const station of out.exam!)if(station.kind==='park'||station.kind==='reverse'){station.bayWidth=32;station.bayLength=station.kind==='park'?95:66;}
  for(const [x,y] of [[3200,2290],[1200,1570]])out.markings.push({type:'stop',x,y,width:3,height:75,rotation:0,color:'#f0eadf'});

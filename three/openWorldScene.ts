@@ -1,3 +1,4 @@
+import {splitSpatialMesh} from './spatialMesh';
 import {addMountainAdventure} from './mountainAdventureScene';
 import {cutLiftOpening,MOUNTAIN_LIFT,inMountainLift,mountainAdventureObstacles} from '../utils/mountainAdventure';
 import * as THREE from 'three';
@@ -14,6 +15,11 @@ export function addOpenWorldScene(scene:THREE.Scene,level:LevelData,track:(g:THR
   const g=track(new THREE.BufferGeometry());g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setIndex(indices);
   if(colors)g.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));g.computeVertexNormals();
   const m=new THREE.Mesh(g,material);m.receiveShadow=true;scene.add(m);return m;
+ };
+ // Large merged roads previously spanned the entire map, so all triangles
+ // were submitted for the main view and each mirror even when far away.
+ const chunkedMesh=(positions:number[],indices:number[],material:THREE.Material,name:string,colors?:number[],order=0)=>{
+  for(const chunk of splitSpatialMesh(positions,indices,colors)){const m=mesh(chunk.positions,chunk.indices,material,chunk.colors);m.name=name;m.renderOrder=order;}
  };
  const groundColor=(h:number)=>new THREE.Color('#627455').lerp(new THREE.Color('#a29d85'),Math.min(.55,Math.max(0,(h-2500)/9000)));
  const b=MOUNTAIN_BOUNDS,step=WORLD_TERRAIN_STEP,chunk=24;
@@ -42,7 +48,7 @@ export function addOpenWorldScene(scene:THREE.Scene,level:LevelData,track:(g:THR
    }
   }
  }
- mesh(shoulderP,shoulderI,new THREE.MeshStandardMaterial({vertexColors:true,roughness:1,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-2}),shoulderC).name='MountainShoulder';
+ chunkedMesh(shoulderP,shoulderI,new THREE.MeshStandardMaterial({vertexColors:true,roughness:1,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-2}),'MountainShoulder',shoulderC);
  const paint:{[k:string]:{p:number[];i:number[]}}={white:{p:[],i:[]},yellow:{p:[],i:[]}};
  const asphalt={p:[] as number[],i:[] as number[],c:[] as number[]},gravel={p:[] as number[],i:[] as number[],c:[] as number[]};
  const junctions=WORLD_ROUTES.flatMap(r=>r.closed?[]:[r.samples[0],r.samples.at(-1)!]);
@@ -76,12 +82,10 @@ export function addOpenWorldScene(scene:THREE.Scene,level:LevelData,track:(g:THR
   }
  }
  for(const data of [asphalt,gravel]){
-  const road=mesh(data.p,data.i,new THREE.MeshStandardMaterial({vertexColors:true,roughness:.95,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}),data.c);
-  road.name=data===asphalt?'MountainAsphalt':'CreekGravel';road.renderOrder=2;
+  chunkedMesh(data.p,data.i,new THREE.MeshStandardMaterial({vertexColors:true,roughness:.95,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}),data===asphalt?'MountainAsphalt':'CreekGravel',data.c,2);
  }
  for(const [key,data] of Object.entries(paint)){
-  const decal=mesh(data.p,data.i,new THREE.MeshBasicMaterial({color:key==='white'?'#e3e4d8':'#e9c35c',side:THREE.DoubleSide,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4}));
-  decal.name=`MountainPaint-${key}`;decal.renderOrder=6;
+  chunkedMesh(data.p,data.i,new THREE.MeshBasicMaterial({color:key==='white'?'#e3e4d8':'#e9c35c',side:THREE.DoubleSide,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4}),`MountainPaint-${key}`,undefined,6);
  }
  for(const p of WORLD_PUDDLES){
   const waterY=worldHeight(p.x,p.y)+.45,ps:number[]=[],ids:number[]=[];

@@ -36,7 +36,7 @@ export const WORLD_ROUTES:WorldRoute[]=[
 
  route('new-orbit','环城山脉公路',88,[[42000,29000,1900],[33000,35000,2200],[23000,38000,2500],[10000,34000,2100],[3500,26000,2800],[3000,15000,3200],[10000,6000,2700],[21000,2500,3200],[33000,4500,3400],[39000,13500,3000],[42200,20500,2400]],true),
  route('new-join','北岭联络路',78,[[34200,19500,1880],[34000,17500,2050],[36500,15500,2600],[39000,13500,3000]]),
- route('new-cloud','千米云顶盘山路',65,[[39000,13500,3000],[40500,13000,3300],[43500,13400,3900],[44900,11900,4300],[43800,10500,4700],[41200,11000,5200],[39500,9600,5650],[40000,7900,6000],[42700,7800,6400],[44700,6500,6900],[43300,4800,7500],[40800,5300,7900],[39500,4000,8300],[40200,2600,8800],[42300,3300,9300],[43700,1700,10000]]),
+ route('new-cloud','千米云顶盘山路',65,[[39000,13500,3000],[40500,13000,3300],[43500,13400,3900],[44900,11900,4300],[43800,10500,4700],[41200,11000,5200],[39500,9600,5650],[40000,7900,6000],[42700,7800,6400],[44700,6500,6900],[43300,4800,7500],[40800,5300,7900],[39500,4000,8300],[40200,2600,8800],[42300,3300,9300],[43500,3500,9500],[44500,3000,9620],[44800,2300,9750],[44000,2000,9970],[43700,1700,10000]]),
  route('new-cliff','外崖碎石险道',42,[[10000,34000,2100],[11000,31000,2400],[8500,30500,2550],[9000,28400,2700],[6500,27600,2800],[3500,26000,2800]],false,true),
  route('new-summit-pad','云顶停车坪',240,[[43500,1700,10000],[44200,1700,10000]]),
 ];
@@ -324,6 +324,16 @@ export function addOpenWorld(level:LevelData):LevelData {
   level.streetSigns!.push({x:x-1200,y:y-90,rotation:rot,label:'城市快速路 / 居民区',kind:'street'});
  }
  for(let i=0;i<8;i++)level.spots.push({id:'summit-park-'+i,x:43550+i*42,y:1738,width:34,height:70,rotation:Math.PI/2,occupied:false,elevation:10000});
+ // Gentle urban crests use the shared physical/rendered slope profile.
+ // Keep them between intersections and parking entrances.
+ for(const y of [18206,19748])level.slopeZones!.push({x:21000,y,length:650,width:60,rotation:0,peakHeight:18});
+ // The tunnel now meets the northern city street, away from the garage portal.
+ // Clear the new mouth corridor before adding a continuous paved transition.
+ const tunnelMouth=(p:{x:number;y:number})=>p.x>22900&&p.x<24450&&Math.abs(p.y-18210)<130;
+ level.obstacles=level.obstacles.filter(o=>!tunnelMouth(o));
+ level.curbSegments=level.curbSegments?.filter(c=>!tunnelMouth(c));
+ level.streetSigns=level.streetSigns?.filter(sign=>!tunnelMouth(sign));
+ level.roadSurfaces!.push({x:23675,y:18210,width:1550,height:150,rotation:0,color:'#353539',curbs:false});
  const gateway=WORLD_ROUTES.find(r=>r.id==='gateway')!;
  const blocksGateway=(o:{x:number;y:number;width:number;height:number})=>gateway.samples.filter(p=>p.x<24000).some(p=>Math.abs(o.x-p.x)<o.width/2+85&&Math.abs(o.y-p.y)<o.height/2+85);
  level.obstacles=level.obstacles.filter(o=>o.id.startsWith('mountain-')||!blocksGateway(o));

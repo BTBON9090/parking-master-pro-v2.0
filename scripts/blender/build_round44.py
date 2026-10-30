@@ -5,23 +5,24 @@ import bpy
 from mathutils import Vector
 import build_round30_fleet as f
 b=f.b
-b.OUT_DOCS=os.path.join(b.ROOT,'docs','round44','vehicles');os.makedirs(b.OUT_DOCS,exist_ok=True)
-s=f.spec('CARGO_TRIKE',4.8,1.8,2.3,3.05,.40,(.12,.40,.60),'trike')
-# Reuse the authored three-wheel builder, preserving circular tyres and interior.
-root,w=f.build(s)
-# Raise the opaque lower doors and windscreen base for a commercial cab.
-paint=bpy.data.materials['Paint']
-for side in [-1,1]:
- b.box('CargoDoorLower',(.10,.88,.58),(side*.56,-.76,1.24),paint,bevel=.025,parent=root)
-b.box('CargoWindscreenBase',(1.1,.11,.52),(0,-1.18,1.22),paint,bevel=.025,parent=root)
-# Stamped ribs and upright cargo rails distinguish the working load bed.
-for side in [-1,1]:
- for y in [.15,.85,1.55]:b.box('CargoRail',(.08,.065,.52),(side*.83,y,1.13),paint,parent=root)
- b.box('CargoTopRail',(.09,2.18,.08),(side*.83,1.05,1.42),paint,parent=root)
-b.batch_static_parts(root);b.export_car(s,root)
-cam=b.add_preview(bpy.context.scene,s)
-b.render_preview(bpy.context.scene,s,cam,os.path.join(b.OUT_DOCS,'CARGO_TRIKE.png'),(8,-9,4),(0,0,1),50)
-bpy.ops.wm.save_as_mainfile(filepath=os.path.join(b.OUT_DOCS,'CARGO_TRIKE.blend'))
+b.OUT_DOCS=os.path.join(b.ROOT,'docs','round45','vehicles');os.makedirs(b.OUT_DOCS,exist_ok=True)
+if not os.getenv('DF41_ONLY'):
+ s=f.spec('CARGO_TRIKE',4.8,1.8,2.3,3.05,.40,(.12,.40,.60),'trike')
+ # Reuse the authored three-wheel builder, preserving circular tyres and interior.
+ root,w=f.build(s)
+ # Raise the opaque lower doors and windscreen base for a commercial cab.
+ paint=bpy.data.materials['Paint']
+ for side in [-1,1]:
+  b.box('CargoDoorLower',(.10,.88,.58),(side*.56,-.76,1.24),paint,bevel=.025,parent=root)
+ b.box('CargoWindscreenBase',(1.1,.11,.52),(0,-1.18,1.22),paint,bevel=.025,parent=root)
+ # Stamped ribs and upright cargo rails distinguish the working load bed.
+ for side in [-1,1]:
+  for y in [.15,.85,1.55]:b.box('CargoRail',(.08,.065,.52),(side*.83,y,1.13),paint,parent=root)
+  b.box('CargoTopRail',(.09,2.18,.08),(side*.83,1.05,1.42),paint,parent=root)
+ b.batch_static_parts(root);b.export_car(s,root)
+ cam=b.add_preview(bpy.context.scene,s)
+ b.render_preview(bpy.context.scene,s,cam,os.path.join(b.OUT_DOCS,'CARGO_TRIKE.png'),(8,-9,4),(0,0,1),50)
+ bpy.ops.wm.save_as_mainfile(filepath=os.path.join(b.OUT_DOCS,'CARGO_TRIKE.blend'))
 # TEL: original simple cab, cylindrical transport tube and eight independently named axles.
 b.reset_scene();root=bpy.data.objects.new('CarRoot',None);b.link_object(root)
 s=f.spec('DF41',16.4,3.2,3.8,11.2,.64,(.20,.28,.14),'suv')
@@ -52,19 +53,20 @@ b.box('InteriorInstrumentScreen',(.42,.025,.20),s['instrument_screen'],m['Instru
 for i,y in enumerate([-5.6,-4.0,-2.4,-.8,.8,2.4,4.0,5.6]):
  label=('Front'+(str(i+1) if i else '')) if i<4 else ('Rear'+(str(i-3) if i>4 else ''))
  for side,lr in [(1,'L'),(-1,'R')]:
-  wheel=f.wheel('Wheel'+label+lr,.39,.36,.64,6,m['Rim'],m['Tyre'],m['BrakeDisc'],m['Hub'],(side*1.37,y,.64),root,side)
+  wheel=f.wheel('Wheel'+label+lr,.48,.36,.64,6,m['Rim'],m['Tyre'],m['BrakeDisc'],m['Hub'],(side*1.34,y,.64),root,side)
   # Closed steel wheel faces suit the heavy transporter and save triangles;
   # retain the 24-sided round tyre profile on all sixteen wheels.
   for child in list(wheel.children):
    if '_Spoke' in child.name:bpy.data.objects.remove(child,do_unlink=True)
-  vertices=[(side*.39*.46,.36*.90*math.cos(j*math.tau/16),.36*.90*math.sin(j*math.tau/16)) for j in range(16)]
+  vertices=[(side*.48*.46,.36*.90*math.cos(j*math.tau/16),.36*.90*math.sin(j*math.tau/16)) for j in range(16)]
   b.mesh_object('SteelWheelFace',vertices,[tuple(range(16))],m['Rim'],False,wheel)
-  b.box('Fender',(.46,1.32,.08),(side*1.36,y,1.40),m['Paint'],parent=root)
+  b.box('Fender',(.52,1.32,.08),(side*1.34,y,1.40),m['Paint'],parent=root)
 launcher=bpy.data.objects.new('LauncherPivot',None);b.link_object(launcher);launcher.parent=root;launcher.location=(0,6.4,1.65)
 tube=b.cylinder('TransportTube',.88,11.3,(0,-5.65,.95),m['Paint'],vertices=20,parent=launcher);tube.rotation_euler.x=math.pi/2
 for y in [-1,-3.5,-6,-8.5,-10.5]:
  band=b.cylinder('TubeBand',.93,.12,(0,y,.95),m['BlackTrim'],vertices=20,parent=launcher);band.rotation_euler.x=math.pi/2
 for side in [-1,1]:
+ tank=b.cylinder('SideStorageTank',.26,7.2,(side*1.20,-2.4,2.12),m['BlackTrim'],vertices=16,parent=root);tank.rotation_euler.x=math.pi/2
  for y in [-4.8,6.4]:
   leg=bpy.data.objects.new('Outrigger'+str(side)+str(y),None);b.link_object(leg);leg.parent=root;leg.location=(side*.6,y,1.1);leg['side']=side
   b.box('SupportArm',(.9,.3,.25),(side*.25,0,0),m['Paint'],parent=leg)

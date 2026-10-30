@@ -3,7 +3,7 @@ import {clearRoadBuildings} from '../utils/roadClearance';
 import {fitBuildingToObstacle} from './obstacleVisuals';
 import {assignParkedFleet} from '../utils/fleetParking';
 import {addExamSignals} from './examSignals';
-import {CITY_OFFSET} from '../utils/openWorld';
+import {CITY_OFFSET,mapCurveSamples} from '../utils/openWorld';
 import { garageFloorAt } from '../utils/garage';
 import { addGarageArchitecture } from './garageScene';
 import { addOpenWorldScene } from './openWorldScene';
@@ -1899,9 +1899,10 @@ function isOnRoad(x: number, y: number, levelData: LevelData, clearance = 5): bo
     return Math.hypot(x - (a.x + abx * t), y - (a.y + aby * t));
   };
   for (const curved of levelData.curvedRoads || []) {
-    const count = curved.closed ? curved.points.length : curved.points.length - 1;
+    const points=mapCurveSamples(curved);
+    const count = curved.closed ? points.length : points.length - 1;
     for (let i = 0; i < count; i++) {
-      if (distanceToSegment(curved.points[i], curved.points[(i + 1) % curved.points.length]) <= curved.width / 2 + clearance) return true;
+      if (distanceToSegment(points[i], points[(i + 1) % points.length]) <= curved.width / 2 + clearance) return true;
     }
   }
   return false;

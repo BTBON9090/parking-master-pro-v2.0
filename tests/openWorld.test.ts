@@ -31,7 +31,7 @@ console.log(JSON.stringify({routes:WORLD_ROUTES.length,lengthKm:total/10000,maxG
 
 // Cast against the actual road triangles, including lane edges and junctions.
 const scene=new THREE.Scene();addOpenWorldScene(scene,level,g=>g);scene.updateMatrixWorld(true);
-const roads=[scene.getObjectByName('MountainAsphalt')!,scene.getObjectByName('CreekGravel')!,scene.getObjectByName('mountain-lift-deck')!];
+const roads=[...scene.children.filter(n=>n.name==='MountainAsphalt'||n.name==='CreekGravel'),scene.getObjectByName('mountain-lift-deck')!];
 const ray=new THREE.Raycaster();let maxError=0,maxGravelError=0;
 for(const r of WORLD_ROUTES)for(let i=4;i<r.samples.length;i+=22){
  const p=r.samples[i],prev=r.samples[i-1];
@@ -47,7 +47,7 @@ for(const r of WORLD_ROUTES)for(let i=4;i<r.samples.length;i+=22){
 assert(maxError<.5,`asphalt visual/contact mismatch ${maxError} units`);
 assert(maxGravelError<.8,`gravel visual/contact mismatch ${maxGravelError} units`);
 console.log({maxAsphaltContactErrorCm:maxError*10,maxGravelContactErrorCm:maxGravelError*10});
-const ground=[...roads,scene.getObjectByName('MountainShoulder')!,...scene.children.filter(n=>n.name==='MountainTerrain')];
+const ground=[...roads,...scene.children.filter(n=>n.name==='MountainShoulder'||n.name==='MountainTerrain')];
 let offRoadError=0;
 for(const r of WORLD_ROUTES)for(let i=8;i<r.samples.length;i+=100){
  const p=r.samples[i];

@@ -10,7 +10,7 @@ export function liftSurface(x:number,y:number,hint:number){
  const height=movingLiftHeight??(hint>5000?MOUNTAIN_LIFT.top:MOUNTAIN_LIFT.bottom);
  return Math.abs(height-hint)<35?{height,gradeX:0,gradeY:0}:null;
 }
-const tunnelCurve=new CatmullRomCurve3([[44050,0,1700],[44540,0,1700],[44900,0,2550],[43300,0,3900],[42400,0,6000],[39700,0,6500],[38600,0,9100],[35700,0,10400],[36000,0,12700],[32800,0,14400],[30800,0,13600],[28600,0,15300],[27800,0,17900],[25100,0,18200],[24320,0,19400],[23400,0,19500]].map(p=>new Vector3(...p as [number,number,number])),false,'centripetal');
+const tunnelCurve=new CatmullRomCurve3([[44050,0,1700],[44540,0,1700],[44900,0,2550],[43300,0,3900],[42400,0,6000],[39700,0,6500],[38600,0,9100],[35700,0,10400],[36000,0,12700],[32800,0,14400],[30800,0,13600],[28600,0,15300],[27800,0,17900],[25100,0,18200],[24300,0,18210],[23700,0,18210],[23100,0,18210]].map(p=>new Vector3(...p as [number,number,number])),false,'centripetal');
 export const MOUNTAIN_TUNNEL_WIDTH=150;
 export const MOUNTAIN_TUNNEL=tunnelCurve.getSpacedPoints(Math.ceil(tunnelCurve.getLength()/45)).map((p,i,ps)=>{
  const a=ps[Math.max(0,i-1)],b=ps[Math.min(ps.length-1,i+1)],len=Math.hypot(b.x-a.x,b.z-a.z)||1;
