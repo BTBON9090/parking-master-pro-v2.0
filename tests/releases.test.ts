@@ -67,6 +67,6 @@ for(const online of [false,true]){
  const before=links.map((l:any)=>l.href);
  await vm.runInNewContext(js,{URL,Promise,setTimeout,clearTimeout,fetch:async()=>{if(!online)throw Error('offline');return {ok:true,json:async()=>release};},document:{getElementById:(id:string)=>({status,version,checksums}[id]),querySelectorAll:()=>links}});
  assert.deepEqual(links.map((l:any)=>l.href),before);
- assert(status.textContent.includes(online?'可直接下载':'仍可直接下载'));
+ assert(status.textContent.includes('Android')&&status.textContent.includes(online?'iPhone / iPad 暂无可安装版本':'iOS ZIP 是开发工程'));
 }
 console.log('Release PASS: native-source fallback, bounded requests, trusted APK URLs, static downloads and older-WebView website fallback.');
