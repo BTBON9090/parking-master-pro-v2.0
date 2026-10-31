@@ -5,7 +5,7 @@ const changes=[
  ['发射演出与场景','调整运输车机构、导弹外观和发射演出；支持返回车辆视角，收回支撑后继续驾驶。'],
  ['半挂卡车','优化车头车架、车厢支撑和对接操作，调整脱挂后的驾驶表现。'],
  ['驾驶界面','更新后视镜周围控制、车模雨刮与 500 米路线图；高速提供可调车流难度。'],
- ['爆点反馈','爆点增加碎屑，并对范围内支持破坏的车辆和场景对象产生影响。'],
+ ['爆点反馈','爆点增强火光、浓烟、冲击波和碎屑，并影响范围内支持破坏的车辆及场景对象。'],
 ];
 export function ReleaseNotes(){
  const [open,setOpen]=useState(()=>{try{return localStorage.getItem(RELEASE_SEEN_KEY)!==APP_VERSION;}catch{return true;}});

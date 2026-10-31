@@ -4,7 +4,7 @@ import {sampleTerrainSurface} from '../utils/terrainSampling';
 import {disposeResources} from './disposeResources';
 /** Entirely fictional local-map animation. No real targeting or flight model. */
 export class MissileShow{
- phase='stowed';time=0;target:THREE.Vector3|null=null;origin=new THREE.Vector3();group=new THREE.Group();rocket=new THREE.Group();blast:THREE.Mesh;flame:THREE.Mesh;last='';speed=0;curve:THREE.CubicBezierCurve3|null=null;launcher:THREE.Object3D|undefined;launchBase=new THREE.Quaternion();legs:THREE.Object3D[]=[];cameraFrom=new THREE.Vector3();cameraRotation=new THREE.Quaternion();orbitAzimuth=.7;orbitPolar=.72;orbitDistance=260;lastWarning=-1;cloud=new THREE.Group();shock:THREE.Mesh;drag:{id:number;x:number;y:number}|null=null;smoke=new THREE.Group();launchShock:THREE.Mesh;hydraulics:Array<{base:THREE.Object3D;top:THREE.Object3D;barrel:THREE.Mesh;rod:THREE.Mesh}>=[];
+ phase='stowed';time=0;target:THREE.Vector3|null=null;origin=new THREE.Vector3();group=new THREE.Group();rocket=new THREE.Group();blast:THREE.Mesh;flame:THREE.Mesh;last='';speed=0;curve:THREE.CubicBezierCurve3|null=null;launcher:THREE.Object3D|undefined;launchBase=new THREE.Quaternion();legs:THREE.Object3D[]=[];cameraFrom=new THREE.Vector3();cameraRotation=new THREE.Quaternion();orbitAzimuth=.7;orbitPolar=.72;orbitDistance=260;lastWarning=-1;cloud=new THREE.Group();shock:THREE.Mesh;shockRings:THREE.Mesh[]=[];cloudPuffs:THREE.Mesh[]=[];drag:{id:number;x:number;y:number}|null=null;smoke=new THREE.Group();launchShock:THREE.Mesh;hydraulics:Array<{base:THREE.Object3D;top:THREE.Object3D;barrel:THREE.Mesh;rod:THREE.Mesh}>=[];
  launcherStored=true;retractTime:number|null=null;vehicleView=false;
  get locked(){return !this.launcherStored;}
  constructor(private scene:THREE.Scene,private vehicle:THREE.Group,private level:LevelData,private sound?:(kind:'deploy'|'warning'|'launch'|'impact'|'flight-start'|'flight-stop')=>void,private wheels:THREE.Object3D[]=[]){
@@ -27,10 +27,14 @@ export class MissileShow{
   for(const side of [-1,1]){const base=vehicle.getObjectByName('HydraulicBase'+side),top=vehicle.getObjectByName('HydraulicTop'+side);if(!base||!top)continue;
    const material=new THREE.MeshStandardMaterial({color:'#404940',metalness:.4,roughness:.48});
    const barrel=new THREE.Mesh(new THREE.CylinderGeometry(1.7,1.7,1,12),material),rod=new THREE.Mesh(new THREE.CylinderGeometry(.85,.85,1,12),new THREE.MeshStandardMaterial({color:'#b9c1b7',metalness:.8,roughness:.25}));vehicle.add(barrel,rod);this.hydraulics.push({base,top,barrel,rod});}
-  this.blast=new THREE.Mesh(new THREE.SphereGeometry(1,24,16),new THREE.MeshBasicMaterial({color:'#ffb258',transparent:true,opacity:.85,depthWrite:false}));
-  this.shock=new THREE.Mesh(new THREE.RingGeometry(.94,1,64),new THREE.MeshBasicMaterial({color:'#ffe2ad',transparent:true,opacity:.7,side:THREE.DoubleSide,depthWrite:false}));this.shock.rotation.x=-Math.PI/2;this.cloud.add(this.shock);
-  const smoke=new THREE.MeshStandardMaterial({color:'#a79c95',emissive:'#624b40',emissiveIntensity:.48,roughness:1,transparent:true,opacity:.92});
-  for(let i=0;i<25;i++){const m=new THREE.Mesh(new THREE.IcosahedronGeometry(1,2),smoke);m.userData.part=i<9?'stem':'cap';m.userData.index=i;this.cloud.add(m);}
+  this.blast=new THREE.Mesh(new THREE.SphereGeometry(1,24,16),new THREE.MeshBasicMaterial({color:'#ff8a30',transparent:true,opacity:.85,depthWrite:false,blending:THREE.AdditiveBlending}));
+  // Several staggered expanding bands read as a pressure ripple from either camera.
+  const ringGeometry=new THREE.RingGeometry(.84,1,64);
+  for(let i=0;i<5;i++){const ring=new THREE.Mesh(ringGeometry,new THREE.MeshBasicMaterial({color:i%2?'#e3edf0':'#ffe4b7',transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));ring.rotation.x=-Math.PI/2;ring.position.y=2+i*1.5;this.shockRings.push(ring);this.cloud.add(ring);}
+  this.shock=this.shockRings[0];
+  const smoke=new THREE.MeshStandardMaterial({color:'#716b66',emissive:'#49372e',emissiveIntensity:.4,roughness:1,transparent:true,opacity:.98,depthWrite:true});
+  const puffGeometry=new THREE.IcosahedronGeometry(1,2);
+  for(let i=0;i<57;i++){const m=new THREE.Mesh(puffGeometry,smoke);m.userData.part=i<18?'stem':i<45?'cap':'dust';m.userData.index=i;this.cloudPuffs.push(m);this.cloud.add(m);}
   this.group.add(this.rocket,this.blast,this.cloud);this.rocket.visible=false;this.blast.visible=false;this.cloud.visible=false;scene.add(this.group);window.addEventListener('missile-command',this.command);window.addEventListener('camera-pinch-zoom',this.pinchZoom);window.addEventListener('wheel',this.wheelZoom);window.addEventListener('camera-orbit-change',this.orbitChange);window.addEventListener('pointerdown',this.pointerDown);window.addEventListener('pointermove',this.pointerMove);window.addEventListener('pointerup',this.pointerUp);window.addEventListener('pointercancel',this.pointerUp);
  }
  command=(e:Event)=>{const d=(e as CustomEvent).detail;
@@ -83,9 +87,12 @@ export class MissileShow{
    this.launchShock.scale.setScalar(12+age*32);(this.launchShock.material as THREE.MeshBasicMaterial).opacity=Math.max(0,.55-age*.14);if(age>10)this.smoke.visible=false;
   }
   if(this.phase==='impact'){
-   const t=this.time,growth=Math.min(1,t/6);this.blast.scale.setScalar(20+Math.min(t,2)*105);(this.blast.material as THREE.MeshBasicMaterial).opacity=Math.max(0,.85-t*.45);
-   this.shock.scale.setScalar(20+t*85);(this.shock.material as THREE.MeshBasicMaterial).opacity=Math.max(0,.65-t*.12);
-   this.cloud.children.slice(1).forEach(n=>{const i=n.userData.index as number,stem=n.userData.part==='stem',angle=i*2.399,ring=stem?25+(i%3)*12:65+(i%4)*22,height=stem?22+i*35:270+(i%4)*20;n.position.set(Math.cos(angle)*ring*growth,height*growth,Math.sin(angle)*ring*growth);n.scale.setScalar((stem?48:85)*Math.max(.01,growth));});
+   const t=this.time,growth=Math.min(1,t/5),fade=1-THREE.MathUtils.smoothstep(t,7,10);
+   // Keep a hot core and fire-lit cloud visible for most of the impact sequence.
+   this.blast.scale.setScalar((35+Math.min(t,2)*95)*(1+.035*Math.sin(t*11)));(this.blast.material as THREE.MeshBasicMaterial).opacity=(.58+.08*Math.sin(t*13))*fade;
+   this.shockRings.forEach((ring,i)=>{const age=t-i*.42,active=age>=0;ring.visible=active;ring.scale.setScalar(35+Math.max(0,age)*105);(ring.material as THREE.MeshBasicMaterial).opacity=active?.65*Math.exp(-age*.32)*fade:0;});
+   (this.cloudPuffs[0].material as THREE.MeshStandardMaterial).opacity=.98*fade;
+   this.cloudPuffs.forEach(n=>{const i=n.userData.index as number,part=n.userData.part as string,stem=part==='stem',dust=part==='dust',angle=i*2.399,ring=stem?20+(i%4)*13:dust?120+(i%4)*35:45+(i%5)*23,height=stem?20+(i%9)*30:dust?15+(i%3)*15:245+(i%5)*24;n.position.set(Math.cos(angle)*ring*growth,height*growth,Math.sin(angle)*ring*growth);n.scale.setScalar((stem?58:dust?75:92)*Math.max(.01,growth));});
    if(t>=10){this.blast.visible=false;this.cloud.visible=false;this.phase=this.launcherStored?'stowed':'spent';this.time=0;if(this.launcherStored)this.target=null;}
   }
   if(!this.vehicleView&&!['stowed','spent'].includes(this.phase)){
