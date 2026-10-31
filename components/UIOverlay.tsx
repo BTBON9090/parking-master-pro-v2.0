@@ -1,4 +1,6 @@
 import {DriverSeatControls} from './DriverSeatControls';
+import {createPortal} from 'react-dom';
+import {clampMapView,mapPointToWorld,mapZoomAt,MapView} from '../utils/overviewMap';
 import {TrailerControls} from './TrailerControls';
 import {HighwayNotice} from './HighwayNotice';
 import {MissilePanel} from './MissilePanel';
@@ -258,6 +260,20 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
   setGlobalOverviewOpen,
   completedSpots,
 }) => {
+  const [targetMode,setTargetMode]=useState(false);
+  const [mapTarget,setMapTarget]=useState<{x:number;y:number}|null>(null);
+  const [overviewView,setOverviewView]=useState<MapView>({zoom:1,x:0,y:0});
+  const overviewViewRef=useRef(overviewView);
+  const mapPointers=useRef(new globalThis.Map<number,{x:number;y:number}>());
+  const mapGesture=useRef<{moved:boolean; start:{x:number;y:number}; last:{x:number;y:number}; distance:number; multi:boolean}|null>(null);
+  const updateOverview=(v:MapView)=>{overviewViewRef.current=v;setOverviewView(v);};
+  useEffect(()=>{const open=()=>{setTargetMode(true);setMapTarget(null);updateOverview({zoom:1,x:0,y:0});setGlobalOverviewOpen(true);};window.addEventListener('missile-map-open',open);return()=>window.removeEventListener('missile-map-open',open);},[setGlobalOverviewOpen]);
+  useEffect(()=>{if(!globalOverviewOpen){setTargetMode(false);setMapTarget(null);mapPointers.current.clear();mapGesture.current=null;}},[globalOverviewOpen]);
+  useEffect(()=>{setTargetMode(false);setMapTarget(null);},[levelData]);
+  const mapPosition=(e:React.PointerEvent<HTMLCanvasElement>)=>{const r=e.currentTarget.getBoundingClientRect();return {x:(e.clientX-r.left)*720/r.width,y:(e.clientY-r.top)*450/r.height};};
+  const onMapPointerDown=(e:React.PointerEvent<HTMLCanvasElement>)=>{e.preventDefault();e.stopPropagation();e.currentTarget.setPointerCapture(e.pointerId);const p=mapPosition(e);mapPointers.current.set(e.pointerId,p);const points=[...mapPointers.current.values()];if(points.length===1)mapGesture.current={start:p,last:p,distance:0,moved:false,multi:false};else if(points.length===2&&mapGesture.current){mapGesture.current.multi=true;mapGesture.current.moved=true;mapGesture.current.last={x:(points[0].x+points[1].x)/2,y:(points[0].y+points[1].y)/2};mapGesture.current.distance=Math.hypot(points[0].x-points[1].x,points[0].y-points[1].y);}};
+  const onMapPointerMove=(e:React.PointerEvent<HTMLCanvasElement>)=>{if(!mapPointers.current.has(e.pointerId))return;e.preventDefault();e.stopPropagation();const p=mapPosition(e);mapPointers.current.set(e.pointerId,p);const g=mapGesture.current,points=[...mapPointers.current.values()];if(!g)return;if(points.length>=2){const mid={x:(points[0].x+points[1].x)/2,y:(points[0].y+points[1].y)/2},distance=Math.hypot(points[0].x-points[1].x,points[0].y-points[1].y);let v=mapZoomAt(overviewViewRef.current,overviewViewRef.current.zoom*(distance/Math.max(1,g.distance)),g.last);v=clampMapView({...v,x:v.x+mid.x-g.last.x,y:v.y+mid.y-g.last.y});updateOverview(v);g.last=mid;g.distance=distance;g.moved=true;g.multi=true;}else{if(Math.hypot(p.x-g.start.x,p.y-g.start.y)>7)g.moved=true;if(g.moved){const v=overviewViewRef.current;updateOverview(clampMapView({...v,x:v.x+p.x-g.last.x,y:v.y+p.y-g.last.y}));}g.last=p;}};
+  const onMapPointerUp=(e:React.PointerEvent<HTMLCanvasElement>)=>{if(!mapPointers.current.has(e.pointerId))return;e.preventDefault();e.stopPropagation();const p=mapPosition(e),g=mapGesture.current;mapPointers.current.delete(e.pointerId);if(!mapPointers.current.size){if(targetMode&&g&&!g.moved&&!g.multi&&levelData){const cache=globalMapCacheRef.current;if(cache){const result=mapPointToWorld(p,overviewViewRef.current,{scale:Number(cache.dataset.mapScale),offsetX:Number(cache.dataset.mapOffsetX),offsetY:Number(cache.dataset.mapOffsetY),viewY:Number(cache.dataset.mapViewY)}, {width:levelData.mapWidth,height:levelData.mapHeight});if(result)setMapTarget(result);}}mapGesture.current=null;}else if(g){const remaining=[...mapPointers.current.values()];if(remaining.length>=2){g.last={x:(remaining[0].x+remaining[1].x)/2,y:(remaining[0].y+remaining[1].y)/2};g.distance=Math.hypot(remaining[0].x-remaining[1].x,remaining[0].y-remaining[1].y);g.multi=true;}else{g.last=remaining[0];g.start=remaining[0];}g.moved=true;}};
   const touch=useTouchControls();
   const [portrait,setPortrait]=useState(()=>window.innerHeight>window.innerWidth);
   useEffect(()=>{const resize=()=>setPortrait(window.innerHeight>window.innerWidth);window.addEventListener('resize',resize);return()=>window.removeEventListener('resize',resize);},[]);
@@ -727,6 +743,8 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
       const cache = globalMapCacheRef.current;
       const context = target?.getContext('2d');
       if (!target || !cache || !context) return;
+      context.setTransform(1,0,0,1,0,0); context.clearRect(0,0,720,450);
+      context.save();context.translate(360+overviewView.x,225+overviewView.y);context.scale(overviewView.zoom,overviewView.zoom);context.translate(-360,-225);
       context.drawImage(cache, 0, 0);
       const scale = Number(cache.dataset.mapScale || 1);
       const offsetX = Number(cache.dataset.mapOffsetX || 0);
@@ -753,7 +771,9 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
       context.closePath();
       context.fill();
       context.restore();
-  }, [globalOverviewCanvasRef, globalOverviewOpen, levelData, mapCarPose]);
+      if(mapTarget){context.save();context.translate(offsetX+mapTarget.x*scale,offsetY+(mapTarget.y-viewY)*scale);context.strokeStyle='#ffaf38';context.lineWidth=3/overviewView.zoom;context.beginPath();context.arc(0,0,10/overviewView.zoom,0,Math.PI*2);context.moveTo(-16/overviewView.zoom,0);context.lineTo(16/overviewView.zoom,0);context.moveTo(0,-16/overviewView.zoom);context.lineTo(0,16/overviewView.zoom);context.stroke();context.restore();}
+      context.restore();
+  }, [globalOverviewCanvasRef, globalOverviewOpen, levelData, mapCarPose,overviewView,mapTarget]);
 
   useEffect(() => {
       let hideTimer: number | undefined;
@@ -1370,47 +1390,20 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                   </>}
               </div>
 
-              {/* 720×450 = 小俯瞰 240×150 的三倍尺寸。 */}
-              <section
-                  aria-label={lang === Language.CN ? '全局俯瞰地图' : 'Global overhead map'}
-                  className="absolute left-4 top-[104px] z-50 w-[720px] h-[500px] pointer-events-auto overflow-hidden rounded-2xl transition-all duration-200"
-                  style={{
-                      opacity: globalOverviewOpen ? 1 : 0,
-                      transform: globalOverviewOpen ? 'scale(1)' : 'scale(0.94)',
-                      transformOrigin: 'top left',
-                      pointerEvents: globalOverviewOpen ? 'auto' : 'none',
-                      background: '#070b10',
-                      border: '1px solid rgba(245,158,11,0.48)',
-                      boxShadow: '0 24px 70px rgba(0,0,0,0.72), 0 0 26px rgba(245,158,11,0.12)',
-                  }}
-              >
-                  <header className="h-[50px] px-4 flex items-center justify-between"
-                          style={{ background: 'rgba(16,18,22,0.94)', borderBottom: '1px solid rgba(255,255,255,0.09)' }}>
-                      <div className="flex items-center gap-3">
-                          <span className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'var(--amber)', color: '#101216' }}>
-                              <LocateFixed size={16} />
-                          </span>
-                          <div>
-                              <h3 className="text-[12px] font-black tracking-[0.16em]" style={{ color: 'var(--text)' }}>
-                                  {lang === Language.CN ? '全局俯瞰地图' : 'GLOBAL OVERHEAD MAP'}
-                              </h3>
-                              <p className="mono text-[8px] tracking-[0.14em] mt-0.5" style={{ color: 'var(--text-mute)' }}>
-                                  {lang === Language.CN ? '青色圆环与白色箭头为本车位置及朝向' : 'CYAN RING + WHITE ARROW = CURRENT VEHICLE'}
-                              </p>
-                          </div>
-                      </div>
-                      <button type="button" onClick={() => setGlobalOverviewOpen(false)} aria-label={lang === Language.CN ? '关闭全局俯瞰地图' : 'Close global overhead map'}
-                              className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors hover:bg-white/10"
-                              style={{ color: 'var(--text-dim)', border: '1px solid rgba(255,255,255,0.10)' }}>
-                          <X size={17} />
-                      </button>
-                  </header>
-                  <canvas ref={globalOverviewCanvasRef} width={720} height={450} className="block w-[720px] h-[450px]" />
-                  <div className="absolute left-4 bottom-4 mono text-[9px] px-3 py-1.5 rounded-full"
-                       style={{ background: 'rgba(5,8,12,0.78)', color: '#67e8f9', border: '1px solid rgba(34,211,238,0.32)' }}>
-                      X {Math.round(mapCarPose.x)} · Y {Math.round(mapCarPose.y)}
-                  </div>
-              </section>
+              {createPortal(<section aria-label={lang === Language.CN ? '全局俯瞰地图' : 'Global overhead map'} data-ui-control
+                  className="fixed pointer-events-auto overflow-hidden rounded-2xl" style={{zIndex:9999,left:'50%',top:'50%',transform:'translate(-50%,-50%)',width:'min(720px, calc(100vw - 24px), calc(160vh - 192px))',maxHeight:'calc(100vh - 24px)',display:globalOverviewOpen?'flex':'none',flexDirection:'column',background:'#070b10',border:'1px solid rgba(245,158,11,.48)',boxShadow:'0 24px 70px rgba(0,0,0,.72)'}}>
+                <header className="px-3 flex items-center justify-between" style={{minHeight:42,background:'#101216',color:'var(--text)'}}>
+                  <div><strong>{targetMode?'选择发射目标':'全局俯瞰地图'}</strong><small style={{display:'block',fontSize:10,color:'#aab8c6'}}>{targetMode?'点击选点，双指缩放或拖动地图':'双指缩放或拖动地图'}</small></div>
+                  <button type="button" onClick={()=>setGlobalOverviewOpen(false)} aria-label="关闭全局俯瞰地图" style={{padding:10}}><X size={17}/></button>
+                </header>
+                <canvas ref={globalOverviewCanvasRef} width={720} height={450} aria-label={targetMode?'点击地图选择发射目标':'全局俯瞰地图画布'} onPointerDown={onMapPointerDown} onPointerMove={onMapPointerMove} onPointerUp={onMapPointerUp} onPointerCancel={()=>{mapPointers.current.clear();mapGesture.current=null;}} onWheel={e=>{e.preventDefault();e.stopPropagation();const r=e.currentTarget.getBoundingClientRect();updateOverview(mapZoomAt(overviewViewRef.current,overviewViewRef.current.zoom*(e.deltaY<0?1.2:1/1.2),{x:(e.clientX-r.left)*720/r.width,y:(e.clientY-r.top)*450/r.height}));}} style={{display:'block',width:'100%',height:'auto',aspectRatio:'720 / 450',touchAction:'none',cursor:targetMode?'crosshair':'grab'}} />
+                <footer style={{minHeight:44,display:'flex',alignItems:'center',gap:8,padding:'5px 10px',color:'#dbeafe',fontSize:11}}>
+                  <button type="button" aria-label="缩小地图" onClick={()=>updateOverview(mapZoomAt(overviewViewRef.current,overviewViewRef.current.zoom/1.4,{x:360,y:225}))} style={{padding:'5px 10px',background:'#26313c',borderRadius:5}}>−</button>
+                  <span>{overviewView.zoom.toFixed(1)}×</span><button type="button" aria-label="放大地图" onClick={()=>updateOverview(mapZoomAt(overviewViewRef.current,overviewViewRef.current.zoom*1.4,{x:360,y:225}))} style={{padding:'5px 10px',background:'#26313c',borderRadius:5}}>＋</button>
+                  <span style={{flex:1}}>{targetMode?(mapTarget?`目标 X ${Math.round(mapTarget.x)} · Y ${Math.round(mapTarget.y)}`:'请点选目标'): `本车 X ${Math.round(mapCarPose.x)} · Y ${Math.round(mapCarPose.y)}`}</span>
+                  {targetMode&&<button type="button" disabled={!mapTarget} onClick={()=>{if(!mapTarget)return;window.dispatchEvent(new CustomEvent('missile-command',{detail:{action:'target',...mapTarget}}));window.dispatchEvent(new CustomEvent('missile-map-confirm',{detail:mapTarget}));setGlobalOverviewOpen(false);}} style={{padding:'7px 12px',background:mapTarget?'#f59e0b':'#49515a',color:'#101216',borderRadius:5}}>确认目标</button>}
+                </footer>
+              </section>,document.body)}
           </>
       )}
 
@@ -1423,16 +1416,6 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
       {levelData?.training && !levelData.exam && (
           <div className="hud-tips absolute top-[368px] right-4 z-30 flex flex-col items-end gap-1.5 pointer-events-auto"
                style={{ maxWidth: 'calc(100vw - 2rem)' }}>
-              {levelData.levelId === 1 && (
-                  <button type="button" disabled={Math.abs(liveCarSpeed) > 0.2}
-                          onClick={() => window.dispatchEvent(new CustomEvent('terrain-teleport'))}
-                          className="mono text-[9px] font-bold tracking-[0.12em] px-2.5 py-1.5 rounded-md disabled:opacity-60"
-                          style={{ background: 'rgba(8,12,16,0.88)', color: 'var(--amber)', border: '1px solid rgba(245,158,11,0.45)' }}>
-                      {Math.abs(liveCarSpeed) > 0.2
-                        ? (lang === Language.CN ? '停稳后进入非铺装' : 'STOP TO ENTER OFF-ROAD')
-                        : (lang === Language.CN ? '非铺装训练入口' : 'OFF-ROAD ENTRY')}
-                  </button>
-              )}
               <div className="training-hint-text"><strong>{levelData.training.title}</strong>{levelData.training.tips.map(t=><p key={t}>{t}</p>)}</div>
           </div>
       )}

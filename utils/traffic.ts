@@ -5,6 +5,7 @@ import { TRAVEL_PER_SPEED_FRAME } from './powertrain';
 export const MAX_ACTIVE_TRAFFIC = 48;
 export type TrafficDifficulty='easy'|'normal'|'hard'|'extreme';
 export const trafficLimit=(difficulty:TrafficDifficulty|undefined)=>({easy:8,normal:16,hard:32,extreme:48}[difficulty??'normal']??16);
+export const trafficLaneBoundary=(id:string)=>/^(motorway-rail-|tunnel-(wall|roof)-|highway-boundary-)/.test(id);
 export const NPC_TURN_RATE = 1.7;
 export const NPC_COLLISION_RECOVERY_MS = 1200;
 export const NPC_HONK_COOLDOWN_MS = 8500;
@@ -15,6 +16,8 @@ export interface TrafficBlocker {
   y: number;
   width: number;
   height: number;
+  type?: string;
+  rotation?: number;
 }
 
 export interface TrafficStepInput {
@@ -50,6 +53,14 @@ const wrapAngle = (angle: number) => {
 };
 
 const circleRadius = (width: number, height: number) => Math.hypot(width, height) * 0.40;
+/** Distance to an oriented wall footprint. A 200-unit guardrail is not a
+ * 200-unit-wide car: its long edge normally runs parallel to the lane. */
+function wallDistance(b:TrafficBlocker,x:number,y:number){
+ const angle=b.rotation??0,c=Math.cos(angle),s=Math.sin(angle),dx=x-b.x,dy=y-b.y;
+ const lx=dx*c+dy*s,ly=-dx*s+dy*c;
+ const qx=Math.max(-b.width/2,Math.min(b.width/2,lx)),qy=Math.max(-b.height/2,Math.min(b.height/2,ly));
+ return Math.hypot(lx-qx,ly-qy);
+}
 
 /**
  * One kinematic traffic update. NPCs follow their authored lane path, brake
@@ -74,9 +85,10 @@ export function stepTrafficVehicle(input: TrafficStepInput): TrafficStepResult {
   if(ai.lanePaths&&(ai.blockedFor??0)>(ai.aggressive?.35:.7)&&input.nowMs-(ai.lastLaneChange??-Infinity)>(ai.aggressive?3500:10000)){
     for(const change of [-1,1]){
       const lane=(ai.laneIndex??0)+change;if(lane<0||lane>3)continue;
-      const next=ai.lanePaths[lane],p=next[currentPathIndex%next.length];
-      const clear=input.blockers.every(b=>Math.hypot(b.x-p.x,b.y-p.y)>(ai.aggressive?140:220));
-      if(clear){ai.path=next;path=next;ai.laneIndex=lane;ai.lastLaneChange=input.nowMs;ai.blockedFor=0;break;}
+      const next=ai.lanePaths[lane],p=next[currentPathIndex%next.length],old=path[currentPathIndex%path.length];
+      const candidate={x:input.x+p.x-old.x,y:input.y+p.y-old.y};
+      const clear=input.blockers.every(b=>b.type==='wall'?wallDistance(b,candidate.x,candidate.y)>15:Math.hypot(b.x-candidate.x,b.y-candidate.y)>(ai.aggressive?140:220));
+      if(clear){ai.path=next;path=next;ai.laneIndex=lane;if(ai.laneSpeeds?.[lane]!=null)ai.maxSpeed=ai.laneSpeeds[lane];ai.lastLaneChange=input.nowMs;ai.blockedFor=0;break;}
     }
   }
   if(ai.incidentAt&&input.nowMs>ai.incidentAt){ai.incidentUntil=input.nowMs+12000;ai.incidentAt=undefined;ai.collisionCooldownUntil=input.nowMs+5000;}
@@ -111,6 +123,12 @@ export function stepTrafficVehicle(input: TrafficStepInput): TrafficStepResult {
       if (distance > lookAhead + Math.max(blocker.width, blocker.height) * 0.5) continue;
       const ahead = bx * forwardX + by * forwardY;
       const lateral = -bx * forwardY + by * forwardX;
+      if(blocker.type==='wall'){
+        const a=(blocker.rotation??0)-rotation,c=Math.abs(Math.cos(a)),s=Math.abs(Math.sin(a));
+        const along=c*blocker.width/2+s*blocker.height/2,across=s*blocker.width/2+c*blocker.height/2;
+        if(ahead+along>4&&ahead-along<lookAhead&&Math.abs(lateral)<11+across){blocked=true;targetSpeed=0;break;}
+        continue;
+      }
       const corridor = ai.lanePaths?18+blocker.width*.4:24+blocker.width*.45;
       if (ahead > 4 && Math.abs(lateral) < corridor && distance < lookAhead) {
         blocked = true;
@@ -140,6 +158,9 @@ export function stepTrafficVehicle(input: TrafficStepInput): TrafficStepResult {
     // long-range stop decision, so a waiting NPC cannot be "kicked" remotely.
     for (const blocker of input.blockers) {
       if (blocker.id === input.id) continue;
+      // Walls are handled by the lane corridor above; treating a long thin
+      // barrier as a circumscribed circle pushes traffic sideways into it.
+      if(blocker.type==='wall')continue;
       const bx = x - blocker.x;
       const by = y - blocker.y;
       const distance = Math.hypot(bx, by);

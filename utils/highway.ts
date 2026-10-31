@@ -95,8 +95,8 @@ export function buildHighway():LevelData{
   // alternating directions keep cars on their own carriageway.
   const spawnIndex=points.reduce((best,p,i)=>Math.hypot(p.x-out.startPos.x,p.y-out.startPos.y)<Math.hypot(points[best].x-out.startPos.x,points[best].y-out.startPos.y)?i:best,0);
   const rank=Math.floor(n/8),index=(spawnIndex+[4,12,6,8,10,14][rank])%points.length,p=points[index],q=points[(index+1)%points.length];
-  const maxSpeed=[115,105,95,85][lane%4]/15;
-  const ai:NonNullable<Obstacle['ai']>={path:points,currentPathIndex:(index+1)%points.length,speed:maxSpeed,maxSpeed,state:'drive',laneIndex:lane%4,lanePaths:lanePaths.slice(lane<4?0:4,lane<4?4:8),incidentAt:n===3?240000:undefined};
+  const maxSpeed=[110,100,90,80][lane%4]/15;
+  const ai:NonNullable<Obstacle['ai']>={path:points,currentPathIndex:(index+1)%points.length,speed:maxSpeed,maxSpeed,state:'drive',laneIndex:lane%4,lanePaths:lanePaths.slice(lane<4?0:4,lane<4?4:8),laneSpeeds:[110,100,90,80].map(kmh=>kmh/15),incidentAt:n===3?240000:undefined};
   out.obstacles.push({id:'highway-traffic-'+n,...p,width:19,height:46,rotation:Math.atan2(q.y-p.y,q.x-p.x),type:'car',movable:true,weight:1350+n%4*180,color:['#bdb8a9','#557487','#95766a','#727f67'][n%4],ai});
  }
  for(const [x,y,w,h] of [[15000,0,30000,10],[15000,14000,30000,10],[0,7000,10,14000],[30000,7000,10,14000]])box('highway-boundary-'+x+'-'+y,x,y,w,h,30);

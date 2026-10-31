@@ -2,10 +2,10 @@ import React,{useEffect,useRef,useState} from 'react';
 import {APP_VERSION} from '../utils/releases';
 export const RELEASE_SEEN_KEY='parking-master-release-seen';
 const changes=[
- ['发射演出与场景','调整运输车机构、导弹外观和发射演出；支持返回车辆视角，收回支撑后继续驾驶。'],
- ['半挂卡车','优化车头车架、车厢支撑和对接操作，调整脱挂后的驾驶表现。'],
- ['驾驶界面','更新后视镜周围控制、车模雨刮与 500 米路线图；高速提供可调车流难度。'],
- ['爆点反馈','爆点增强火光、浓烟、冲击波和碎屑，并影响范围内支持破坏的车辆及场景对象。'],
+ ['高速车流','修复护栏导致车辆停驶；调整主线车道目标速度和变道判断。'],
+ ['驾驶流畅度','减少隐藏画面的重复渲染，优化触屏自动画质下的后视镜与阴影。'],
+ ['驾驶声音','转向灯增加提示音；发射和爆炸演出使用实录剪辑。'],
+ ['地图选点','在全局俯瞰地图缩放、选择并确认发射目标。'],
 ];
 export function ReleaseNotes(){
  const [open,setOpen]=useState(()=>{try{return localStorage.getItem(RELEASE_SEEN_KEY)!==APP_VERSION;}catch{return true;}});

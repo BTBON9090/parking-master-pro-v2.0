@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {clampMapView,mapPointToWorld,mapZoomAt,MAP_W,MAP_H} from '../utils/overviewMap';
+const close=(a:number,b:number)=>assert(Math.abs(a-b)<1e-9,`${a} != ${b}`);
+const start={zoom:2,x:20,y:-30}, anchor={x:400,y:180};
+const base=(p:{x:number;y:number},v:typeof start)=>({x:(p.x-MAP_W/2-v.x)/v.zoom+MAP_W/2,y:(p.y-MAP_H/2-v.y)/v.zoom+MAP_H/2});
+const before=base(anchor,start), zoomed=mapZoomAt(start,3,anchor), after=base(anchor,zoomed);
+close(before.x,after.x);close(before.y,after.y);
+const minimum=clampMapView({zoom:0,x:999,y:-999});assert.equal(minimum.zoom,1);close(minimum.x,0);close(minimum.y,0);
+assert.deepEqual(clampMapView({zoom:100,x:1e6,y:-1e6}),{zoom:8,x:2520,y:-1575});
+const metadata={scale:.2,offsetX:30,offsetY:20,viewY:150};
+const world={width:3000,height:2000}, expected={x:1200,y:700};
+const logical={x:metadata.offsetX+expected.x*metadata.scale,y:metadata.offsetY+(expected.y-metadata.viewY)*metadata.scale};
+const point={x:MAP_W/2+zoomed.x+(logical.x-MAP_W/2)*zoomed.zoom,y:MAP_H/2+zoomed.y+(logical.y-MAP_H/2)*zoomed.zoom};
+const actual=mapPointToWorld(point,zoomed,metadata,world)!;close(actual.x,expected.x);close(actual.y,expected.y);
+const panned=clampMapView({...zoomed,x:zoomed.x+60,y:zoomed.y-35});const movedPoint={x:point.x+(panned.x-zoomed.x),y:point.y+(panned.y-zoomed.y)};const pannedWorld=mapPointToWorld(movedPoint,panned,metadata,world)!;close(pannedWorld.x,expected.x);close(pannedWorld.y,expected.y);
+assert.equal(mapPointToWorld({x:-10000,y:-10000},start,metadata,world),null);
+console.log('Overview map PASS: anchored zoom, limits, inverse world coordinates and out-of-bounds points');

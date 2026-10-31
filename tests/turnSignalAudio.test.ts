@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {TurnSignalClock,playTurnSignalClick} from '../utils/turnSignalAudio';
+const c=new TurnSignalClock();
+assert.equal(c.step(false,true),null);assert.equal(c.step(true,true),'on');
+for(let i=0;i<40;i++)assert.equal(c.step(true,true),null,'no frame-rate dependent repeat');
+assert.equal(c.step(true,false),'off');assert.equal(c.step(true,false),null);assert.equal(c.step(true,true),'on');
+assert.equal(c.step(false,true),null);assert.equal(c.step(true,false),null);assert.equal(c.step(true,true),'on');
+let created=0,stopped=0,disconnected=0;
+const param={setValueAtTime(){},exponentialRampToValueAtTime(){}};
+const ctx={state:'running',currentTime:0,destination:{},createOscillator(){created++;return {type:'',frequency:param,onended:null,connect(){},start(){},stop(){stopped++},disconnect(){disconnected++}}},createGain(){return {gain:param,connect(){},disconnect(){disconnected++}}}} as unknown as AudioContext;
+playTurnSignalClick(ctx,'on',0);assert.equal(created,0,'silent volume creates no nodes');playTurnSignalClick(ctx,'off',.8);assert.equal(created,1);assert.equal(stopped,1,'click stops itself');
+console.log('Turn signal PASS: blink-synchronised edges, cancellation and bounded audio');

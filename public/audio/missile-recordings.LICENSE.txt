@@ -1,0 +1,14 @@
+MISSILE EFFECTS — RECORDING CREDITS
+
+missile-launch.wav and missile-flight.wav
+Source: NASA, "Discovery STS-131: Sound of Launch", NASA Historical Sounds
+https://www.nasa.gov/historical-sounds/
+Original: https://www.nasa.gov/wp-content/uploads/2015/01/590189main_ringtone_131_launchNats.mp3
+These files are edited portions of the NASA launch recording. The flight loop has a cross-faded seam. NASA media guidelines: https://www.nasa.gov/nasa-brand-center/images-and-media/
+This game is not endorsed by NASA. The source is a space shuttle recording, used as a sound-design substitute, not a recording of the depicted vehicle.
+
+missile-impact.wav
+Source: sidohzen, "Explosion with debris - authentic. 4kg TNT", Freesound sound 165808
+https://freesound.org/people/sidohzen/sounds/165808/
+License: CC0 1.0 Universal, https://creativecommons.org/publicdomain/zero/1.0/
+Derived from the publicly available high-quality MP3 preview, edited to remove pre-impact audio and fade the tail. This is a real controlled landmine demolition recording, not a nuclear explosion recording.

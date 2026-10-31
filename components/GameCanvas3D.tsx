@@ -10,6 +10,7 @@ import {HintSlot} from './DrivingHints';
 import {inCity, WORLD_ROUTES, mapCurveSamples} from '../utils/openWorld';
 import {MOUNTAIN_LIFT,MOUNTAIN_TUNNEL,inMountainLift,setMountainLiftHeight,mountainTunnelSample} from '../utils/mountainAdventure';
 import {AudioPlaybackGate} from '../utils/audioPlaybackGate';
+import {TurnSignalClock,playTurnSignalClick} from '../utils/turnSignalAudio';
 import {experimentalContactsFromSamples,experimentalDriveEnabled,type WheelSample} from '../utils/experimentalContactBridge';
 import {stepExperimentalFrames,type ExperimentalContacts} from '../utils/experimentalDrivetrain';
 import {isDrivenWheel,stepAirborneWheelSpin,trackedYawRate,wheelGroundedFromTelemetry} from '../utils/wheelSpin';
@@ -80,9 +81,10 @@ import { ORBIT_POLAR_MAX, ORBIT_POLAR_MIN, stepOrbitDrag, followRelativeCoordina
 import { suspensionForCar } from '../utils/suspension';
 import { resolveCurbMotion, sampleWheelSupport, nearbyWheelCurbs, curbTripRollover, type WheelShape } from '../utils/wheelObstacles';
 import { disposeRecordingAudio, getRecordingAudioStatus, initRecordingAudio, playRecordingImpact, setRecordingAudioFocus, setRecordingAudioPaused, setRecordingAudioVisibility, updateRecordingAudio } from '../utils/recordingAudio';
+import {MissileRecordingAudio} from '../utils/missileRecordingAudio';
 import { buildCollisionGrid, queryCollisionGrid } from '../utils/collisionSpatial';
 import {VehicleCollisionQuery} from '../utils/vehicleCollisionQuery';
-import { isGravelSurface, isTrainingTerrain, trainingTerrainGradient, trainingTerrainHeight, TRAINING_TERRAIN } from '../utils/trainingTerrain';
+import { isGravelSurface, isTrainingTerrain, trainingTerrainGradient, trainingTerrainHeight } from '../utils/trainingTerrain';
 import {resolveWeatherOptions} from '../utils/weatherOptions';
 import {PrecipitationField, syncPrecipitation} from '../three/precipitation';
 import { sampleElevatedRoad } from '../utils/elevatedRoad';
@@ -97,7 +99,7 @@ import { applyDriverSeatToCamera } from '../utils/driverSeat';
 import { isCockpitGlassMaterial, isConceptCockpitFrameNode } from '../utils/materialClassification';
 import { buildConceptCockpitFrame } from '../utils/conceptCockpit';
 import { sedanCowlLayout } from '../utils/sedanCowl';
-import { MAX_ACTIVE_TRAFFIC, stepTrafficVehicle, trafficLimit } from '../utils/traffic';
+import { MAX_ACTIVE_TRAFFIC, stepTrafficVehicle, trafficLimit, trafficLaneBoundary } from '../utils/traffic';
 import { buildDriverInterior, DriverInterior } from '../three/driverInterior';
 
 interface GameCanvas3DProps {
@@ -286,24 +288,8 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     carSpeedRef.current = levelData.entryMotion?.speed??0;
   }, [levelData, carSpeedRef]);
 
-  // Clickable navigation entry: teleport only while essentially stopped; no
-  // hidden window/coordinate hook is required for verification.
+  // QA and recovery controls.
   useEffect(() => {
-    const handleTerrainTeleport = () => {
-      const state = carState.current;
-      if (Math.abs(state.speed) > 0.2) return;
-      state.x = TRAINING_TERRAIN.entranceX;
-      state.y = TRAINING_TERRAIN.entranceY - 110;
-      state.rotation = Math.PI / 2;
-      state.speed = 0;
-      state.steeringAngle = 0;
-      state.yawRate = 0;
-      state.slipAngle = 0;
-      state.driftSlip = 0;
-      state.roadHeight = 0;
-      suspensionResetRef.current++;
-      carSpeedRef.current = 0;
-    };
     const handleTestTeleport = (event: Event) => {
       const detail = (event as CustomEvent<{ x: number; y: number; rotation: number; deckHeight?: number }>).detail;
       if (!detail) return;
@@ -323,11 +309,9 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     };
     const stop = () => {carState.current.speed=0;carState.current.yawRate=0;carState.current.slipAngle=0;carState.current.driftSlip=0;throttleState.current=0;carSpeedRef.current=0;};
     window.addEventListener('free-drive-stop', stop);
-    window.addEventListener('terrain-teleport', handleTerrainTeleport);
     window.addEventListener('test-teleport', handleTestTeleport);
     return () => {
       window.removeEventListener('free-drive-stop', stop);
-      window.removeEventListener('terrain-teleport', handleTerrainTeleport);
       window.removeEventListener('test-teleport', handleTestTeleport);
     };
   }, [carSpeedRef]);
@@ -502,6 +486,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     const overviewPixels = overviewCanvas ? new Uint8Array(240 * 150 * 4) : null;
     const overviewImage = overviewContext?.createImageData(240, 150) || null;
     let lastOverviewRenderAt = 0;
+    let overviewVisible = false, lastOverviewVisibilityCheck = -Infinity;
     let overviewReadPending = false;
     const overviewCamera = new THREE.PerspectiveCamera(34, 240 / 150, 1, 1200);
 
@@ -689,8 +674,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
 	    // ===== 异步加载场景 + 注册物理刚体 =====
 	    let disposed = false;
 	    let built: BuiltScene | null = null;let missile:MissileShow|null=null;let presented=false;
-    let missileFlightAudio:{source:AudioBufferSourceNode;oscillator:OscillatorNode;gain:GainNode}|null=null;
-    const stopMissileFlightAudio=()=>{if(!missileFlightAudio)return;const {source,oscillator,gain}=missileFlightAudio,ctx=audioContextRef.current;missileFlightAudio=null;if(ctx&&ctx.state!=='closed'){const now=ctx.currentTime;gain.gain.cancelScheduledValues(now);gain.gain.setTargetAtTime(0,now,.05);source.stop(now+.3);oscillator.stop(now+.3);}else{try{source.stop();oscillator.stop();}catch{}}};
+    const missileAudio=new MissileRecordingAudio();
     let vehicleWipers:ReturnType<typeof createVehicleWipers>=null;
 	    const streamingPending = new Set<string>();
     const streamingLru: string[] = [];
@@ -841,6 +825,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     // settings panel must freeze skid-mark aging, minimap/radar timers and turn
     // signal blinking as well as the vehicle itself.
     let simulationClockMs = 0;
+    const turnSignalClock = new TurnSignalClock();
     let audioDistanceM=0;
     let lastMotorDriveForce=0;
     let audioMixReadout={cabin:false,motor:0,road:0,hz:0,driving:false};
@@ -981,28 +966,17 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       if(prepared){staticLevelData.obstacles=prepared.data.obstacles;}
       if(currentCarId===CarType.DF41&&!disposed)missile=new MissileShow(built.scene,built.playerCarParts.group,levelData,kind=>{
         if(kind==='impact'&&missile?.target)applyMissileImpact(missile.target.clone());
-        if(kind==='flight-stop'){stopMissileFlightAudio();return;}
+        if(kind==='flight-start'||kind==='flight-stop')return;
         const ctx=audioContextRef.current,settings=settingsRef.current;if(!ctx||ctx.state==='closed')return;
-        if(kind==='flight-start'){
-          stopMissileFlightAudio();const buffer=ctx.createBuffer(1,Math.floor(ctx.sampleRate*1.2),ctx.sampleRate),samples=buffer.getChannelData(0);
-          for(let i=0;i<samples.length;i++){const edge=Math.min(1,i/(ctx.sampleRate*.04),(samples.length-i-1)/(ctx.sampleRate*.04));samples[i]=(Math.random()*2-1)*Math.max(0,edge);}
-          const source=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),oscillator=ctx.createOscillator(),oscGain=ctx.createGain(),gain=ctx.createGain();
-          source.buffer=buffer;source.loop=true;filter.type='lowpass';filter.frequency.value=620;oscillator.type='sawtooth';oscillator.frequency.value=53;oscGain.gain.value=.32;gain.gain.value=0;
-          source.connect(filter).connect(gain);oscillator.connect(oscGain).connect(gain);gain.connect(ctx.destination);source.start();oscillator.start();missileFlightAudio={source,oscillator,gain};return;
-        }
         if(!settings.soundEnabled)return;
         const now=ctx.currentTime,volume=settings.volume*(cameraViewRef.current==='HOOD'?(settings.cabinVolume??.7):(settings.exteriorVolume??.85));
-        const duration=kind==='warning'?.16:kind==='deploy'?3:kind==='launch'?3.5:8;
+        if(kind==='launch'||kind==='impact'){missileAudio.play(kind,ctx,volume);return;}
+        const duration=kind==='warning'?.16:3;
         const oscillator=ctx.createOscillator(),gain=ctx.createGain();oscillator.type=kind==='warning'?'sine':kind==='deploy'?'sawtooth':'triangle';
-        oscillator.frequency.setValueAtTime(kind==='warning'?880:kind==='deploy'?75:kind==='launch'?95:70,now);
+        oscillator.frequency.setValueAtTime(kind==='warning'?880:75,now);
         if(kind!=='warning')oscillator.frequency.exponentialRampToValueAtTime(kind==='deploy'?110:30,now+duration);
         gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(Math.max(.0002,volume*(kind==='warning'?.13:kind==='deploy'?.045:.18)),now+.03);gain.gain.exponentialRampToValueAtTime(.0001,now+duration);
         oscillator.connect(gain).connect(ctx.destination);oscillator.start(now);oscillator.stop(now+duration);
-        if(kind==='impact'||kind==='launch'){
-          const buffer=ctx.createBuffer(1,Math.ceil(ctx.sampleRate*duration),ctx.sampleRate),samples=buffer.getChannelData(0);
-          for(let i=0;i<samples.length;i++)samples[i]=(Math.random()*2-1)*Math.exp(-i/ctx.sampleRate*(kind==='impact'?.48:.7));
-          const noise=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),noiseGain=ctx.createGain();noise.buffer=buffer;filter.type='lowpass';filter.frequency.value=kind==='impact'?1100:850;noiseGain.gain.value=volume*(kind==='impact'?.48:.26);noise.connect(filter).connect(noiseGain).connect(ctx.destination);noise.start(now);
-        }
       },built.playerCarParts.wheelMounts);
       obstaclesRef.current=staticLevelData.obstacles;
       resolutionSampler.reset(performance.now());
@@ -1892,8 +1866,13 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           if (other.id === obs.id) continue;
           if (!trafficEnabled(other)) continue;
           if (other.type !== 'car' && other.type !== 'wall') continue;
+          // Lane paths already follow the inside of these structures; their
+          // straight segments can cross a long look-ahead on tight bends even
+          // though the lane itself is clear.
+          if(other.type==='wall'&&trafficLaneBoundary(other.id))continue;
           if (Math.abs(other.x - obs.x) > 750 || Math.abs(other.y - obs.y) > 750) continue;
-          blockers.push({ id: other.id, x: other.x, y: other.y, width: other.width, height: other.height });
+          if(other.type==='wall'&&!vehicleLayersCompatible({x:obs.x,y:obs.y,rotation:obs.rotation,width:obs.width,length:obs.height,elevation:obs.elevation,verticalHeight:20},other))continue;
+          blockers.push({ id: other.id, x: other.x, y: other.y, width: other.width, height: other.height, type:other.type,rotation:other.rotation });
         }
         blockers.push(...playerBlockers);
         const result = stepTrafficVehicle({
@@ -2786,7 +2765,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         built.movableMeshes.forEach((mesh, id) => {
           const tf = physics.getMovableTransform(id);
           if (tf) {
-            const obstacle = obstaclesRef.current.find(candidate => candidate.id === id);
+            const obstacle = obstacleById.get(id);
             // Cone meshes are authored from a ground-level group origin while
             // Cannon reports their centre of mass. Subtract the half-height
             // so the base, not the centre, sits on the road.
@@ -3399,6 +3378,12 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         const steeringSignalThreshold = 35;
         const leftSignalOn = (currentInputReal.indicator===-1 || (settingsRef.current.autoTurnSignal && currentInputReal.steeringWheelAngle < -steeringSignalThreshold)) && signalBlinkOn;
         const rightSignalOn = (currentInputReal.indicator===1 || (settingsRef.current.autoTurnSignal && currentInputReal.steeringWheelAngle > steeringSignalThreshold)) && signalBlinkOn;
+        const signalActive = currentInputReal.indicator!==0 || (settingsRef.current.autoTurnSignal && Math.abs(currentInputReal.steeringWheelAngle)>steeringSignalThreshold);
+        const signalEdge=turnSignalClock.step(signalActive,signalBlinkOn);
+        const signalSettings=settingsRef.current,signalContext=audioContextRef.current;
+        if(signalEdge && signalContext && signalSettings.soundEnabled && !isPausedRef.current && !document.hidden && document.hasFocus()) {
+          playTurnSignalClick(signalContext,signalEdge,signalSettings.volume*(cameraViewRef.current==='HOOD'?(signalSettings.cabinVolume??.7):(signalSettings.exteriorVolume??.85)));
+        }
         const setLamp = (mesh: THREE.Mesh, on: boolean, onColor: number, offColor: number, intensity = 2.2) => {
           const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
           materials.forEach(material => {
@@ -3646,7 +3631,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         rainParticles?.step(frameDelta / 1000, car.x, renderSlope.height, car.y);
         snowParticles?.step(frameDelta / 1000, car.x, renderSlope.height, car.y);
         missile?.step(frameDelta/1000,carState.current.speed,camera);
-        if(missileFlightAudio&&audioContextRef.current){const s=settingsRef.current,ctx=audioContextRef.current,volume=s.soundEnabled?s.volume*(missile?.vehicleView?(s.exteriorVolume??.85)*.06:.19):0;missileFlightAudio.gain.gain.setTargetAtTime(volume,ctx.currentTime,.12);}
+        if(missile){const s=settingsRef.current,volume=s.soundEnabled?s.volume*(cameraViewRef.current==='HOOD'?(s.cabinVolume??.7):(s.exteriorVolume??.85)):0;missileAudio.update(audioContextRef.current,missile.phase==='flight',volume,volume*(missile.vehicleView?.12:.65));}
         } // end if (frameDelta > 0)
       }  // end if (!paused)
 
@@ -3836,8 +3821,16 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       }
 
       const overviewNow = performance.now();
+      // The HUD can hide this legacy inset in CSS. Do not render or read back
+      // a whole second scene when its canvas cannot be seen. Check periodically
+      // so layout changes still make the inset resume without a scene rebuild.
+      if (overviewNow - lastOverviewVisibilityCheck >= 500) {
+        overviewVisible = !!overviewCanvas?.getClientRects().length;
+        lastOverviewVisibilityCheck = overviewNow;
+      }
       if (overviewTarget && overviewContext && overviewPixels && overviewImage
-        && !overviewReadPending && overviewNow - lastOverviewRenderAt >= 100) {
+        && !overviewReadPending && overviewNow - lastOverviewRenderAt >= 100
+        && overviewVisible) {
         lastOverviewRenderAt = overviewNow;
         const overviewSlope = sampleSlope(levelDataRef.current, car.x, car.y, car.rotation,car.roadHeight);
         const overviewForwardX = Math.cos(car.rotation);
@@ -3969,7 +3962,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       try{renderer.render(scene,camera);snapshot.getContext('2d')?.drawImage(renderer.domElement,0,0);snapshot.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1';transitionFrame.current?.remove();transitionFrame.current=snapshot;mount.appendChild(snapshot);}catch{}}
       // 物理引擎释放
       wreck?.dispose();looseDebris.forEach(d=>d.dispose());fires.forEach(f=>f.dispose());blastEffects.forEach(d=>d.dispose());damageModel?.dispose();rollover?.dispose();
-      missile?.dispose();stopMissileFlightAudio();physics.dispose();
+      missile?.dispose();missileAudio.dispose();physics.dispose();
       // 模型缓存释放
       // Retain decoded GLBs across map/vehicle changes; renderer resources are disposed below.
       const keep=peekPreparedScene();disposeResources([scene,...(built?.streamingChunks?.values()??[])],keep?[keep.scene,...(keep.streamingChunks?.values()??[])]:[]);

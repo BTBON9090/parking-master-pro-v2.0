@@ -1,0 +1,5 @@
+export type MapView={zoom:number; x:number; y:number};
+export const MAP_W=720, MAP_H=450;
+export function clampMapView(v:MapView):MapView { const zoom=Math.min(8,Math.max(1,v.zoom)); return {zoom,x:Math.max(-MAP_W*(zoom-1)/2,Math.min(MAP_W*(zoom-1)/2,v.x)),y:Math.max(-MAP_H*(zoom-1)/2,Math.min(MAP_H*(zoom-1)/2,v.y))}; }
+export function mapZoomAt(v:MapView,zoom:number,point:{x:number;y:number}):MapView {zoom=Math.max(1,Math.min(8,zoom));const ratio=zoom/v.zoom;return clampMapView({zoom,x:point.x-MAP_W/2-(point.x-MAP_W/2-v.x)*ratio,y:point.y-MAP_H/2-(point.y-MAP_H/2-v.y)*ratio});}
+export function mapPointToWorld(point:{x:number;y:number},v:MapView,metadata:{scale:number;offsetX:number;offsetY:number;viewY:number},world:{width:number;height:number}) {const px=(point.x-MAP_W/2-v.x)/v.zoom+MAP_W/2,py=(point.y-MAP_H/2-v.y)/v.zoom+MAP_H/2; const x=(px-metadata.offsetX)/metadata.scale,y=(py-metadata.offsetY)/metadata.scale+metadata.viewY; return x>=0&&x<=world.width&&y>=0&&y<=world.height?{x,y}:null;}

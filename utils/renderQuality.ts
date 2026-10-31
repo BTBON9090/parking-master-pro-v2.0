@@ -10,8 +10,10 @@ export function qualityProfile(quality:RenderQuality='auto',deviceDpr=1,mobile=f
  const native=Math.max(1,Math.min(deviceDpr,3));
  const ceiling=quality==='low'?.65:quality==='medium'?1:quality==='ultra'?Math.min(native,2):Math.min(native,1.5);
  return {ceiling,floor:quality==='auto'?(mobile?.8:.75):ceiling,initial:quality==='auto'&&mobile?Math.min(1,ceiling):ceiling,
- mirrorWidth:quality==='low'?384:quality==='medium'?576:768,
- shadowSize:quality==='low'?1024:quality==='ultra'?4096:2048};
+ // Auto on touch devices favours frame rate: three mirror render targets and
+ // the shadow map are independent of the main scene's adaptive pixel ratio.
+ mirrorWidth:quality==='low'||(quality==='auto'&&mobile)?384:quality==='medium'?576:768,
+ shadowSize:quality==='low'||(quality==='auto'&&mobile)?1024:quality==='ultra'?4096:2048};
 }
 export function nextResolution(current:number,averageMs:number,min:number,max:number){
  return averageMs>20.5?Math.max(min,current-.1):averageMs<17.5?Math.min(max,current+.05):current;

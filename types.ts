@@ -194,6 +194,8 @@ export interface AiConfig {
     aggressive?:boolean;
     laneIndex?:number;
     lanePaths?:Vector2[][];
+    /** Optional target speeds in internal units, indexed by lane. */
+    laneSpeeds?:number[];
     incidentAt?:number;
     incidentUntil?:number;
     path: Vector2[];

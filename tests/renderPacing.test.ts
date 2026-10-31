@@ -3,6 +3,12 @@ import {SceneRenderPacer,MirrorRenderPacer,PreviewRenderPacer} from '../utils/re
 import {CAR_MODELS,DEFAULT_VEHICLE_TUNING,GARAGE_CARS} from '../constants';
 import {getPowertrain} from '../utils/powertrain';
 import {createLongitudinalState,stepLongitudinal} from '../utils/longitudinal';
+import {qualityProfile} from '../utils/renderQuality';
+const touchAuto=qualityProfile('auto',3,true), desktopAuto=qualityProfile('auto',3,false);
+assert.equal(touchAuto.mirrorWidth,384,'mobile auto bounds each of the three mirror render targets');
+assert.equal(touchAuto.shadowSize,1024,'mobile auto bounds the per-frame shadow map');
+assert.equal(desktopAuto.mirrorWidth,768,'desktop auto retains mirror detail');
+assert.equal(qualityProfile('ultra',3,true).shadowSize,4096,'explicit high quality remains available');
 const scene=new SceneRenderPacer();
 assert(scene.shouldRender(0,false,false));
 assert(scene.shouldRender(1,true,false),'first paused frame draws');
