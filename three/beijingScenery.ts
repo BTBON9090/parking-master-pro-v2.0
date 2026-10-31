@@ -8,7 +8,7 @@ import {sampleTerrainSurface} from '../utils/terrainSampling';
 import {composeSceneryPose} from './obstacleVisuals';
 
 /** Low-poly Beijing courtyard frontage: masonry blocks and shallow grey gables. */
-export function addBeijingScenery(scene:THREE.Scene,level:LevelData,trackGeo:(g:THREE.BufferGeometry)=>THREE.BufferGeometry) {
+export function addBeijingScenery(scene:THREE.Scene,level:LevelData,trackGeo:(g:THREE.BufferGeometry)=>THREE.BufferGeometry,destructible?:Map<string,()=>void>) {
  const buildings=level.obstacles.filter(o=>o.id.startsWith('hutong-'));
  if(buildings.length) {
   const wallGeo=trackGeo(new THREE.BoxGeometry(1,1,1));
@@ -22,6 +22,7 @@ export function addBeijingScenery(scene:THREE.Scene,level:LevelData,trackGeo:(g:
   const doors=new THREE.InstancedMesh(wallGeo,new THREE.MeshLambertMaterial({color:'#634c42'}),buildings.length*2);
   const matrix=new THREE.Matrix4();
   buildings.forEach((o,i)=>{
+   destructible?.set(o.id,()=>{const zero=new THREE.Matrix4().makeScale(0,0,0);for(const [mesh,indices] of [[walls,[i]],[roofs,[i]],[windows,[i*4,i*4+1,i*4+2,i*4+3]],[doors,[i*2,i*2+1]]] as Array<[THREE.InstancedMesh,number[]]>){indices.forEach(n=>mesh.setMatrixAt(n,zero));mesh.instanceMatrix.needsUpdate=true;}});
    composeSceneryPose(matrix,o,0,14,0,o.width,28,o.height);walls.setMatrixAt(i,matrix);walls.setColorAt(i,new THREE.Color(o.color));
    composeSceneryPose(matrix,o,0,28,0,o.width,16,o.height);roofs.setMatrixAt(i,matrix);
    for(const side of [-1,1]) {
@@ -90,6 +91,8 @@ export function addBeijingScenery(scene:THREE.Scene,level:LevelData,trackGeo:(g:
    const roofsF=flat.length?new THREE.InstancedMesh(bodyGeo,flatRoofMat,flat.length):null;
    list.forEach((spec,index)=>{
     const {o}=spec;
+    const shadowIndex=specs.indexOf(spec),windowStart=windowIndex.value,roofIndex=spec.roof>0?gabled.indexOf(spec):flat.indexOf(spec),roof=spec.roof>0?roofsG:roofsF;
+    destructible?.set(o.id,()=>{const zero=new THREE.Matrix4().makeScale(0,0,0);for(const [mesh,indices] of [[bodies,[index]],[shadows,[shadowIndex]],[windows,[windowStart,windowStart+1,windowStart+2,windowStart+3]],[roof,[roofIndex]]] as Array<[THREE.InstancedMesh|null,number[]]>){if(mesh){indices.forEach(n=>mesh.setMatrixAt(n,zero));mesh.instanceMatrix.needsUpdate=true;}}});
     composeSceneryPose(matrix,o,0,spec.height/2,0,o.width,spec.height,o.height);
     bodies.setMatrixAt(index,matrix);
     bodies.setColorAt(index,new THREE.Color(o.color));

@@ -1,4 +1,7 @@
 import {MissileShow} from '../three/missileShow';
+import {BlastDebris,blastDistance} from '../three/blastDebris';
+import {blastCameraShake} from '../utils/blastCameraShake';
+import {createVehicleWipers} from '../three/vehicleWipers';
 import {SeatClearance} from '../three/seatClearance';
 import {takePreparedScene,peekPreparedScene} from '../three/preparedScene';
 import {aeroGripScale,multiAxleSteer} from '../utils/handling44';
@@ -66,6 +69,7 @@ import { sampleSlopeProfile } from '../utils/slopeProfile';
 import { disposeModelCache } from '../three/modelLoader';
 import { computeRpm, getPowertrain, isElectricVehicle, steeringWheelMaxDeg, SPEED_UNIT_KMH, TRAVEL_PER_SPEED_FRAME } from '../utils/powertrain';
 import { stepLongitudinal } from '../utils/longitudinal';
+import {trailerVehicleConfig,trailerPowertrain} from '../utils/trailerDynamics';
 import { approachExponential, elapsedFramesFromMs, simulationDeltaMs } from '../utils/timeStep';
 import { resolveHoodCameraLocalPose } from '../utils/hoodCamera';
 import { measuredMirrorMounts } from '../three/mirrorMounts';
@@ -93,7 +97,7 @@ import { applyDriverSeatToCamera } from '../utils/driverSeat';
 import { isCockpitGlassMaterial, isConceptCockpitFrameNode } from '../utils/materialClassification';
 import { buildConceptCockpitFrame } from '../utils/conceptCockpit';
 import { sedanCowlLayout } from '../utils/sedanCowl';
-import { MAX_ACTIVE_TRAFFIC, stepTrafficVehicle } from '../utils/traffic';
+import { MAX_ACTIVE_TRAFFIC, stepTrafficVehicle, trafficLimit } from '../utils/traffic';
 import { buildDriverInterior, DriverInterior } from '../three/driverInterior';
 
 interface GameCanvas3DProps {
@@ -176,7 +180,6 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
   const retainedRenderer=useRef<THREE.WebGLRenderer|null>(null);
   useEffect(()=>()=>{const renderer=retainedRenderer.current;retainedRenderer.current=null;queueMicrotask(()=>{renderer?.dispose();renderer?.forceContextLoss();disposeMaterials();});},[]);
   const transitionFrame=useRef<HTMLCanvasElement|null>(null);
-  const wiperRef = useRef<HTMLDivElement>(null);
   const retainedQuality = useRef<{quality:RenderQuality;dpr:number}|null>(null);
   const [wrecked,setWrecked]=useState(false);
   const [overturned,setOverturned]=useState(false);
@@ -686,6 +689,9 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
 	    // ===== 异步加载场景 + 注册物理刚体 =====
 	    let disposed = false;
 	    let built: BuiltScene | null = null;let missile:MissileShow|null=null;let presented=false;
+    let missileFlightAudio:{source:AudioBufferSourceNode;oscillator:OscillatorNode;gain:GainNode}|null=null;
+    const stopMissileFlightAudio=()=>{if(!missileFlightAudio)return;const {source,oscillator,gain}=missileFlightAudio,ctx=audioContextRef.current;missileFlightAudio=null;if(ctx&&ctx.state!=='closed'){const now=ctx.currentTime;gain.gain.cancelScheduledValues(now);gain.gain.setTargetAtTime(0,now,.05);source.stop(now+.3);oscillator.stop(now+.3);}else{try{source.stop();oscillator.stop();}catch{}}};
+    let vehicleWipers:ReturnType<typeof createVehicleWipers>=null;
 	    const streamingPending = new Set<string>();
     const streamingLru: string[] = [];
     let lastStreamingCheckAt = 0;
@@ -695,15 +701,13 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       const trailer=built?.playerCarParts.trailer;if(!trailer)return;
       const notify=(message:string)=>window.dispatchEvent(new CustomEvent('trailer-status',{detail:{attached:trailer.isAttached,message}}));
       if(Math.abs(carState.current.speed)>.05){notify('请先停车再操作车厢');return;}
+      if(trailer.isBusy){notify('车厢支撑腿正在运动，请稍候');return;}
       if(trailer.isAttached){
-        if(!trailer.detach(scene))return;
-        const point=trailer.trailerHitchWorld(),forward=new THREE.Vector3(0,0,1).transformDirection(trailer.root.matrixWorld);
-        const obstacle:Obstacle={id:'detached-player-trailer',x:point.x,y:point.z,rotation:Math.atan2(forward.z,forward.x),width:40,height:300,elevation:point.y,verticalHeight:CAR_MODELS[currentCarIdRef.current].height,type:'car',movable:false,weight:15000,color:'#777777',collisionFootprint:trailer.footprint};
-        obstaclesRef.current.push(obstacle);indexCollisionObstacles();notify('车厢已分离；倒车对准牵引座后点击对接');
+        if(trailer.requestDetach(scene))notify('正在放下车厢支撑腿，请稍候');
       }else{
         if(inputRef.current.gear!==-1){notify('请挂倒挡，倒车对准牵引座后停车对接');return;}
         if(!trailer.couple()){notify('请继续倒车，将牵引座对准车厢并停车');return;}
-        obstaclesRef.current=obstaclesRef.current.filter(o=>o.id!=='detached-player-trailer');indexCollisionObstacles();notify('车厢已对接');
+        obstaclesRef.current=obstaclesRef.current.filter(o=>o.id!=='detached-player-trailer');indexCollisionObstacles();notify('车厢已对接，正在收回支撑腿');
       }
     };
     window.addEventListener('trailer-command',trailerCommand);
@@ -713,6 +717,9 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     let recoveryPose={x:carState.current.x,y:carState.current.y,rotation:carState.current.rotation,roadHeight:carState.current.roadHeight};
     let recoveryCandidate={...recoveryPose},accidentRecoveryPose={...recoveryPose},lastRecoveryAt=0;
     let wreck:CrashDebris|null=null;
+    const blastEffects:BlastDebris[]=[];
+    let blastShakeStart=-Infinity;
+    const blastShakeOrigin=new THREE.Vector3(),blastCameraSavedPosition=new THREE.Vector3(),blastCameraOffset=new THREE.Vector3();
     let damageModel:VehicleDamage|null=null;
     const looseDebris:CrashDebris[]=[];
     const fires:AccidentFire[]=[];
@@ -727,6 +734,25 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
     let directionChangeActive=false;
     const impactMotion={x:0,y:0,yaw:0,time:0};
     const movingParked=new Map<string,{x:number;y:number}>(); // metres/second
+    const applyMissileImpact=(point:THREE.Vector3)=>{
+      if(!built)return;
+      blastShakeStart=performance.now();blastShakeOrigin.copy(point);
+      const ld=levelDataRef.current;
+      const affected=obstaclesRef.current.filter(o=>blastDistance(o,point)<=350&&built!.destructibleVisuals.has(o.id)&&!o.collisionOnly&&o.id!=='detached-player-trailer'&&!/boundary|garage-ramp/.test(o.id)).sort((a,b)=>blastDistance(a,point)-blastDistance(b,point)).slice(0,24);
+      const visuals=affected.slice(0,18),effect=new BlastDebris(point,visuals,(x,z)=>sampleTerrainSurface(ld,x,z,point.y).height);scene.add(effect.group);blastEffects.push(effect);while(blastEffects.length>2)blastEffects.shift()!.dispose();
+      let fractured=0;
+      for(const obs of affected){
+        const npc=built.trafficCarParts.get(obs.id);
+        if(npc&&fractured<3){try{const delta=new THREE.Vector2(obs.x-point.x,obs.y-point.z).normalize().multiplyScalar(60);const debris=new CrashDebris(npc.group,delta,obs.rotation,[],(x,z,h)=>sampleTerrainSurface(ld,x,z,h).height,{x:delta.x,y:delta.y},{mass:obs.weight,bounds:{width:ld.mapWidth,height:ld.mapHeight},spawnDriver:false});looseDebris.push(debris);scene.add(debris.group);fractured++;}catch(error){console.warn('NPC blast debris unavailable',error);}}
+        built.destructibleVisuals.get(obs.id)?.();built.destructibleVisuals.delete(obs.id);built.trafficObstacles.delete(obs.id);built.trafficCarParts.delete(obs.id);movingParked.delete(obs.id);physics.removeObstacle(obs.id);
+      }
+      while(looseDebris.length>6)looseDebris.shift()!.dispose();
+      const ids=new Set(affected.map(o=>o.id));obstaclesRef.current=obstaclesRef.current.filter(o=>!ids.has(o.id));indexCollisionObstacles();
+      const car=carState.current,parts=built.playerCarParts,cc=CAR_MODELS[currentCarIdRef.current];
+      if(!destroyed&&!rollover&&Math.hypot(car.x-point.x,car.y-point.z,(car.roadHeight??0)-point.y)<=350){
+        const dir=new THREE.Vector2(car.x-point.x,car.y-point.z).normalize();try{wreck=new CrashDebris(parts.group,{x:dir.x*60,y:dir.y*60},car.rotation,[],(x,z,h)=>sampleTerrainSurface(ld,x,z,h).height,{x:dir.x,y:dir.y},{mass:cc.weight,bounds:{width:ld.mapWidth,height:ld.mapHeight},spawnDriver:false});scene.add(wreck.group);destroyed=true;parts.group.visible=false;setWrecked(true);damage=1;setDamagePercent(100);}catch(error){console.warn('Player blast breakup unavailable',error);damage=Math.max(damage,.5);setDamagePercent(Math.round(damage*100));}
+      }
+    };
     setWrecked(false);setDamagePercent(0);setDamageTier('none');
     let liftRide:{from:number;to:number;elapsed:number;x:number;y:number;rotation:number}|null=null;
     let lastLiftStatus=0;
@@ -954,9 +980,19 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       if(disposed){disposeResources([built.scene,...(built.streamingChunks?.values()??[])]);return;}
       if(prepared){staticLevelData.obstacles=prepared.data.obstacles;}
       if(currentCarId===CarType.DF41&&!disposed)missile=new MissileShow(built.scene,built.playerCarParts.group,levelData,kind=>{
-        const ctx=audioContextRef.current,settings=settingsRef.current;if(!ctx||ctx.state==='closed'||!settings.soundEnabled)return;
+        if(kind==='impact'&&missile?.target)applyMissileImpact(missile.target.clone());
+        if(kind==='flight-stop'){stopMissileFlightAudio();return;}
+        const ctx=audioContextRef.current,settings=settingsRef.current;if(!ctx||ctx.state==='closed')return;
+        if(kind==='flight-start'){
+          stopMissileFlightAudio();const buffer=ctx.createBuffer(1,Math.floor(ctx.sampleRate*1.2),ctx.sampleRate),samples=buffer.getChannelData(0);
+          for(let i=0;i<samples.length;i++){const edge=Math.min(1,i/(ctx.sampleRate*.04),(samples.length-i-1)/(ctx.sampleRate*.04));samples[i]=(Math.random()*2-1)*Math.max(0,edge);}
+          const source=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),oscillator=ctx.createOscillator(),oscGain=ctx.createGain(),gain=ctx.createGain();
+          source.buffer=buffer;source.loop=true;filter.type='lowpass';filter.frequency.value=620;oscillator.type='sawtooth';oscillator.frequency.value=53;oscGain.gain.value=.32;gain.gain.value=0;
+          source.connect(filter).connect(gain);oscillator.connect(oscGain).connect(gain);gain.connect(ctx.destination);source.start();oscillator.start();missileFlightAudio={source,oscillator,gain};return;
+        }
+        if(!settings.soundEnabled)return;
         const now=ctx.currentTime,volume=settings.volume*(cameraViewRef.current==='HOOD'?(settings.cabinVolume??.7):(settings.exteriorVolume??.85));
-        const duration=kind==='warning'?.16:kind==='deploy'?3:kind==='launch'?3.5:3;
+        const duration=kind==='warning'?.16:kind==='deploy'?3:kind==='launch'?3.5:8;
         const oscillator=ctx.createOscillator(),gain=ctx.createGain();oscillator.type=kind==='warning'?'sine':kind==='deploy'?'sawtooth':'triangle';
         oscillator.frequency.setValueAtTime(kind==='warning'?880:kind==='deploy'?75:kind==='launch'?95:70,now);
         if(kind!=='warning')oscillator.frequency.exponentialRampToValueAtTime(kind==='deploy'?110:30,now+duration);
@@ -964,10 +1000,10 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         oscillator.connect(gain).connect(ctx.destination);oscillator.start(now);oscillator.stop(now+duration);
         if(kind==='impact'||kind==='launch'){
           const buffer=ctx.createBuffer(1,Math.ceil(ctx.sampleRate*duration),ctx.sampleRate),samples=buffer.getChannelData(0);
-          for(let i=0;i<samples.length;i++)samples[i]=(Math.random()*2-1)*Math.exp(-i/ctx.sampleRate*(kind==='impact'?1.6:.7));
-          const noise=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),noiseGain=ctx.createGain();noise.buffer=buffer;filter.type='lowpass';filter.frequency.value=kind==='impact'?1100:450;noiseGain.gain.value=volume*(kind==='impact'?.48:.15);noise.connect(filter).connect(noiseGain).connect(ctx.destination);noise.start(now);
+          for(let i=0;i<samples.length;i++)samples[i]=(Math.random()*2-1)*Math.exp(-i/ctx.sampleRate*(kind==='impact'?.48:.7));
+          const noise=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),noiseGain=ctx.createGain();noise.buffer=buffer;filter.type='lowpass';filter.frequency.value=kind==='impact'?1100:850;noiseGain.gain.value=volume*(kind==='impact'?.48:.26);noise.connect(filter).connect(noiseGain).connect(ctx.destination);noise.start(now);
         }
-      });
+      },built.playerCarParts.wheelMounts);
       obstaclesRef.current=staticLevelData.obstacles;
       resolutionSampler.reset(performance.now());
       if (disposed) {disposeResources([built.scene,...(built.streamingChunks?.values()??[])]);return;}
@@ -1139,6 +1175,8 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       });
       playerBodyRigRoots.forEach(root => playerBodyTiltPivot!.attach(root));
       missile?.rebase();
+      vehicleWipers=createVehicleWipers(built.playerCarParts.group,ccCur);
+      if(vehicleWipers)playerBodyTiltPivot.attach(vehicleWipers.plane);
       playerBodyTiltPivot.rotation.order = 'YXZ';
       nativeMirrors=measuredMirrorMounts(built.playerCarParts.group);
 
@@ -1815,12 +1853,13 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
 
     // ===== Highway traffic; path following yields to impact motion =====
     const trafficLastUpdateAt = new Map<string, number>();
+    const trafficEnabled = (obs:Obstacle) => !obs.ai || !levelDataRef.current.highway || Number(obs.id.match(/highway-traffic-(\d+)/)?.[1]??0)<trafficLimit(settingsRef.current.trafficDifficulty);
     const updateTraffic = (frameDeltaMs: number) => {
       if (!built) return;
       // Explicit cap: level data may add more, but only the nearest active set
       // is simulated. The rest remain authored scenery.
       const active = Array.from(built.trafficObstacles.values())
-        .filter(obs => obs.ai)
+        .filter(obs => obs.ai && trafficEnabled(obs))
         .slice(0, MAX_ACTIVE_TRAFFIC);
       const playerCc = CAR_MODELS[currentCarIdRef.current];
       const playerBlocker = {
@@ -1838,6 +1877,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       }
       for (const obs of active) {
         if (!obs.ai || movingParked.has(obs.id)) continue;
+        obs.ai.aggressive=settingsRef.current.trafficDifficulty==='extreme';
         const distanceToPlayer = Math.hypot(obs.x - carState.current.x, obs.y - carState.current.y);
         // Far cars update at 9 Hz; near cars every frame. dt covers the real
         // elapsed time, so traffic speed does not depend on the update rate.
@@ -1848,10 +1888,11 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         trafficLastUpdateAt.set(obs.id, simulationClockMs);
 
         const blockers = [];
-        for (const other of obstaclesRef.current) {
+        for (const other of new Set([...nearbyCollisionObstacles(obs.x,obs.y,750),...active])) {
           if (other.id === obs.id) continue;
+          if (!trafficEnabled(other)) continue;
           if (other.type !== 'car' && other.type !== 'wall') continue;
-          if (Math.abs(other.x - obs.x) > 1200 || Math.abs(other.y - obs.y) > 1200) continue;
+          if (Math.abs(other.x - obs.x) > 750 || Math.abs(other.y - obs.y) > 750) continue;
           blockers.push({ id: other.id, x: other.x, y: other.y, width: other.width, height: other.height });
         }
         blockers.push(...playerBlockers);
@@ -2005,11 +2046,12 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         }});
       }
 
-      const cc = CAR_MODELS[currentCarIdRef.current];
+      const baseCc = CAR_MODELS[currentCarIdRef.current];
+      const playerParts = built.playerCarParts;
+      const cc = trailerVehicleConfig(baseCc,playerParts.trailer?.isAttached);
       const baseSettings=settingsRef.current;
       const sCur={...baseSettings,volume:baseSettings.volume*(cameraViewRef.current==='HOOD'?2*(baseSettings.cabinVolume??.7):(baseSettings.exteriorVolume??.85))};
       const ldCur = levelDataRef.current;
-      const playerParts = built.playerCarParts;
       damageModel ??= new VehicleDamage(playerParts.group);
       const axleGeometry = playerParts.group.userData.axleGeometry;
       const rigWheelbase = cc.id===CarType.DF41?cc.wheelbase:axleGeometry?.wheelbase ?? cc.wheelbase;
@@ -2183,6 +2225,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         }
         if(parkedSettled)indexCollisionObstacles();
         let currentInputReal = (destroyed || rollover || fires.length>0 || liftRide || missile?.locked) ? {...inputRef.current,throttle:0,gasPressed:false,brake:1,handbrake:true,engineStarted:false} : inputRef.current;
+        if(playerParts.trailer?.isBusy)currentInputReal={...currentInputReal,throttle:0,gasPressed:false,brake:1,handbrake:true};
         if(destroyed || rollover || fires.length>0){car.speed=0;throttleState.current=0;}
         if(lastSuspensionReset!==suspensionResetRef.current){
           damageModel?.reset();looseDebris.splice(0).forEach(d=>d.dispose());fires.splice(0).forEach(f=>f.dispose());setDamageTier('none');
@@ -2191,7 +2234,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           rollover?.dispose();rollover=null;setOverturned(false);chassisState=createChassisState();
           recoveryPose={x:car.x,y:car.y,rotation:car.rotation,roadHeight:car.roadHeight};recoveryCandidate={...recoveryPose};accidentRecoveryPose={...recoveryPose};lastRecoveryAt=simulationClockMs;
         }
-        const pt = getPowertrain(cc.id);
+        const pt = trailerPowertrain(baseCc,playerParts.trailer?.isAttached);
         const vehicleTune = settingsRef.current.vehicleTuning?.[cc.id] ?? DEFAULT_VEHICLE_TUNING[cc.id];
         const wCur = resolveWeatherOptions(sCur,weatherRef.current);
         const terrainResponse = ldCur.challengeTerrain ? {...ldCur.challengeTerrain,grip:challengeGripAt(ldCur,car.x,car.y),gravel:ldCur.challengeTerrain.kind==='mud'||ldCur.challengeTerrain.kind==='quarry'} : ldCur.openWorld ? (mountainTunnelSample(car.x,car.y,car.roadHeight??0)?{grip:1,rolling:1,gravel:false}:worldSurface(car.x, car.y)) : {grip:1,rolling:1,gravel:false};
@@ -2549,6 +2592,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         const solidHitsAt = (x: number, y: number, rotation: number) =>
           vehicleCollisionQuery.findHits(collisionGrid,{...collisionBody,x,y,rotation},
             built?.trafficObstacles.values()??[],movingParked.keys(),obs=>{
+              if(!trafficEnabled(obs))return true;
               if(obs.id==='detached-player-trailer' && playerParts.trailer){
                 const trailer=playerParts.trailer,hitch=trailer.hitchWorld(),parked=trailer.trailerHitchWorld();
                 const forward=new THREE.Vector3(0,0,1).transformDirection(trailer.root.matrixWorld);
@@ -2726,7 +2770,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         // 结果。旧顺序先写当前位姿再 step，碰撞体会比主车多前进一帧并在下
         // 一帧被拉回，锥桶/交通接触时会出现位置双写。这里只调整顺序。
         physics.step(frameDelta / 1000);
-        wreck?.step(frameDelta/1000);looseDebris.forEach(d=>d.step(frameDelta/1000));fires.forEach(f=>f.step(frameDelta/1000));
+        wreck?.step(frameDelta/1000);looseDebris.forEach(d=>d.step(frameDelta/1000));fires.forEach(f=>f.step(frameDelta/1000));blastEffects.forEach(d=>d.step(frameDelta/1000));while(blastEffects[0]?.finished)blastEffects.shift()!.dispose();
         const playerRotY3D = toMeshRotY(car.rotation);
         physics.updatePlayerKinematics(car.x, car.y, playerRotY3D, car.speed, car.rotation,
           airborneActive ? suspensionBodyHeight ?? car.roadHeight : car.roadHeight);
@@ -2735,7 +2779,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         built.trafficObstacles.forEach((obs) => {
           const obsRotY3D = toMeshRotY(obs.rotation);
           const obsSpeed = obs.ai ? obs.ai.speed : 0;
-          physics.updateTrafficKinematics(obs.id, obs.x, obs.y, obsRotY3D, obsSpeed, obs.rotation, obs.elevation??0,movingParked.get(obs.id));
+          physics.updateTrafficKinematics(obs.id, trafficEnabled(obs)?obs.x:-100000, trafficEnabled(obs)?obs.y:-100000, obsRotY3D, obsSpeed, obs.rotation, obs.elevation??0,movingParked.get(obs.id));
         });
 
         // 6. 从物理刚体读回可移动物体位置（锥桶/箱子被撞飞翻滚）
@@ -2778,7 +2822,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         ];
         
         for (const obs of obstaclesRef.current) {
-          if (!sensedObstacle(obs,car.roadHeight,cc.height)) continue;
+          if (!trafficEnabled(obs) || !sensedObstacle(obs,car.roadHeight,cc.height)) continue;
           const maxRange = PROXIMITY_RANGE + carHalfL + Math.max(obs.width, obs.height) / 2;
           if (Math.abs(obs.x - car.x) > maxRange || Math.abs(obs.y - car.y) > maxRange) continue;
           // 障碍物本地半尺寸：对于 car 类型，height=车长(沿 heading)，width=车宽(垂直 heading)
@@ -3072,7 +3116,12 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           const r=rollover.step(frameDelta/1000);car.x=r.position.x;car.y=r.position.z;car.speed=0;
           suspensionTelemetryRef.current.wheelGrounded=playerParts.wheels.map(()=>false);
         }
-        playerParts.trailer?.step(frameDelta/1000,(x,z)=>sampleTerrainSurface(ldCur,x,z,car.roadHeight).height);
+        const trailerParked=playerParts.trailer?.step(frameDelta/1000,(x,z)=>sampleTerrainSurface(ldCur,x,z,car.roadHeight).height);
+        if(trailerParked&&playerParts.trailer){
+          const trailer=playerParts.trailer,point=trailer.trailerHitchWorld(),forward=new THREE.Vector3(0,0,1).transformDirection(trailer.root.matrixWorld);
+          const obstacle:Obstacle={id:'detached-player-trailer',x:point.x,y:point.z,rotation:Math.atan2(forward.z,forward.x),width:40,height:300,elevation:point.y,verticalHeight:cc.height,type:'car',movable:false,weight:15000,color:'#777777',collisionFootprint:trailer.footprint};
+          obstaclesRef.current.push(obstacle);indexCollisionObstacles();window.dispatchEvent(new CustomEvent('trailer-status',{detail:{attached:false,message:'支撑腿已放下，车厢已分离；倒车对准后可对接'}}));
+        }
         const effectiveRoadPitch=chassisState.pitch-suspensionPitch;
         if (isSkiddingNow && !destroyed && !rollover && suspensionTelemetryRef.current.wheelGrounded.some(Boolean)) {
           const travelled=lastSkidPosition?Math.hypot(car.x-lastSkidPosition.x,car.y-lastSkidPosition.y):Infinity;
@@ -3114,12 +3163,13 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
           const carFloor = levelData.levelId === 6
             ? garageFloorAt(car.roadHeight ?? -48)
             : -1;
-          if(wiperRef.current)wiperRef.current.style.display=cameraViewRef.current==='HOOD'&&currentInputReal.wipers?'block':'none';
           if(ldCur.exam)window.dispatchEvent(new CustomEvent('exam-telemetry',{detail:{x:car.x,y:car.y,rotation:car.rotation,speedKmh:car.speed*15,time:simulationClockMs,gear:currentInputReal.gear,manual:!isAutomaticVehicle(cc.id),width:cc.width,length:cc.length}}));
           window.dispatchEvent(new CustomEvent('car-map-position', {
             detail: {level:ldCur.levelId,car:cc.id,speedKmh:car.speed*15,gear:currentInputReal.gear,parkingBrake:currentInputReal.parkingBrake,driveSlip:wheelDriveSlip,steeredWheels:playerParts.wheelMounts.map(w=>w.rotation.y), x: car.x, y: car.y, rotation: car.rotation, floor: carFloor, elevation:car.roadHeight??0, safe:!destroyed&&!rollover&&!liftRide },
           }));
         }
+
+        vehicleWipers?.update(!!currentInputReal.wipers,simulationClockMs/1000);
 
         // 驾校 2 压线检测：只在带 warningEdges 的单行训练道路上启用。
         // If an overlapping junction lane safely contains the car, it wins so
@@ -3323,6 +3373,9 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         built.trafficCarParts.forEach((parts, id) => {
           const obs = built!.trafficObstacles.get(id);
           if (obs) {
+            const show=trafficEnabled(obs)&&Math.hypot(obs.x-car.x,obs.y-car.y)<2500;
+            parts.group.visible=show;
+            if(!show)return;
             const trafficSlope = sampleSlope(ldCur, obs.x, obs.y, obs.rotation, obs.elevation ?? 0);
             const gradeAlongHeading = trafficSlope.gradeX * Math.cos(obs.rotation)
               + trafficSlope.gradeY * Math.sin(obs.rotation);
@@ -3593,6 +3646,7 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
         rainParticles?.step(frameDelta / 1000, car.x, renderSlope.height, car.y);
         snowParticles?.step(frameDelta / 1000, car.x, renderSlope.height, car.y);
         missile?.step(frameDelta/1000,carState.current.speed,camera);
+        if(missileFlightAudio&&audioContextRef.current){const s=settingsRef.current,ctx=audioContextRef.current,volume=s.soundEnabled?s.volume*(missile?.vehicleView?(s.exteriorVolume??.85)*.06:.19):0;missileFlightAudio.gain.gain.setTargetAtTime(volume,ctx.currentTime,.12);}
         } // end if (frameDelta > 0)
       }  // end if (!paused)
 
@@ -3607,7 +3661,15 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       renderer.setScissorTest(false);
       renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
       if (!isPausedRef.current) renderer.shadowMap.needsUpdate = settingsRef.current.shadowsEnabled;
+      // Render-only offset: never feed the shake back into the user's camera
+      // controls, interpolation, mirror transforms, or saved camera pose.
+      const shake=blastCameraShake(isPausedRef.current ? Infinity : (performance.now()-blastShakeStart)/1000,camera.position.distanceTo(blastShakeOrigin));
+      blastCameraSavedPosition.copy(camera.position);
+      blastCameraOffset.set(shake.x,shake.y,shake.z).applyQuaternion(camera.quaternion);
+      camera.position.add(blastCameraOffset);
       renderer.render(scene, camera);
+      camera.position.copy(blastCameraSavedPosition);
+      camera.updateMatrixWorld();
       if(transitionFrame.current){transitionFrame.current.remove();transitionFrame.current=null;}
       if(!presented){presented=true;setLoadStage(null);}
 
@@ -3896,14 +3958,18 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
       window.removeEventListener('mountain-lift-start',startLift);window.removeEventListener('mountain-lift-skip',skipLift);setMountainLiftHeight(null);
       window.removeEventListener('vehicle-recover',recoverInPlace);
       window.removeEventListener('trailer-command',trailerCommand);
+      // A detached trailer's collider is transient. Rebuilding a scene for a
+      // different selected vehicle disposes its mesh; keeping this car-typed
+      // placeholder would respawn it as an unrelated traffic model.
+      obstaclesRef.current=obstaclesRef.current.filter(o=>o.id!=='detached-player-trailer');
       dom.removeEventListener('wheel', onWheel);
       window.removeEventListener('camera-pinch-zoom', onPinchZoom);
       if(presented){const snapshot=document.createElement('canvas');snapshot.width=renderer.domElement.width;snapshot.height=renderer.domElement.height;
       // Redraw because WebGL's default drawing buffer may have been cleared.
       try{renderer.render(scene,camera);snapshot.getContext('2d')?.drawImage(renderer.domElement,0,0);snapshot.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1';transitionFrame.current?.remove();transitionFrame.current=snapshot;mount.appendChild(snapshot);}catch{}}
       // 物理引擎释放
-      wreck?.dispose();looseDebris.forEach(d=>d.dispose());fires.forEach(f=>f.dispose());damageModel?.dispose();rollover?.dispose();
-      missile?.dispose();physics.dispose();
+      wreck?.dispose();looseDebris.forEach(d=>d.dispose());fires.forEach(f=>f.dispose());blastEffects.forEach(d=>d.dispose());damageModel?.dispose();rollover?.dispose();
+      missile?.dispose();stopMissileFlightAudio();physics.dispose();
       // 模型缓存释放
       // Retain decoded GLBs across map/vehicle changes; renderer resources are disposed below.
       const keep=peekPreparedScene();disposeResources([scene,...(built?.streamingChunks?.values()??[])],keep?[keep.scene,...(keep.streamingChunks?.values()??[])]:[]);
@@ -3948,7 +4014,6 @@ const GameCanvas3D: React.FC<GameCanvas3DProps> = React.memo(({
   }, [levelData, carSpeedRef, currentCarId]);
 
   return <>
-    <div ref={wiperRef} style={{display:'none'}} className="windshield-wipers" aria-label="雨刮器运行"><i/><i/></div>
     <div ref={mountRef} className="block w-full h-full touch-none" />
     {loadStage&&<LoadingDrive stage={loadStage} compact={!!transitionFrame.current}/> }
     <HintSlot>{(damagePercent>0 || overturned) && <div role="status" className={`damage-status ${isTouchDevice()?'damage-status-touch':''}`}>

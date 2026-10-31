@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
+import {normalizeModel,MODEL_REGISTRY} from '../three/modelLoader';
+import {buildNativeAuthoredVehicle} from '../three/blenderVehicle';
+import {CAR_MODELS} from '../constants';
+import {CarType} from '../types';
+const def=MODEL_REGISTRY.df41,bytes=fs.readFileSync('public/models/'+def.file);
+const gltf=await new GLTFLoader().parseAsync(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),'');
+normalizeModel(gltf.scene,def);const parts=buildNativeAuthoredVehicle(gltf.scene,CAR_MODELS[CarType.DF41]);
+for(const name of ['HydraulicBase-1','HydraulicBase1','HydraulicTop-1','HydraulicTop1','TransportTube'])assert(parts.group.getObjectByName(name),name);
+assert.equal(parts.leftIndicators.length,1);assert.equal(parts.rightIndicators.length,1);assert.notEqual(parts.leftIndicators[0],parts.rightIndicators[0]);
+assert(parts.leftIndicators[0].getWorldPosition(new THREE.Vector3()).x>0);assert(parts.rightIndicators[0].getWorldPosition(new THREE.Vector3()).x<0);
+console.log('DF41 rig PASS: independent signal lenses, hydraulic pivots and tube');

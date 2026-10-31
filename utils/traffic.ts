@@ -2,7 +2,9 @@ import type { AiConfig } from '../types';
 import { TRAVEL_PER_SPEED_FRAME } from './powertrain';
 
 /** Active NPC traffic is deliberately capped; the level may contain fewer. */
-export const MAX_ACTIVE_TRAFFIC = 16;
+export const MAX_ACTIVE_TRAFFIC = 48;
+export type TrafficDifficulty='easy'|'normal'|'hard'|'extreme';
+export const trafficLimit=(difficulty:TrafficDifficulty|undefined)=>({easy:8,normal:16,hard:32,extreme:48}[difficulty??'normal']??16);
 export const NPC_TURN_RATE = 1.7;
 export const NPC_COLLISION_RECOVERY_MS = 1200;
 export const NPC_HONK_COOLDOWN_MS = 8500;
@@ -69,11 +71,11 @@ export function stepTrafficVehicle(input: TrafficStepInput): TrafficStepResult {
   let collided = false;
   let honked = false;
 
-  if(ai.lanePaths&&(ai.blockedFor??0)>.7&&input.nowMs-(ai.lastLaneChange??-Infinity)>10000){
+  if(ai.lanePaths&&(ai.blockedFor??0)>(ai.aggressive?.35:.7)&&input.nowMs-(ai.lastLaneChange??-Infinity)>(ai.aggressive?3500:10000)){
     for(const change of [-1,1]){
       const lane=(ai.laneIndex??0)+change;if(lane<0||lane>3)continue;
       const next=ai.lanePaths[lane],p=next[currentPathIndex%next.length];
-      const clear=input.blockers.every(b=>Math.hypot(b.x-p.x,b.y-p.y)>220);
+      const clear=input.blockers.every(b=>Math.hypot(b.x-p.x,b.y-p.y)>(ai.aggressive?140:220));
       if(clear){ai.path=next;path=next;ai.laneIndex=lane;ai.lastLaneChange=input.nowMs;ai.blockedFor=0;break;}
     }
   }
@@ -100,7 +102,7 @@ export function stepTrafficVehicle(input: TrafficStepInput): TrafficStepResult {
     // a stopped car ahead means wait, not drive through it.
     // Fixed stop window. A speed-dependent window shrank as the NPC braked
     // and produced a stop/go oscillation just outside the threshold.
-    const lookAhead = Math.max(140,ai.maxSpeed*ai.maxSpeed*18+70);
+    const lookAhead = Math.max(140,ai.maxSpeed*ai.maxSpeed*7+70);
     for (const blocker of input.blockers) {
       if (blocker.id === input.id) continue;
       const bx = blocker.x - x;

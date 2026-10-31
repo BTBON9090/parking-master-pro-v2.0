@@ -89,9 +89,14 @@ export function buildHighway():LevelData{
   const points=path.map((p,i)=>{const tangent=path[(i+1)%path.length].clone().sub(path[(i+path.length-1)%path.length]).normalize();const off=(18.75+lane*37.5)*(direction?-1:1);return{x:p.x-tangent.z*off,y:p.z+tangent.x*off};});
   lanePaths.push(direction?points.reverse():points);
  }
- for(let n=0;n<16;n++){
-  const lane=n%8,points=lanePaths[lane],index=(20+n*23)%points.length,p=points[index],q=points[(index+1)%points.length];
-  const ai:NonNullable<Obstacle['ai']>={path:points,currentPathIndex:(index+1)%points.length,speed:3+n%4*.3,maxSpeed:5+(n%4)*.7,state:'drive',laneIndex:lane%4,lanePaths:lanePaths.slice(lane<4?0:4,lane<4?4:8),incidentAt:n===3?240000:undefined};
+ for(let n=0;n<48;n++){
+  const lane=n%8,points=lanePaths[lane];
+  // Extra traffic starts near the entry so the higher density is observable;
+  // alternating directions keep cars on their own carriageway.
+  const spawnIndex=points.reduce((best,p,i)=>Math.hypot(p.x-out.startPos.x,p.y-out.startPos.y)<Math.hypot(points[best].x-out.startPos.x,points[best].y-out.startPos.y)?i:best,0);
+  const rank=Math.floor(n/8),index=(spawnIndex+[4,12,6,8,10,14][rank])%points.length,p=points[index],q=points[(index+1)%points.length];
+  const maxSpeed=[115,105,95,85][lane%4]/15;
+  const ai:NonNullable<Obstacle['ai']>={path:points,currentPathIndex:(index+1)%points.length,speed:maxSpeed,maxSpeed,state:'drive',laneIndex:lane%4,lanePaths:lanePaths.slice(lane<4?0:4,lane<4?4:8),incidentAt:n===3?240000:undefined};
   out.obstacles.push({id:'highway-traffic-'+n,...p,width:19,height:46,rotation:Math.atan2(q.y-p.y,q.x-p.x),type:'car',movable:true,weight:1350+n%4*180,color:['#bdb8a9','#557487','#95766a','#727f67'][n%4],ai});
  }
  for(const [x,y,w,h] of [[15000,0,30000,10],[15000,14000,30000,10],[0,7000,10,14000],[30000,7000,10,14000]])box('highway-boundary-'+x+'-'+y,x,y,w,h,30);

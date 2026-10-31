@@ -7,6 +7,9 @@ const wrap=(a:number)=>Math.atan2(Math.sin(a),Math.cos(a));
 export class ArticulatedTrailer {
  readonly root=new THREE.Group(); readonly footprint:Vector2[];
  private attached=true;
+ private supportPhase:'stowed'|'lowering'|'extended'|'raising'='stowed';
+ private supportProgress=0;private pendingScene:THREE.Scene|null=null;
+ private supportLegs:THREE.Group[]=[];
  private axleDistance=94.5;
  private heading:number|undefined;private last=new THREE.Vector3();
  private hitch:THREE.Vector3;private wheels:{node:THREE.Object3D;rest:THREE.Vector3;roll:THREE.Group;radius:number}[]=[];
@@ -27,9 +30,22 @@ export class ArticulatedTrailer {
    const roll=new THREE.Group();mount.add(roll);roll.attach(wheel);this.wheels.push({node:mount,rest,roll,radius:Math.max(.1,radius)});
   }
   this.footprint=collectVehicleFootprint(this.root,true);
+  // Landing gear is mounted to the trailer, not the tractor. It remains in
+  // world space with the parked trailer after the fifth wheel is released.
+  const steel=new THREE.MeshStandardMaterial({color:0x434b4b,roughness:.8});
+  for(const side of [-1,1]){
+   const leg=new THREE.Group();leg.name='trailer-landing-gear';leg.position.set(side*8,0,-20);
+   const upper=new THREE.Mesh(new THREE.BoxGeometry(1.7,6,1.7),steel);upper.position.y=9;
+   const lower=new THREE.Mesh(new THREE.BoxGeometry(1.1,6,1.1),steel);lower.name='landing-leg-extension';lower.position.y=7;
+   const foot=new THREE.Mesh(new THREE.BoxGeometry(4,.65,3),steel);foot.name='landing-leg-foot';foot.position.y=4;
+   leg.add(upper,lower,foot);this.root.add(leg);this.supportLegs.push(leg);
+  }
  }
  reset(){this.heading=undefined;}
  get isAttached(){return this.attached;}
+ get isBusy(){return this.supportPhase==='lowering'||this.supportPhase==='raising';}
+ get landingGearExtended(){return this.supportPhase==='extended';}
+ requestDetach(scene:THREE.Scene){if(!this.attached||this.supportPhase!=='stowed')return false;this.pendingScene=scene;this.supportPhase='lowering';return true;}
  hitchWorld(){this.vehicle.updateWorldMatrix(true,false);return this.vehicle.localToWorld(this.hitch.clone());}
  trailerHitchWorld(){this.root.updateWorldMatrix(true,false);return this.root.getWorldPosition(new THREE.Vector3());}
  alignment(){
@@ -42,9 +58,18 @@ export class ArticulatedTrailer {
  couple(){
   if(this.attached||this.hitchWorld().distanceTo(this.trailerHitchWorld())>6||this.alignment()<Math.cos(Math.PI/12))return false;
   this.vehicle.attach(this.root);this.attached=true;this.last.copy(this.hitchWorld());
+  if(this.supportPhase==='extended')this.supportPhase='raising';
   const forward=new THREE.Vector3(0,0,1).transformDirection(this.root.matrixWorld);this.heading=Math.atan2(forward.x,forward.z);return true;
  }
  step(dt:number,surface:(x:number,z:number)=>number){
+  if(this.isBusy){
+   const direction=this.supportPhase==='lowering'?1:-1;
+   this.supportProgress=THREE.MathUtils.clamp(this.supportProgress+direction*dt/2,0,1);
+   for(const leg of this.supportLegs){const lower=leg.getObjectByName('landing-leg-extension')!,foot=leg.getObjectByName('landing-leg-foot')!;lower.position.y=7-this.supportProgress*4;foot.position.y=4-this.supportProgress*4;}
+   if(this.supportProgress===1&&this.supportPhase==='lowering'){
+    this.supportPhase='extended';if(this.pendingScene){this.detach(this.pendingScene);this.pendingScene=null;return true;}
+   }else if(this.supportProgress===0&&this.supportPhase==='raising')this.supportPhase='stowed';
+  }
   if(!this.attached)return;
   this.vehicle.updateWorldMatrix(true,true);
   const hitch=this.vehicle.localToWorld(this.hitch.clone());

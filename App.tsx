@@ -96,6 +96,7 @@ function App() {
   const [globalOverviewOpen, setGlobalOverviewOpen] = useState(false);
   
   const [settings, setSettings] = useState<UserSettings>(()=>loadSettings({
+    trafficDifficulty: 'normal',
     renderQuality: 'auto',
     soundEnabled: true,
     absEnabled: true,

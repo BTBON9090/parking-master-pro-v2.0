@@ -758,3 +758,19 @@ html,body,#root{overscroll-behavior:none}body{-webkit-touch-callout:none}button,
 .touch-hud .live-seat-panel p{display:none}
 .touch-hud .live-seat-panel .driver-seat-row{min-height:30px;margin:0}
 .touch-hud .live-seat-panel .driver-seat-reset{min-height:27px;margin-top:3px;padding:3px 8px;font-size:10px}
+/* Keep auxiliary controls next to the instruments and clear of the steering arc. */
+.mobile-controls .mobile-signal-buttons{position:absolute;left:calc(50% - min(150px,14vw) - 112px);bottom:4px;display:flex;gap:2px}
+.mobile-controls .mobile-signal-buttons button{width:34px;height:36px;min-width:34px;min-height:36px;border-radius:9px;font-size:10px}
+.mobile-controls .mobile-sideaux{gap:0;overflow:hidden;border:1px solid #ffffff40;border-radius:9px;background:#14232bda}
+.mobile-controls .mobile-sideaux button{border-radius:0}
+.mobile-controls .mobile-sideaux button+button{border-top:1px solid #ffffff40}
+.mobile-controls .mobile-sideaux button::before{inset:0;border:0;border-radius:0;background:transparent}
+.mobile-controls .mobile-sideaux button[aria-pressed=true]{background:#ecc66c}
+.touch-hud .live-trailer{top:auto;bottom:44px;left:calc(50% + min(150px,14vw) + 5px);transform:none;align-items:flex-start}
+.touch-hud .live-trailer button{width:34px;height:34px;padding:6px;display:grid;place-items:center}
+.touch-hud .live-trailer small{position:absolute;bottom:40px;left:0;width:180px}
+.live-seat>button{width:36px;height:36px;padding:8px;display:grid;place-items:center}
+.mobile-controls .mobile-sideaux button{min-height:0;min-width:0;flex:1 1 0;padding:6px}
+.missile-quick-controls{position:fixed;z-index:65;top:64px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:5px;pointer-events:auto;color:#edf4ed;font-size:11px}
+.missile-quick-controls button,.missile-quick-controls span{white-space:nowrap;padding:7px 10px;border:1px solid #8da29c;border-radius:6px;background:#14252ce8}
+@media(max-height:550px){.missile-quick-controls{top:42px}.missile-quick-controls button,.missile-quick-controls span{padding:6px 8px;font-size:10px}}

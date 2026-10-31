@@ -1,6 +1,6 @@
 import {HudId} from '../utils/mobileLayout';
 import React, {useRef, useEffect} from 'react';
-import {Settings, Camera, Map, RotateCcw, Power, CircleParking} from 'lucide-react';
+import {Settings, Camera, Map, RotateCcw, Power, CircleParking, Armchair} from 'lucide-react';
 import type {InputState, CarType} from '../types';
 import {CAR_MODELS} from '../constants';
 import {getPowertrain, isElectricVehicle, isAutomaticVehicle, steeringWheelMaxDeg} from '../utils/powertrain';
@@ -21,7 +21,7 @@ function HoldBrakeIcon() {
 function HeadlightIcon() {
   return <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 4.8c-4 0-4 14.4 0 14.4s9-2.7 9-7.2s-5-7.2-9-7.2m.1 12.4C12.7 16.8 12 15 12 12s.7-4.8 1.1-5.2C16 6.9 20 8.7 20 12s-4 5.1-6.9 5.2M2 5h7.5c-.2.4-.5.8-.6 1.4c-.1.2-.1.4-.2.6H2zm6 6H2V9h6.2c-.1.6-.1 1.3-.2 2m.7 6c.2.8.5 1.4.9 2H2.1v-2zm-.5-2H2v-2h6c.1.7.1 1.4.2 2"/></svg>;
 }
-export function MobileControls(p: {input: InputState; update: React.Dispatch<React.SetStateAction<InputState>>; onTouchInput?:(snapshot:MobileSnapshot,immediate:boolean)=>void; readInput?:()=>InputState; car: CarType; speedKmh?:number; settings: () => void; camera: () => void; cameraMenu?:()=>void; map: () => void; reset: () => void; disabled: boolean; absEnabled?:boolean; toggleAbs?:()=>void; layout?: (id:HudId)=>React.CSSProperties; editing?:boolean}) {
+export function MobileControls(p: {input: InputState; update: React.Dispatch<React.SetStateAction<InputState>>; onTouchInput?:(snapshot:MobileSnapshot,immediate:boolean)=>void; readInput?:()=>InputState; car: CarType; speedKmh?:number; settings: () => void; camera: () => void; cameraMenu?:()=>void; map: () => void; reset: () => void; seat?:()=>void; seatOpen?:boolean; disabled: boolean; absEnabled?:boolean; toggleAbs?:()=>void; layout?: (id:HudId)=>React.CSSProperties; editing?:boolean}) {
   const controller = useRef(new MobileInputController());
   const update = useRef(p.update); update.current = p.update;
   const lock = steeringWheelMaxDeg(CAR_MODELS[p.car]);
@@ -134,11 +134,12 @@ export function MobileControls(p: {input: InputState; update: React.Dispatch<Rea
       <div className="mobile-aux mobile-sideaux hud-positioned" style={p.layout?.('aux')}>
         <button aria-label="启停动力" title="启停动力" aria-pressed={p.input.engineStarted} {...action(() => p.update(v => ({...v, engineStarted:!v.engineStarted})))}><Power/></button>
         <button aria-label="ABS 防抱死" title="ABS 防抱死（脚刹）" aria-pressed={!!p.absEnabled} {...action(()=>p.toggleAbs?.())}><span className="text-[11px] font-bold">ABS</span></button>
-        <button aria-label="临时手刹" title="按住手刹" aria-pressed={p.input.handbrake && !p.input.parkingBrake} {...hold('handbrake')}><HoldBrakeIcon/></button>
+        <button aria-label="座椅调节" title="座椅调节" aria-pressed={!!p.seatOpen} {...action(()=>p.seat?.())}><Armchair/></button>
       </div>
       <div className="mobile-aux mobile-bottomaux">
         <button aria-label={`灯光：${p.input.headlightMode === 2 ? '远光' : p.input.lights ? '近光' : '关闭'}`} title="灯光" aria-pressed={p.input.lights} {...action(() => p.update(v => {const mode=((v.headlightMode??0)+1)%3 as 0|1|2; return {...v, headlightMode:mode, lights:mode!==0};}))}><HeadlightIcon/>{p.input.headlightMode === 2 && <small>远</small>}</button>
         <button aria-label="驻车制动" title="驻车制动" aria-pressed={!!p.input.parkingBrake} {...action(() => p.update(v => ({...v, parkingBrake:!v.parkingBrake, handbrake:!v.parkingBrake || controller.current.held('handbrake')})))}><CircleParking/></button>
+        <button aria-label="临时手刹" title="按住手刹" aria-pressed={p.input.handbrake && !p.input.parkingBrake} {...hold('handbrake')}><HoldBrakeIcon/></button>
       </div>
     </>}
   </div>;

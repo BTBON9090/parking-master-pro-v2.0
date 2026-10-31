@@ -53,6 +53,7 @@ export interface BuiltScene {
   /** 可移动物体 mesh 引用（锥桶/箱子，供物理同步） */
   movableMeshes: Map<string, THREE.Group>;
   parkedVisuals: Map<string, (pose: {x:number;y:number;rotation:number;elevation?:number})=>void>;
+  destructibleVisuals: Map<string,()=>void>;
   /** 可释放的几何体列表（清理用） */
   geometries: THREE.BufferGeometry[];
   /** Level 6 render chunks; detached chunks do not upload GPU resources. */
@@ -658,7 +659,8 @@ export async function buildScene(
     .filter(obstacle => obstacle.type === 'car' && !obstacle.ai)
     .map(obstacle => ({obstacle,modelName:CAR_TYPE_TO_MODEL[obstacle.carType!]}));
   const parkedVisuals = new Map<string, (pose: {x:number;y:number;rotation:number;elevation?:number})=>void>();
-  const instancedParkedCarIds = await addParkedCarInstances(scene, levelData, parkedAssignments, parkedVisuals);
+  const destructibleVisuals = new Map<string,()=>void>();
+  const instancedParkedCarIds = await addParkedCarInstances(scene, levelData, parkedAssignments, parkedVisuals,destructibleVisuals);
 
   // 预加载建筑模型
   const buildingGroups: THREE.Group[] = [];
@@ -752,6 +754,7 @@ export async function buildScene(
         trafficCarParts.set(obs.id, parts);
         trafficObstacles.set(obs.id, obs);
       }
+      destructibleVisuals.set(obs.id,()=>{parts.group.visible=false;});
     } else if (obs.type === 'wall') {
       if (obs.collisionOnly) continue;
       if (obs.id.startsWith('hutong-') || obs.id.startsWith('street-tree-')
@@ -817,12 +820,14 @@ export async function buildScene(
           const targetHeight = obs.verticalHeight ?? (24 + (Math.abs(obs.id.length * 17) % 20));
           fitBuildingToObstacle(bld,obs,targetHeight);
           scene.add(bld);
+          destructibleVisuals.set(obs.id,()=>{bld.visible=false;});
         } else {
           // fallback 代码几何体
           const bld = buildBuildingMesh(obs.width, obs.height, obs.id);
           const height=obs.verticalHeight??new THREE.Box3().setFromObject(bld).getSize(new THREE.Vector3()).y;
           fitBuildingToObstacle(bld,obs,height);
           scene.add(bld);
+          destructibleVisuals.set(obs.id,()=>{bld.visible=false;});
         }
       }
     } else if (obs.type === 'cone') {
@@ -893,6 +898,7 @@ export async function buildScene(
         new THREE.Vector3(obstacle.width, entry.height, obstacle.height),
       );
       instances.setMatrixAt(index, matrix);
+      if(kind!=='boundary')destructibleVisuals.set(obstacle.id,()=>{instances.setMatrixAt(index,new THREE.Matrix4().makeScale(0,0,0));instances.instanceMatrix.needsUpdate=true;});
       instances.setColorAt(index, new THREE.Color(
         kind === 'boundary' ? '#252a32'
           : kind === 'pillar' ? '#8491a2'
@@ -964,7 +970,7 @@ export async function buildScene(
     playerCarParts.group.add(shadow);
   }
 
-  addBeijingScenery(scene, levelData, trackGeo);
+  addBeijingScenery(scene, levelData, trackGeo, destructibleVisuals);
   addOpenWorldScene(scene, levelData, trackGeo);
   if (levelData.levelId === 1) {
     addTrainingTerrainMesh(scene, trackGeo);
@@ -1011,13 +1017,14 @@ export async function buildScene(
   }
 
   const updateExamSignals=levelData.exam?addExamSignals(scene,levelData,trackGeo):undefined;
-  return { scene, updateExamSignals, playerCarParts, trafficCarParts, trafficObstacles, spotMeshes, movableMeshes, parkedVisuals, geometries, streamingChunks, ceilingGroup, staticCarCount: levelData.obstacles.filter(obs => obs.type === 'car' && !obs.ai).length };
+  return { scene, updateExamSignals, playerCarParts, trafficCarParts, trafficObstacles, spotMeshes, movableMeshes, parkedVisuals, destructibleVisuals, geometries, streamingChunks, ceilingGroup, staticCarCount: levelData.obstacles.filter(obs => obs.type === 'car' && !obs.ai).length };
 }
 
 async function addParkedCarInstances(
  scene:THREE.Scene,levelData:LevelData,
  assignments:Array<{obstacle:Obstacle;modelName:string}>,
  visuals:Map<string,(pose:{x:number;y:number;rotation:number;elevation?:number;crushed?:number})=>void>,
+ destructible:Map<string,()=>void>,
 ){
  const ids=new Set<string>(),buckets=new Map<string,typeof assignments>();
  for(const a of assignments){const key=a.modelName+':'+(levelData.garage?garageFloorAt(a.obstacle.elevation??-48):0);if(!buckets.has(key))buckets.set(key,[]);buckets.get(key)!.push(a);}
@@ -1060,6 +1067,7 @@ async function addParkedCarInstances(
   shadow.name='parked-contact-shadows';scene.add(shadow);meshes.push({mesh:shadow,shadow:true});
   const actualHull=hull(points),size=box.getSize(new THREE.Vector3());
   group.forEach(({obstacle:o},i)=>{
+   destructible.set(o.id,()=>{const zero=new THREE.Matrix4().makeScale(0,0,0);for(const {mesh} of meshes){mesh.setMatrixAt(i,zero);mesh.instanceMatrix.needsUpdate=true;}});
    o.collisionFootprint=actualHull;o.width=size.x;o.height=size.z;o.verticalHeight=size.y;
    o.elevation??=terrainHeightAt(levelData,o.x,o.y);ids.add(o.id);
    const update=(pose:{x:number;y:number;rotation:number;elevation?:number;crushed?:number})=>{

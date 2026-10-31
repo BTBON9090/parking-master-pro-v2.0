@@ -20,6 +20,7 @@ export function restoreSettings(defaults:UserSettings,raw:string|null,legacyCar?
    for(const car of Object.values(CarType)) if(saved.driverSeatAdjustments[car]) seats[car]=normalizeDriverSeat(saved.driverSeatAdjustments[car]);
   } else if(legacyCar&&saved?.driverSeatAdjustment) seats[legacyCar]=normalizeDriverSeat(saved.driverSeatAdjustment);
   result.driverSeatAdjustments=seats;
+  if(!['easy','normal','hard','extreme'].includes(result.trafficDifficulty??''))result.trafficDifficulty='normal';
   if(result.dayTime !== DayTime.DAY && result.dayTime !== DayTime.NIGHT) result.dayTime=DayTime.DAY;
   if(!['auto','low','medium','high','ultra'].includes(result.renderQuality??''))result.renderQuality='auto';
   for(const key of ['volume','cabinVolume','exteriorVolume'] as const)result[key]=Math.max(0,Math.min(1,result[key]??1));

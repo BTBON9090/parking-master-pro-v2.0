@@ -18,7 +18,7 @@ export function sanitizeHudLayout(saved:unknown):HudLayout{
 export function resolveHudLayout(w:number,h:number,bus:boolean,saved:HudLayout={}):Record<HudId,HudRect>{
  const px=(x:number,y:number,width:number,height:number)=>clampRect({x:x/w,y:y/h,width:width/w,height:height/h});
  const pedal=Math.min(94,Math.max(66,h*.21)),gap=10,cluster=Math.min(300,w*.28),clusterH=cluster*190/422;
- const steerSize=Math.min(Math.max(136,(w*.5-124)*.75),h*.53-10);
+ const steerSize=Math.min(Math.max(136,(w*.5-124)*.75),h*.53-10,Math.max(105,(w-cluster)/2-130));
  const sideW=bus?Math.min(72,h*.18):Math.min(158,w*.18),sideH=bus?sideW*1.65:sideW/2.65;
  const centreW=Math.min(190,w*.23);
  const result:Record<HudId,HudRect>={
@@ -31,6 +31,8 @@ export function resolveHudLayout(w:number,h:number,bus:boolean,saved:HudLayout={
   topbar:px(w/2-centreW/2-80,2,centreW+160,36),aux:px(w-40,sideH+5,36,114),
  };
  for(const id of Object.keys(result) as HudId[])if(saved[id])result[id]=clampRect(saved[id]!);
+ if(!saved.topbar){const l=(result.mirrorLeft.x+result.mirrorLeft.width)*w+4,r=result.mirrorRight.x*w-4;result.topbar=px(l,2,Math.max(150,r-l),36);}
+ if(!saved.aux){const r=result.mirrorRight;result.aux=px(w-38,(r.y+r.height)*h+4,36,108);}
  return result;
 }
 export function hudStyle(r:HudRect,w:number,h:number):CSSProperties{

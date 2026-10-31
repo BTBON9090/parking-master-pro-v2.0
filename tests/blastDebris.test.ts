@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import * as THREE from 'three';
+import {BlastDebris,blastDistance} from '../three/blastDebris';
+import {PhysicsWorld} from '../utils/physicsWorld';
+import {addBeijingScenery} from '../three/beijingScenery';
+import type {Obstacle,LevelData} from '../types';
+const obs={id:'hutong-1',type:'wall',x:100,y:100,width:20,height:30,rotation:0,color:'#aaa',weight:0,movable:false,elevation:0,verticalHeight:30} as Obstacle;
+assert.equal(blastDistance(obs,new THREE.Vector3(100,0,100)),0);
+assert.equal(blastDistance(obs,new THREE.Vector3(460,0,100)),350,'range uses collider edge');
+assert(blastDistance(obs,new THREE.Vector3(100,400,100))>350,'other elevation layers do not take ground blast damage');
+const physics=new PhysicsWorld();physics.addStaticObstacles([obs]);const body=physics.world.bodies.find(b=>b.shapes.length===1&&b.shapes[0].type!==2)!;assert(body);const count=body.shapes.length;physics.removeObstacle(obs.id);assert.equal(body.shapes.length,count-1,'collision removed together with object');physics.dispose();
+const scene=new THREE.Scene(),visuals=new Map<string,()=>void>();addBeijingScenery(scene,{obstacles:[obs],mapWidth:1000,mapHeight:1000,spots:[],markings:[]} as LevelData,g=>g,visuals);assert(visuals.has(obs.id));visuals.get(obs.id)!();let found=0;scene.traverse(o=>{if(o instanceof THREE.InstancedMesh){const m=new THREE.Matrix4();o.getMatrixAt(0,m);assert.equal(m.elements[0],0);found++;}});assert(found>=4,'all courtyard visual parts hidden');
+const debris=new BlastDebris(new THREE.Vector3(0,0,0),[obs],()=>0);const mesh=debris.group.children[0] as THREE.InstancedMesh;assert.equal(mesh.count,260,'a dense ground plume plus object fragments');assert(mesh.instanceColor,'ground and object debris have varied tones');for(let i=0;i<130;i++)debris.step(.1);assert(debris.finished);debris.dispose();
+const bridgeBlast=new BlastDebris(new THREE.Vector3(0,80,0),[],()=>0);const bridgeMesh=bridgeBlast.group.children[0] as THREE.InstancedMesh;assert.equal(bridgeMesh.count,240,'surface plume exists without a destructible object');const transform=new THREE.Matrix4();bridgeMesh.getMatrixAt(0,transform);assert(transform.elements[13]>79,'elevated impact plume starts at the impacted surface');bridgeBlast.dispose();
+const capped=new BlastDebris(new THREE.Vector3(),Array.from({length:50},()=>obs),()=>0);assert.equal((capped.group.children[0] as THREE.InstancedMesh).count,600,'debris count is bounded for performance');capped.dispose();
+console.log('Blast PASS: bounded distance/height, collider removal, instanced facade removal and debris lifetime');

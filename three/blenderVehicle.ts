@@ -62,6 +62,24 @@ export function buildNativeAuthoredVehicle(source: THREE.Group, cfg: CarConfig):
   source.updateMatrixWorld(true);
   source.traverse(node => {
     if (!(node instanceof THREE.Mesh)) return;
+    if([CarType.SEMI,CarType.US22].includes(cfg.id)&&node.name==='Surface_CarRoot_BlackTrim'){
+      // Generic passenger-car sill strips run through the truck tyres.
+      const geometry=node.geometry.clone(),position=geometry.getAttribute('position'),index=geometry.index,keep:number[]=[];
+      const sill=(i:number)=>{const p=new THREE.Vector3().fromBufferAttribute(position,i).applyMatrix4(node.matrixWorld);return Math.abs(p.x)>11.3&&Math.abs(p.x)<11.9&&p.y>2.6&&p.y<3.6&&p.z>-10&&p.z<22;};
+      for(let i=0;i<(index?.count??position.count);i+=3){const face=[0,1,2].map(j=>index?index.getX(i+j):i+j);if(!face.every(sill))keep.push(...face);}
+      geometry.setIndex(keep);geometry.computeBoundingBox();geometry.computeBoundingSphere();node.geometry=geometry;
+    }
+    if(cfg.id===CarType.US22 && ['Interior_CarRoot_BlackTrim','Interior_CarRoot_InteriorDark'].includes(node.name)){
+      // Two SUV-derived interior islands sit outside the long-nose cab: a
+      // 2.7 m steering-column rod and a dashboard display over the hood.
+      // Remove only their authored bounds; the actual cab and chassis remain.
+      const geometry=node.geometry.clone(),position=geometry.getAttribute('position'),index=geometry.index,keep:number[]=[];
+      const outside=(i:number)=>{const p=new THREE.Vector3().fromBufferAttribute(position,i).applyMatrix4(node.matrixWorld);
+        return node.name==='Interior_CarRoot_BlackTrim' ? p.x>4.15&&p.x<5.3&&p.y>23&&p.y<26.1&&p.z>9&&p.z<37.2
+          : Math.abs(p.x)<2.5&&p.y>23&&p.y<27&&p.z>35.8&&p.z<37.3;};
+      for(let i=0;i<(index?.count??position.count);i+=3){const face=[0,1,2].map(j=>index?index.getX(i+j):i+j);if(!face.every(outside))keep.push(...face);}
+      geometry.setIndex(keep);geometry.computeBoundingBox();geometry.computeBoundingSphere();node.geometry=geometry;
+    }
     // The exported black-trim batch contains the physical inside mirror.
     // Its untextured back blocks the windscreen despite the functional HUD
     // mirror above it. Remove only this small isolated upper-centre island.
@@ -222,7 +240,11 @@ export function buildNativeAuthoredVehicle(source: THREE.Group, cfg: CarConfig):
   }
 
   const screenMesh = source.getObjectByName('InteriorInstrumentScreen');
-  if (screenMesh instanceof THREE.Mesh && parts.nativeCockpit) {
+  // The original car-derived screen floats above the raised dashboard on the
+  // two trucks; their instrument overlay remains available in the cockpit.
+  if(screenMesh && [CarType.SEMI,CarType.US22].includes(cfg.id))screenMesh.removeFromParent();
+  if(cfg.id===CarType.US22)source.getObjectByName('InteriorCenterScreen')?.removeFromParent();
+  if (screenMesh instanceof THREE.Mesh && screenMesh.parent && parts.nativeCockpit) {
     const material = Array.isArray(screenMesh.material) ? screenMesh.material[0] : screenMesh.material;
     const screenMaterial = material.clone() as THREE.MeshStandardMaterial;
     screenMaterial.name = 'InstrumentScreenLive';
@@ -321,6 +343,17 @@ export function buildNativeAuthoredVehicle(source: THREE.Group, cfg: CarConfig):
 
   const trailerNode=source.getObjectByName('TrailerRoot');
   if(trailerNode)parts.trailer=new ArticulatedTrailer(group,trailerNode);
+  if([CarType.SEMI,CarType.US22].includes(cfg.id)){
+    // Continuous tractor ladder frame reaches the front axle and both rear
+    // axles even after the trailer is detached. Rails stay inboard of tyres.
+    const frame=new THREE.Group();frame.name='tractor-ladder-frame';
+    const material=new THREE.MeshStandardMaterial({color:0x30383b,roughness:.82,metalness:.16});
+    const rear=Math.min(...parts.wheelMounts.map(w=>w.position.z))-4,front=Math.max(...parts.frontWheels.map(w=>w.position.z))+4;
+    const railGeom=new THREE.BoxGeometry(1.2,1.8,front-rear),crossGeom=new THREE.BoxGeometry(11.4,1.3,1.3);
+    for(const side of [-1,1]){const rail=new THREE.Mesh(railGeom,material);rail.position.set(side*5.1,7.7,(front+rear)/2);frame.add(rail);}
+    for(const z of [rear+1,(rear+front)/2,front-1]){const cross=new THREE.Mesh(crossGeom,material);cross.position.set(0,7.7,z);frame.add(cross);}
+    frame.traverse(n=>{if(n instanceof THREE.Mesh){n.castShadow=true;n.receiveShadow=true;}});group.add(frame);
+  }
   group.updateWorldMatrix(true, true);
   let bodyFootprint = collectVehicleFootprint(group, false);
   const wheelFootprints = parts.wheelMounts.map(mount => collectVehicleFootprint(mount, true));

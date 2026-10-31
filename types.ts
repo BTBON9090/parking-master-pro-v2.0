@@ -191,6 +191,7 @@ export interface VehicleTuning {
 }
 
 export interface AiConfig {
+    aggressive?:boolean;
     laneIndex?:number;
     lanePaths?:Vector2[][];
     incidentAt?:number;
@@ -451,6 +452,7 @@ export interface KeyBindings {
 }
 
 export interface UserSettings {
+  trafficDifficulty?: 'easy'|'normal'|'hard'|'extreme';
   mobileHudLayout?: import("./utils/mobileLayout").HudLayout;
   renderQuality?: import("./utils/renderQuality").RenderQuality;
   soundEnabled: boolean;

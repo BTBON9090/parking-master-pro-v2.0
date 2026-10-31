@@ -25,6 +25,7 @@ export class PhysicsWorld {
   private trafficBodies = new Map<string, CANNON.Body>();
   private movableBodies = new Map<string, CANNON.Body>();
   private staticBodies: CANNON.Body[] = [];
+  private staticShapes = new Map<string,{body:CANNON.Body;shape:CANNON.Shape}>();
 
   // 碰撞回调
   onPlayerCollision: ((impactSpeed: number) => void) | null = null;
@@ -177,9 +178,15 @@ export class PhysicsWorld {
         const offset=new CANNON.Vec3(obs.x-x,(obs.elevation||0)+15,obs.y-z);
         const orientation=new CANNON.Quaternion();orientation.setFromEuler(0,obs.rotation,0);
         body.addShape(shape,offset,orientation);
+        this.staticShapes.set(obs.id,{body,shape});
       }
       this.world.addBody(body);this.staticBodies.push(body);
     }
+  }
+
+  removeObstacle(id:string){
+    const entry=this.staticShapes.get(id);if(entry){entry.body.removeShape(entry.shape);entry.body.updateBoundingRadius();entry.body.aabbNeedsUpdate=true;this.staticShapes.delete(id);}
+    const body=this.trafficBodies.get(id)??this.movableBodies.get(id);if(body){this.world.removeBody(body);this.trafficBodies.delete(id);this.movableBodies.delete(id);}
   }
 
   /**

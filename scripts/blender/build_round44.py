@@ -27,7 +27,7 @@ if not os.getenv('DF41_ONLY'):
 b.reset_scene();root=bpy.data.objects.new('CarRoot',None);b.link_object(root)
 s=f.spec('DF41',16.4,3.2,3.8,11.2,.64,(.20,.28,.14),'suv')
 s.update(eye=(.75,-6.45,2.65),steering_center=(.75,-6.9,2.2),instrument_screen=(.75,-7.15,2.25))
-colors={'Paint':(.20,.28,.14),'BlackTrim':(.028,.035,.025),'Tyre':(.04,.045,.04),'Rim':(.29,.34,.23),'Hub':(.22,.26,.19),'BrakeDisc':(.15,.16,.14),'Glass':(.18,.30,.33),'InteriorDark':(.08,.10,.08),'InteriorTrim':(.32,.36,.28),'Chrome':(.55,.61,.56),'Headlight':(.9,.93,.85),'Taillight':(.7,.04,.02),'InstrumentScreen':(.05,.14,.17)}
+colors={'Paint':(.20,.28,.14),'BlackTrim':(.028,.035,.025),'Tyre':(.04,.045,.04),'Rim':(.29,.34,.23),'Hub':(.22,.26,.19),'BrakeDisc':(.15,.16,.14),'Glass':(.18,.30,.33),'InteriorDark':(.08,.10,.08),'InteriorTrim':(.32,.36,.28),'Chrome':(.55,.61,.56),'Headlight':(.9,.93,.85),'Taillight':(.7,.04,.02),'InstrumentScreen':(.05,.14,.17),'IndicatorL':(.85,.42,.03),'IndicatorR':(.85,.42,.03)}
 m={k:b.material(k,c,roughness=.8,alpha=.30 if k=='Glass' else 1) for k,c in colors.items()}
 b.box('Body',(2.45,15.8,.36),(0,0,1.20),m['Paint'],bevel=.08,parent=root)
 # Cabin panels keep all glazing apertures truly open.
@@ -39,6 +39,8 @@ for side in [-1,1]:
  b.box('SideMirrorLens',(.15,.025,.40),(side*1.68,-7.39,2.65),m['Chrome'],parent=root)
  b.box('Headlight'+str(side),(.48,.08,.22),(side*.95,-8.01,1.65),m['Headlight'],parent=root)
  b.box('Taillight'+str(side),(.30,.08,.18),(side*1.05,7.95,1.35),m['Taillight'],parent=root)
+ indicator='IndicatorL' if side>0 else 'IndicatorR'
+ b.box(indicator,(.19,.055,.12),(side*1.28,-8.04,1.57),m[indicator],parent=root)
 b.box('CabNose',(3.12,.18,.7),(0,-7.92,1.85),m['Paint'],bevel=.06,parent=root)
 b.box('CabRoof',(3.16,2.6,.14),(0,-6.7,3.17),m['Paint'],bevel=.06,parent=root)
 b.box('CabBack',(3.0,.12,1.7),(0,-5.45,2.30),m['Paint'],parent=root)
@@ -66,7 +68,9 @@ tube=b.cylinder('TransportTube',.88,11.3,(0,-5.65,.95),m['Paint'],vertices=20,pa
 for y in [-1,-3.5,-6,-8.5,-10.5]:
  band=b.cylinder('TubeBand',.93,.12,(0,y,.95),m['BlackTrim'],vertices=20,parent=launcher);band.rotation_euler.x=math.pi/2
 for side in [-1,1]:
- tank=b.cylinder('SideStorageTank',.26,7.2,(side*1.20,-2.4,2.12),m['BlackTrim'],vertices=16,parent=root);tank.rotation_euler.x=math.pi/2
+ tank=b.cylinder('SideStorageTank',.42,11.3,(side*1.19,1.0,2.12),m['BlackTrim'],vertices=16,parent=root);tank.rotation_euler.x=math.pi/2
+ base=bpy.data.objects.new('HydraulicBase'+str(side),None);b.link_object(base);base.parent=root;base.location=(side*.65,3.1,1.4)
+ top=bpy.data.objects.new('HydraulicTop'+str(side),None);b.link_object(top);top.parent=launcher;top.location=(side*.65,-5.0,.72)
  for y in [-4.8,6.4]:
   leg=bpy.data.objects.new('Outrigger'+str(side)+str(y),None);b.link_object(leg);leg.parent=root;leg.location=(side*.6,y,1.1);leg['side']=side
   b.box('SupportArm',(.9,.3,.25),(side*.25,0,0),m['Paint'],parent=leg)

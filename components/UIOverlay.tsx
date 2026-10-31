@@ -26,7 +26,7 @@ import { resolveCockpitPack } from './cockpit/stylePacks';
 import { publishMirrorGlassLayout } from '../utils/mirrorLayout';
 import { firstPersonClusterScale } from '../utils/hudLayout';
 import { SideMirrorFrame, CentreMirrorFrame, CockpitCluster } from './cockpit/CockpitParts';
-import { Settings, X, Zap, Pause, Power, Volume2, Gauge, ChevronUp, ChevronDown, RotateCcw, Keyboard, Sliders, Map, Scan, LocateFixed, Camera, MoveUpRight, MoveUpLeft, MoveDownRight, MoveDownLeft, CarFront, Eye, Maximize2, Minimize2, Languages, AlertTriangle } from 'lucide-react';
+import { Settings, X, Zap, Pause, Power, Volume2, Gauge, ChevronUp, ChevronDown, RotateCcw, Keyboard, Sliders, Map, Scan, LocateFixed, Camera, MoveUpRight, MoveUpLeft, MoveDownRight, MoveDownLeft, CarFront, Eye, Maximize2, Minimize2, Languages, AlertTriangle, Armchair } from 'lucide-react';
 
 interface UIOverlayProps {
   savedExam?:SavedExam;
@@ -1415,7 +1415,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
       )}
 
       <DrivingHints/>{levelData&&<RouteRadar level={levelData}/>}
-      <div className="live-seat" data-ui-control><button type="button" aria-expanded={seatPanelOpen} onClick={()=>{setSeatPanelOpen(v=>!v);if(!seatPanelOpen)onCameraViewChange('HOOD');}}>座椅视角 {seatPanelOpen?'×':'调节'}</button>{seatPanelOpen&&<div className="live-seat-panel"><DriverSeatControls car={currentCarId} settings={settings} update={updateSettings} compact/></div>}</div>
+      <div className="live-seat" data-ui-control style={touch?{top:(hudRects.aux.y+hudRects.aux.height)*hudViewport.h,right:46}:undefined}>{!touch&&<button type="button" aria-label="座椅调节" aria-expanded={seatPanelOpen} onClick={()=>{setSeatPanelOpen(v=>!v);if(!seatPanelOpen)onCameraViewChange('HOOD');}}><Armchair size={18}/></button>}{seatPanelOpen&&<div className="live-seat-panel"><DriverSeatControls car={currentCarId} settings={settings} update={updateSettings} compact/></div>}</div>
       <TrailerControls car={currentCarId} levelId={levelData?.levelId}/>
       <HintSlot>{levelData?.highway&&<HighwayNotice/>}{currentCarId===CarType.DF41&&levelData&&<MissilePanel level={levelData}/>}
       {levelData?.openWorld&&<MountainAdventurePanel/>}
@@ -1516,7 +1516,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
       </div>
 
       {/* ===== 设置抽屉（语言 + 按键指南 已迁移至此） ===== */}
-      {touch&&<MobileControls absEnabled={settings.absEnabled} toggleAbs={()=>updateSettings({absEnabled:!settings.absEnabled})} speedKmh={Math.abs(liveCarSpeed)*15} input={inputState} update={setInputState} onTouchInput={onTouchInput} readInput={readInput} car={currentCarId} layout={layoutStyle} editing={layoutDraft!==null} disabled={showSettings||showGuide||portrait||layoutDraft!==null} settings={()=>setShowSettings(true)} camera={cycleCamera} cameraMenu={()=>setCameraMenuOpen(v=>!v)} map={()=>setGlobalOverviewOpen(!globalOverviewOpen)} reset={resetLevel}/>}
+      {touch&&<MobileControls absEnabled={settings.absEnabled} toggleAbs={()=>updateSettings({absEnabled:!settings.absEnabled})} speedKmh={Math.abs(liveCarSpeed)*15} input={inputState} update={setInputState} onTouchInput={onTouchInput} readInput={readInput} car={currentCarId} layout={layoutStyle} editing={layoutDraft!==null} disabled={showSettings||showGuide||portrait||layoutDraft!==null} settings={()=>setShowSettings(true)} camera={cycleCamera} cameraMenu={()=>setCameraMenuOpen(v=>!v)} seat={()=>{setSeatPanelOpen(v=>!v);if(!seatPanelOpen)onCameraViewChange('HOOD');}} seatOpen={seatPanelOpen} map={()=>setGlobalOverviewOpen(!globalOverviewOpen)} reset={resetLevel}/>}
       {touch&&cameraMenuOpen&&<div className="mobile-camera-menu" data-ui-control>{cameraPresets.map(item=><button key={item.view} type="button" aria-pressed={cameraView===item.view} onClick={()=>{onCameraViewChange(item.view);setCameraMenuOpen(false);}}>{lang===Language.CN?item.cn:item.en}</button>)}</div>}
       {touch&&portrait&&!showSettings&&<div className="rotate-device" role="status"><strong>请横屏驾驶</strong><p>转动手机，展开方向盘和踏板。</p><button onClick={()=>setShowSettings(true)}>打开设置</button></div>}
       {showSettings && <SettingsPage saveMessage={saveMessage} onLayout={editLayout} settings={settings} update={updateSettings} car={currentCarId} level={level} openWorld={!!levelData?.openWorld} onCar={onChangeCar} onMap={onChangeMap} onTravel={onTravel} close={()=>setShowSettings(false)} reset={resetLevel} restart={restartLevel} exit={exitGame} lang={lang} setLang={setLang} capture={captureBinding} bind={setCaptureBinding} guide={()=>{setShowSettings(false);setShowGuide(true);}}/>}
