@@ -35,7 +35,7 @@ export default function MainMenu(p:MainMenuProps){
   {toggle('absEnabled','ABS 防抱死')}{toggle('autoTurnSignal','自动转向灯')}{toggle('weatherEnabled','天气效果')}
   {p.settings.weatherEnabled&&<>{toggle('weatherRain','降雨')}{toggle('weatherSnow','降雪')}{toggle('weatherFog','大雾')}</>}
   {toggle('shadowsEnabled','实时阴影')}{toggle('soundEnabled','音效')}{toggle('wheelGhost','车轮透视')}{toggle('logitechKnobMode','旋钮方向盘')}
-  <DriverSeatControls settings={p.settings} update={p.updateSettings} compact/>
+  <DriverSeatControls car={p.currentCar} settings={p.settings} update={p.updateSettings} compact/>
   <label><span>音量</span><input aria-label="训练音量" type="range" min="0" max="1" step=".05" value={p.settings.volume} onChange={e=>p.updateSettings({volume:+e.target.value})}/></label>
   {(()=>{let saves:Record<string,any>={};try{saves=JSON.parse(localStorage.getItem('map-editor-saves-v2')??'{}');}catch{}return Object.keys(saves).length>0&&<div className="custom-saves"><h3>自定义地图</h3>{Object.entries(saves).map(([name,record])=><button key={name} onClick={()=>p.onPlayCustom?.(record)}>{name} ↗</button>)}</div>;})()}
  </>;

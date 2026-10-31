@@ -144,7 +144,7 @@ function App() {
       ackermannSplitGain: 0.82,
       differentialGain: 0.37,
     },
-  }));
+  },currentCar));
   useEffect(()=>{
     if(isInGame)return;
     const toggle=()=>setMenuSettings(v=>!v);
@@ -767,14 +767,39 @@ function App() {
     };
 
     let touchTap={time:0,x:0,y:0};
+    const cameraTouches = new Map<number, {x:number;y:number}>();
+    let pinchDistance = 0;
+    const touchDistance = () => {
+        const [a,b] = [...cameraTouches.values()];
+        return a && b ? Math.hypot(a.x-b.x,a.y-b.y) : 0;
+    };
     const handleTouchPointerDown = (e: PointerEvent) => {
-        if (e.pointerType !== 'touch' || !(e.target instanceof HTMLCanvasElement) || touchSteerRef.current.active) return;
+        if (e.pointerType !== 'touch' || !(e.target instanceof HTMLCanvasElement) || cameraTouches.size >= 2) return;
         e.preventDefault();
+        cameraTouches.set(e.pointerId,{x:e.clientX,y:e.clientY});
+        try { (e.target as HTMLElement).setPointerCapture(e.pointerId); } catch { /* optional */ }
+        if (cameraTouches.size === 2) {
+            pinchDistance = touchDistance();
+            lookDragRef.current.moved = true;
+            touchTap.time = 0;
+            return;
+        }
         touchSteerRef.current = { active: true, pointerId: e.pointerId, lastX: e.clientX };
         lookDragRef.current={active:true,lastX:e.clientX,lastY:e.clientY,mode:cameraViewStateRef.current==='HOOD'?'head':'orbit',moved:false};
-        try { (e.target as HTMLElement).setPointerCapture(e.pointerId); } catch { /* optional */ }
     };
     const handleTouchPointerMove = (e: PointerEvent) => {
+        if (!cameraTouches.has(e.pointerId)) return;
+        e.preventDefault();
+        cameraTouches.set(e.pointerId,{x:e.clientX,y:e.clientY});
+        if (cameraTouches.size === 2) {
+            const distance = touchDistance();
+            if (pinchDistance > 0 && distance > 0 && cameraViewStateRef.current !== 'HOOD') {
+                setCameraView('ORBIT');
+                window.dispatchEvent(new CustomEvent('camera-pinch-zoom',{detail:{scale:pinchDistance/distance}}));
+            }
+            pinchDistance = distance;
+            return;
+        }
         if (!touchSteerRef.current.active || e.pointerId !== touchSteerRef.current.pointerId) return;
         const dx = e.clientX - touchSteerRef.current.lastX;
         touchSteerRef.current.lastX = e.clientX;
@@ -784,6 +809,17 @@ function App() {
         else {setCameraView('ORBIT');window.dispatchEvent(new CustomEvent('camera-orbit-nudge',{detail:{dx,dy}}));}
     };
     const handleTouchPointerUp = (e: PointerEvent) => {
+        if (!cameraTouches.has(e.pointerId)) return;
+        const wasPinching = cameraTouches.size === 2;
+        cameraTouches.delete(e.pointerId);
+        if (wasPinching && cameraTouches.size) {
+            const [pointerId, point] = [...cameraTouches.entries()][0];
+            touchSteerRef.current = {active:true,pointerId,lastX:point.x};
+            lookDragRef.current.lastY=point.y;
+            lookDragRef.current.moved=true;
+            pinchDistance=0;
+            return;
+        }
         if (!touchSteerRef.current.active || e.pointerId !== touchSteerRef.current.pointerId) return;
         if(e.type==='pointerup'&&!lookDragRef.current.moved){
           const now=performance.now();
@@ -951,7 +987,7 @@ function App() {
             const cameraOrder: CameraView[] = [
                 'REAR_RIGHT', 'REAR_LEFT', 'FRONT_LEFT', 'FRONT_RIGHT',
                 'FOLLOW_FAR', 'FOLLOW_NEAR', 'TOP', 'SIDE_LEFT', 'SIDE_RIGHT',
-                'HOOD', 'REVERSE',
+                'HOOD', 'REVERSE', 'ROAD_FRONT', 'ROAD_REAR',
             ];
             setCameraView(previous => {
                 const available=inspectionRef.current?cameraOrder.filter(v=>v!=='HOOD'):cameraOrder;

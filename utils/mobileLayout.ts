@@ -20,14 +20,15 @@ export function resolveHudLayout(w:number,h:number,bus:boolean,saved:HudLayout={
  const pedal=Math.min(94,Math.max(66,h*.21)),gap=10,cluster=Math.min(300,w*.28),clusterH=cluster*190/422;
  const steerSize=Math.min(Math.max(136,(w*.5-124)*.75),h*.53-10);
  const sideW=bus?Math.min(72,h*.18):Math.min(158,w*.18),sideH=bus?sideW*1.65:sideW/2.65;
+ const centreW=Math.min(190,w*.23);
  const result:Record<HudId,HudRect>={
   steer:px(12,h-steerSize-10,steerSize,steerSize),
   gas:px(w-pedal-14,h-pedal-12,pedal,pedal),brake:px(w-pedal*2-gap-14,h-pedal-12,pedal,pedal),
   gears:px(w-pedal*2-gap-14,h-pedal-53,pedal*2+gap,34),
   dashboard:px((w-cluster)/2,h-clusterH-7,cluster,clusterH),
-  mirrorLeft:px(12,62,sideW,sideH),mirrorRight:px(w-sideW-12,62,sideW,sideH),
-  mirrorCentre:px(w*.5-Math.min(190,w*.23)/2,0,Math.min(190,w*.23),Math.min(190,w*.23)/3.7),
-  topbar:px(12,8,176,42),aux:px(w-222,8,210,42),
+  mirrorLeft:px(0,0,sideW,sideH),mirrorRight:px(w-sideW,0,sideW,sideH),
+  mirrorCentre:px(w*.5-centreW/2,0,centreW,centreW/3.7),
+  topbar:px(w/2-centreW/2-80,2,centreW+160,36),aux:px(w-40,sideH+5,36,114),
  };
  for(const id of Object.keys(result) as HudId[])if(saved[id])result[id]=clampRect(saved[id]!);
  return result;

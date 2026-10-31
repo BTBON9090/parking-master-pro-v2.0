@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import * as THREE from 'three';
+import {MissileShow} from '../three/missileShow';
+import type {LevelData} from '../types';
+Object.assign(globalThis,{window:new EventTarget()});
+const scene=new THREE.Scene(),vehicle=new THREE.Group(),pivot=new THREE.Group(),leg=new THREE.Group(),camera=new THREE.PerspectiveCamera(),sounds:string[]=[];
+pivot.name='LauncherPivot';pivot.add(new THREE.Mesh(new THREE.BoxGeometry(4,30,4),new THREE.MeshBasicMaterial()));leg.name='OutriggerLeft';leg.position.x=3;vehicle.add(pivot,leg);scene.add(vehicle);
+const level={mapWidth:10000,mapHeight:10000} as LevelData,show=new MissileShow(scene,vehicle,level,s=>sounds.push(s));
+const send=(action:string)=>show.command({detail:{action}} as unknown as Event);
+const step=(n:number)=>{for(let i=0;i<n;i++)show.step(.1,0,camera);};
+send('deploy');step(20);assert.equal(show.phase,'deploying');assert(leg.position.x>3);assert(Math.abs(pivot.rotation.x)<.01,'outriggers extend before tube');
+step(101);assert.equal(show.phase,'ready');assert(Math.abs(pivot.rotation.x)>1.5);assert(sounds.filter(s=>s==='warning').length>=10);
+show.target=new THREE.Vector3(1000,0,1000);send('launch');step(51);assert.equal(show.phase,'ignition');assert(sounds.includes('launch'));assert(show.rocket.visible);
+const before=show.rocket.position.y;step(20);assert(show.rocket.position.y>before,'rocket emerges after ignition');
+step(11);assert.equal(show.phase,'flight');const early=show.rocket.position.clone();step(10);assert(show.rocket.position.distanceTo(early)<20,'initial flight accelerates slowly');
+const old=show.orbitAzimuth;show.pointerDown({pointerId:1,clientX:10,clientY:10,target:null} as unknown as Event);show.pointerMove({pointerId:1,clientX:50,clientY:10} as unknown as Event);assert.notEqual(show.orbitAzimuth,old,'flight camera remains draggable');
+step(140);assert.equal(show.phase,'impact');assert(sounds.includes('impact'));step(101);assert.equal(show.phase,'spent');send('retract');step(30);assert.equal(show.phase,'retracting');assert(leg.position.x>3,'legs stay extended while tube lowers');step(91);assert.equal(show.phase,'stowed');assert(Math.abs(leg.position.x-3)<1e-6);show.dispose();
+console.log('Missile sequence PASS: deployment, beeps, ignition, accelerating launch, free camera, blast and staged retraction');

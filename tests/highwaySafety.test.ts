@@ -6,6 +6,7 @@ import {CatmullRomCurve3,Vector3} from 'three';
 import type {LevelData} from '../types';
 
 const level=buildHighway();
+assert(level.markings.some(m=>m.type==='arrow-uturn')&&level.streetSigns?.some(s=>s.label.includes('掉头')),'turnaround has a pavement arrow and an advance warning');
 const roofs=level.obstacles.filter(o=>o.id.startsWith('tunnel-roof-'));
 const walls=level.obstacles.filter(o=>o.id.startsWith('tunnel-wall-'));
 assert.equal(roofs.length,10,'two tunnels have continuous roof sections');

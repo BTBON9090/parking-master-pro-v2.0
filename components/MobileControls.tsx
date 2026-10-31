@@ -21,16 +21,19 @@ function HoldBrakeIcon() {
 function HeadlightIcon() {
   return <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 4.8c-4 0-4 14.4 0 14.4s9-2.7 9-7.2s-5-7.2-9-7.2m.1 12.4C12.7 16.8 12 15 12 12s.7-4.8 1.1-5.2C16 6.9 20 8.7 20 12s-4 5.1-6.9 5.2M2 5h7.5c-.2.4-.5.8-.6 1.4c-.1.2-.1.4-.2.6H2zm6 6H2V9h6.2c-.1.6-.1 1.3-.2 2m.7 6c.2.8.5 1.4.9 2H2.1v-2zm-.5-2H2v-2h6c.1.7.1 1.4.2 2"/></svg>;
 }
-export function MobileControls(p: {input: InputState; update: React.Dispatch<React.SetStateAction<InputState>>; onTouchInput?:(snapshot:MobileSnapshot,immediate:boolean)=>void; readInput?:()=>InputState; car: CarType; speedKmh?:number; settings: () => void; camera: () => void; map: () => void; reset: () => void; disabled: boolean; absEnabled?:boolean; toggleAbs?:()=>void; layout?: (id:HudId)=>React.CSSProperties; editing?:boolean}) {
+export function MobileControls(p: {input: InputState; update: React.Dispatch<React.SetStateAction<InputState>>; onTouchInput?:(snapshot:MobileSnapshot,immediate:boolean)=>void; readInput?:()=>InputState; car: CarType; speedKmh?:number; settings: () => void; camera: () => void; cameraMenu?:()=>void; map: () => void; reset: () => void; disabled: boolean; absEnabled?:boolean; toggleAbs?:()=>void; layout?: (id:HudId)=>React.CSSProperties; editing?:boolean}) {
   const controller = useRef(new MobileInputController());
   const update = useRef(p.update); update.current = p.update;
   const lock = steeringWheelMaxDeg(CAR_MODELS[p.car]);
   const zoom=steeringRulerZoom(p.speedKmh??0);
-  const panConfig=useRef({lock,zoom});panConfig.current={lock,zoom};
+  const innerSteer=useRef(false);
+  const panConfig=useRef({lock,zoom});panConfig.current={lock,zoom:innerSteer.current?1:zoom};
+  const cameraTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
+  const cameraLong=useRef(false);
   const panTimer=useRef<ReturnType<typeof setInterval>|null>(null);
   const panPointer=useRef({id:-1,direction:0,last:0});
   const stopPan=()=>{if(panTimer.current!==null)clearInterval(panTimer.current);panTimer.current=null;panPointer.current.id=-1;};
-  const centre=controller.current.held('steer')?controller.current.viewCentre(lock,zoom):
+  const centre=controller.current.held('steer')&&!innerSteer.current?controller.current.viewCentre(lock,zoom):
     Math.max(-lock+lock/zoom,Math.min(lock-lock/zoom,p.input.steeringWheelAngle));
   const ticks=steeringRulerTicks(lock,centre,zoom);
   const arcPoint=(fraction:number,radius=1)=>{
@@ -39,7 +42,7 @@ export function MobileControls(p: {input: InputState; update: React.Dispatch<Rea
   };
   const pointerSteer=(id:number,x:number,y:number,r:DOMRect,canPan=true)=>{
     const fraction=steeringArcPosition(x,y,r.left,r.top,r.width,r.height);
-    const changed=controller.current.steerAt(id,r.left+fraction*r.width,r.left,r.width,lock,zoom);
+    const changed=controller.current.steerAt(id,r.left+fraction*r.width,r.left,r.width,lock,innerSteer.current?1:zoom);
     if(!changed)return false; // A different finger must not stop or steal edge panning.
     const direction=canPan?(fraction>1.02?1:fraction<-.02?-1:0):0;
     if(!direction)stopPan();
@@ -86,7 +89,7 @@ export function MobileControls(p: {input: InputState; update: React.Dispatch<Rea
       e.preventDefault(); e.stopPropagation();
       if (p.disabled || !controller.current.begin(control, e.pointerId, e.clientX, e.clientY, p.readInput?.().steeringWheelAngle??p.input.steeringWheelAngle)) return;
       e.currentTarget.setPointerCapture(e.pointerId);
-      if (control === 'steer') {const r=e.currentTarget.getBoundingClientRect();pointerSteer(e.pointerId,e.clientX,e.clientY,r,false);}
+      if (control === 'steer') {const r=e.currentTarget.getBoundingClientRect();innerSteer.current=Math.hypot((e.clientX-r.left)/r.width,(r.bottom-e.clientY)/r.height)<.88;panConfig.current={lock,zoom:innerSteer.current?1:zoom};pointerSteer(e.pointerId,e.clientX,e.clientY,r,false);}
       publish();
     },
     onPointerMove: (e: React.PointerEvent<HTMLElement>) => {
@@ -100,7 +103,7 @@ export function MobileControls(p: {input: InputState; update: React.Dispatch<Rea
   return <div className="mobile-controls" data-ui-control>
     <div className="mobile-topbar hud-positioned" style={p.layout?.('topbar')}>
       <button aria-label="暂停" title="暂停" {...action(p.settings)}><Settings/></button>
-      <button aria-label="切换视角" title="切换视角" {...action(p.camera)}><Camera/></button>
+      <button aria-label="切换视角" title="点击切换，长按选择视角" onPointerDown={e=>{e.preventDefault();e.stopPropagation();cameraLong.current=false;e.currentTarget.setPointerCapture(e.pointerId);cameraTimer.current=setTimeout(()=>{cameraLong.current=true;p.cameraMenu?.();},500);}} onPointerUp={e=>{e.preventDefault();if(cameraTimer.current)clearTimeout(cameraTimer.current);if(!cameraLong.current)p.camera();}} onPointerCancel={()=>{if(cameraTimer.current)clearTimeout(cameraTimer.current);}} onClick={e=>{if(e.detail===0)p.camera();}}><Camera/></button>
       <button aria-label="地图" title="地图" {...action(p.map)}><Map/></button>
       <button aria-label="重置车辆" title="重置车辆" {...action(p.reset)}><RotateCcw/></button>
     </div>
@@ -112,6 +115,9 @@ export function MobileControls(p: {input: InputState; update: React.Dispatch<Rea
           <path className="steer-arc-line" d="M 0 2 A 98 98 0 0 1 98 100" vectorEffect="non-scaling-stroke"/>
           {ticks.filter(t=>t.left>=0&&t.left<=100).map(t=>{const outer=arcPoint(t.left/100,.98),inner=arcPoint(t.left/100,t.major?.89:t.medium?.92:.95);return <line key={t.n} x1={outer.x} y1={outer.y} x2={inner.x} y2={inner.y} className={t.n===24?'steer-arc-centre':''} vectorEffect="non-scaling-stroke"/>;})}
           {(()=>{const point=arcPoint((50+50*(p.input.steeringWheelAngle-centre)/lock*zoom)/100,.98);return <circle cx={point.x} cy={point.y} r="2.2" className="steer-arc-indicator" vectorEffect="non-scaling-stroke"/>;})()}
+          <path className="steer-arc-inner" d="M 0 22 A 78 78 0 0 1 78 100" vectorEffect="non-scaling-stroke"/>
+          {steeringRulerTicks(lock,0,1).filter(t=>t.medium).map(t=>{const a=arcPoint(t.left/100,.78),b=arcPoint(t.left/100,t.major?.72:.75);return <line key={'inner-'+t.n} x1={a.x} y1={a.y} x2={b.x} y2={b.y} className={t.n===24?'steer-arc-centre':''} vectorEffect="non-scaling-stroke"/>;})}
+          {(()=>{const point=arcPoint((p.input.steeringWheelAngle/lock+1)/2,.78);return <circle cx={point.x} cy={point.y} r="2.2" className="steer-arc-indicator" vectorEffect="non-scaling-stroke"/>;})()}
         </svg>
       </div>
       <div className="mobile-drive">
@@ -120,12 +126,19 @@ export function MobileControls(p: {input: InputState; update: React.Dispatch<Rea
         </div>
         <div className="mobile-pedals"><button className="mobile-brake hud-positioned" style={p.layout?.('brake')} aria-label="触屏刹车" {...hold('brake')}>刹车<small>上滑加力</small></button><button className="mobile-gas hud-positioned" style={p.layout?.('gas')} aria-label="触屏油门" {...hold('gas')}>油门<small>上滑加力</small></button></div>
       </div>
-      <div className="mobile-aux hud-positioned" style={p.layout?.('aux')}>
+      <div className="mobile-signal-buttons">
+        <button aria-label="左转向灯" aria-pressed={p.input.indicator===-1} {...action(()=>p.update(v=>({...v,indicator:v.indicator===-1?0:-1})))}>◀</button>
+        <button aria-label="雨刮" aria-pressed={!!p.input.wipers} {...action(()=>p.update(v=>({...v,wipers:!v.wipers})))}>雨刮</button>
+        <button aria-label="右转向灯" aria-pressed={p.input.indicator===1} {...action(()=>p.update(v=>({...v,indicator:v.indicator===1?0:1})))}>▶</button>
+      </div>
+      <div className="mobile-aux mobile-sideaux hud-positioned" style={p.layout?.('aux')}>
         <button aria-label="启停动力" title="启停动力" aria-pressed={p.input.engineStarted} {...action(() => p.update(v => ({...v, engineStarted:!v.engineStarted})))}><Power/></button>
-        <button aria-label={`灯光：${p.input.headlightMode === 2 ? '远光' : p.input.lights ? '近光' : '关闭'}`} title="灯光" aria-pressed={p.input.lights} {...action(() => p.update(v => {const mode=((v.headlightMode??0)+1)%3 as 0|1|2; return {...v, headlightMode:mode, lights:mode!==0};}))}><HeadlightIcon/>{p.input.headlightMode === 2 && <small>远</small>}</button>
-        <button aria-label="驻车制动" title="驻车制动" aria-pressed={!!p.input.parkingBrake} {...action(() => p.update(v => ({...v, parkingBrake:!v.parkingBrake, handbrake:!v.parkingBrake || controller.current.held('handbrake')})))}><CircleParking/></button>
         <button aria-label="ABS 防抱死" title="ABS 防抱死（脚刹）" aria-pressed={!!p.absEnabled} {...action(()=>p.toggleAbs?.())}><span className="text-[11px] font-bold">ABS</span></button>
         <button aria-label="临时手刹" title="按住手刹" aria-pressed={p.input.handbrake && !p.input.parkingBrake} {...hold('handbrake')}><HoldBrakeIcon/></button>
+      </div>
+      <div className="mobile-aux mobile-bottomaux">
+        <button aria-label={`灯光：${p.input.headlightMode === 2 ? '远光' : p.input.lights ? '近光' : '关闭'}`} title="灯光" aria-pressed={p.input.lights} {...action(() => p.update(v => {const mode=((v.headlightMode??0)+1)%3 as 0|1|2; return {...v, headlightMode:mode, lights:mode!==0};}))}><HeadlightIcon/>{p.input.headlightMode === 2 && <small>远</small>}</button>
+        <button aria-label="驻车制动" title="驻车制动" aria-pressed={!!p.input.parkingBrake} {...action(() => p.update(v => ({...v, parkingBrake:!v.parkingBrake, handbrake:!v.parkingBrake || controller.current.held('handbrake')})))}><CircleParking/></button>
       </div>
     </>}
   </div>;

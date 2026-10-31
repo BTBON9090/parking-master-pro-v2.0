@@ -6,6 +6,7 @@ const wrap=(a:number)=>Math.atan2(Math.sin(a),Math.cos(a));
  * Pose is solved in world space and converted back through the tractor's tilt. */
 export class ArticulatedTrailer {
  readonly root=new THREE.Group(); readonly footprint:Vector2[];
+ private attached=true;
  private axleDistance=94.5;
  private heading:number|undefined;private last=new THREE.Vector3();
  private hitch:THREE.Vector3;private wheels:{node:THREE.Object3D;rest:THREE.Vector3;roll:THREE.Group;radius:number}[]=[];
@@ -28,7 +29,23 @@ export class ArticulatedTrailer {
   this.footprint=collectVehicleFootprint(this.root,true);
  }
  reset(){this.heading=undefined;}
+ get isAttached(){return this.attached;}
+ hitchWorld(){this.vehicle.updateWorldMatrix(true,false);return this.vehicle.localToWorld(this.hitch.clone());}
+ trailerHitchWorld(){this.root.updateWorldMatrix(true,false);return this.root.getWorldPosition(new THREE.Vector3());}
+ alignment(){
+  this.vehicle.updateWorldMatrix(true,false);this.root.updateWorldMatrix(true,false);
+  const tractor=new THREE.Vector3(0,0,1).transformDirection(this.vehicle.matrixWorld);
+  const trailer=new THREE.Vector3(0,0,1).transformDirection(this.root.matrixWorld);
+  return tractor.dot(trailer);
+ }
+ detach(scene:THREE.Scene){if(!this.attached)return false;scene.attach(this.root);this.attached=false;return true;}
+ couple(){
+  if(this.attached||this.hitchWorld().distanceTo(this.trailerHitchWorld())>6||this.alignment()<Math.cos(Math.PI/12))return false;
+  this.vehicle.attach(this.root);this.attached=true;this.last.copy(this.hitchWorld());
+  const forward=new THREE.Vector3(0,0,1).transformDirection(this.root.matrixWorld);this.heading=Math.atan2(forward.x,forward.z);return true;
+ }
  step(dt:number,surface:(x:number,z:number)=>number){
+  if(!this.attached)return;
   this.vehicle.updateWorldMatrix(true,true);
   const hitch=this.vehicle.localToWorld(this.hitch.clone());
   const forward=new THREE.Vector3(0,0,1).transformDirection(this.vehicle.matrixWorld),tractorYaw=Math.atan2(forward.x,forward.z);

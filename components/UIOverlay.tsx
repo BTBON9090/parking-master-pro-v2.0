@@ -1,3 +1,5 @@
+import {DriverSeatControls} from './DriverSeatControls';
+import {TrailerControls} from './TrailerControls';
 import {HighwayNotice} from './HighwayNotice';
 import {MissilePanel} from './MissilePanel';
 import {DrivingHints,HintSlot} from './DrivingHints';
@@ -342,6 +344,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
   const mapViewY = 0;
   const floorFilter = (_y: number, elevation?:number) => !isLevel6 || garageFloorAt(elevation ?? -48) === mapCarFloor;
 
+  const [seatPanelOpen,setSeatPanelOpen]=useState(false);
   const [orbitBall, setOrbitBall] = useState({ azimuth: 0, polar: 0.12 });
   const [cameraMenuOpen, setCameraMenuOpen] = useState(false);
   const [miniZoom,setMiniZoom]=useState(1);
@@ -353,10 +356,11 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
       try { localStorage.setItem('parking-master-route-map-expanded', String(miniMapExpanded)); } catch {}
   }, [miniMapExpanded]);
   const [viewportWidth, setViewportWidth] = useState(() => typeof window === 'undefined' ? 1280 : window.innerWidth);
-  const [trainingTipsOpen, setTrainingTipsOpen] = useState(() => typeof window === 'undefined' ? true : window.innerWidth >= 1450);
   const [miniMapAreaSize, setMiniMapAreaSize] = useState({ width: 300, height: 190 });
   const miniMapAreaRef = useRef<HTMLDivElement>(null);
   const orbitDragRef = useRef({ active: false, x: 0, y: 0 });
+  const cameraPressTimer = useRef<ReturnType<typeof setTimeout>|null>(null);
+  const cameraLongPress = useRef(false);
   const globalMapCacheRef = useRef<HTMLCanvasElement | null>(null);
 
   const [blink, setBlink] = useState(false);
@@ -378,7 +382,10 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
       { view: 'SIDE_RIGHT', cn: '右正视角', en: 'Right side', icon: <Eye size={14} /> },
       { view: 'HOOD', cn: '驾驶视角', en: 'Driver', icon: <CarFront size={14} /> },
       { view: 'REVERSE', cn: '倒车视角', en: 'Reverse', icon: <Scan size={14} /> },
+      { view: 'ROAD_FRONT', cn: '路线车头', en: 'Road front', icon: <CarFront size={14} /> },
+      { view: 'ROAD_REAR', cn: '路线车尾', en: 'Road rear', icon: <Camera size={14} /> },
   ];
+  const cycleCamera = () => {const views:CameraView[]=['HOOD','FOLLOW_NEAR','FOLLOW_FAR','TOP','REVERSE','ROAD_FRONT','ROAD_REAR','ORBIT'];onCameraViewChange(views[(views.indexOf(cameraView)+1)%views.length]);setCameraMenuOpen(false);};
   const handleOrbitPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
       if (!orbitDragRef.current.active) return;
       const dx = event.clientX - orbitDragRef.current.x;
@@ -538,12 +545,6 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
       window.addEventListener('resize', onResize);
       return () => window.removeEventListener('resize', onResize);
   }, []);
-
-  useEffect(() => {
-      // Small windows default the training card to a compact button so it
-      // cannot cover the carriageway. The player can still reopen it.
-      if (viewportWidth < 1450) setTrainingTipsOpen(false);
-  }, [viewportWidth]);
 
   // Cache the complete course into a plain 2D bitmap. Subsequent updates
   // copy that bitmap and redraw only the vehicle locator, so opening the
@@ -1083,7 +1084,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
       )}
 
       {/* ===== 左上：资金 / 关卡（无背景悬浮排版） ===== */}
-      <div className="desktop-hud absolute top-5 left-6 z-40 pointer-events-auto flex items-start gap-5">
+      <div className="desktop-hud desktop-left-top absolute top-5 left-6 z-40 pointer-events-auto flex items-start gap-5">
           <div className="flex items-center gap-4" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.85)' }}>
               <div className="flex flex-col">
                   <span className="text-[9px] font-black tracking-[0.3em] uppercase mb-0.5" style={{ color: 'var(--amber)' }}>{t.money}</span>
@@ -1123,7 +1124,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
       </div>
 
       {/* ===== 右上：状态灯 + 球形视角 + 视角切换（无背景紧凑排布） ===== */}
-      <div className="desktop-hud absolute top-4 right-5 z-40 pointer-events-auto flex items-center gap-3">
+      <div className="desktop-hud desktop-right-top absolute top-4 right-5 z-40 pointer-events-auto flex items-center gap-3">
           {/* 车状态指示灯 */}
           <div className="flex items-start gap-1.5 pr-2.5" style={{ borderRight: '1px solid rgba(255,255,255,0.14)' }}>
               <Telltale on={settings.absEnabled!==false} color="var(--green)" icon={<span style={{fontSize:8,fontWeight:900}}>ABS</span>} label="ABS" onClick={()=>updateSettings({absEnabled:settings.absEnabled===false})} />
@@ -1167,7 +1168,11 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
           <div className="relative">
               <button
                   type="button"
-                  onClick={() => setCameraMenuOpen(open => !open)}
+                  onPointerDown={e=>{cameraLongPress.current=false;e.currentTarget.setPointerCapture(e.pointerId);cameraPressTimer.current=setTimeout(()=>{cameraLongPress.current=true;setCameraMenuOpen(true);},500);}}
+                  onPointerUp={()=>{if(cameraPressTimer.current)clearTimeout(cameraPressTimer.current);if(!cameraLongPress.current)cycleCamera();}}
+                  onPointerCancel={()=>{if(cameraPressTimer.current)clearTimeout(cameraPressTimer.current);}}
+                  onClick={e=>{if(e.detail===0)cycleCamera();}}
+                  title="点击切换，长按选择视角"
                   className="flex items-center gap-2 px-1.5 py-1 text-left transition-colors"
                   style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9)' }}
               >
@@ -1410,6 +1415,8 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
       )}
 
       <DrivingHints/>{levelData&&<RouteRadar level={levelData}/>}
+      <div className="live-seat" data-ui-control><button type="button" aria-expanded={seatPanelOpen} onClick={()=>{setSeatPanelOpen(v=>!v);if(!seatPanelOpen)onCameraViewChange('HOOD');}}>座椅视角 {seatPanelOpen?'×':'调节'}</button>{seatPanelOpen&&<div className="live-seat-panel"><DriverSeatControls car={currentCarId} settings={settings} update={updateSettings} compact/></div>}</div>
+      <TrailerControls car={currentCarId} levelId={levelData?.levelId}/>
       <HintSlot>{levelData?.highway&&<HighwayNotice/>}{currentCarId===CarType.DF41&&levelData&&<MissilePanel level={levelData}/>}
       {levelData?.openWorld&&<MountainAdventurePanel/>}
       {levelData?.exam && <ExamPanel saved={savedExam} level={levelData} input={inputState} update={setInputState}/>}
@@ -1426,29 +1433,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                         : (lang === Language.CN ? '非铺装训练入口' : 'OFF-ROAD ENTRY')}
                   </button>
               )}
-              <button type="button" onClick={() => setTrainingTipsOpen(open => !open)}
-                      className="mono text-[9px] font-bold tracking-[0.12em] px-2.5 py-1.5 rounded-md"
-                      style={{ background: 'rgba(8,12,16,0.88)', color: trainingTipsOpen ? 'var(--amber)' : 'var(--text-dim)', border: '1px solid rgba(255,255,255,0.16)' }}>
-                  {trainingTipsOpen
-                      ? (lang === Language.CN ? '收起训练提示' : 'HIDE TRAINING TIPS')
-                      : (lang === Language.CN ? '训练提示' : 'TRAINING TIPS')}
-              </button>
-              {trainingTipsOpen && (
-                  <div className="cockpit-panel p-3.5"
-                       style={{ width: 'min(17rem, calc(100vw - 2rem))' }}>
-                      <div className="text-xs font-black tracking-[0.14em] mb-2" style={{ color: 'var(--amber)' }}>
-                          {levelData.training.title}
-                      </div>
-                      <ol className="space-y-1.5">
-                          {levelData.training.tips.map((tip, index) => (
-                              <li key={tip} className="flex gap-2 text-[10px] leading-4" style={{ color: 'var(--text-dim)' }}>
-                                  <span className="mono" style={{ color: 'var(--green)' }}>{index + 1}</span>
-                                  <span>{tip}</span>
-                              </li>
-                          ))}
-                      </ol>
-                  </div>
-              )}
+              <div className="training-hint-text"><strong>{levelData.training.title}</strong>{levelData.training.tips.map(t=><p key={t}>{t}</p>)}</div>
           </div>
       )}
 
@@ -1531,7 +1516,8 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
       </div>
 
       {/* ===== 设置抽屉（语言 + 按键指南 已迁移至此） ===== */}
-      {touch&&<MobileControls absEnabled={settings.absEnabled} toggleAbs={()=>updateSettings({absEnabled:!settings.absEnabled})} speedKmh={Math.abs(liveCarSpeed)*15} input={inputState} update={setInputState} onTouchInput={onTouchInput} readInput={readInput} car={currentCarId} layout={layoutStyle} editing={layoutDraft!==null} disabled={showSettings||showGuide||portrait||layoutDraft!==null} settings={()=>setShowSettings(true)} camera={()=>{const views:CameraView[]=['HOOD','FOLLOW_NEAR','FOLLOW_FAR','TOP','REVERSE'];onCameraViewChange(views[(views.indexOf(cameraView)+1)%views.length]);}} map={()=>setGlobalOverviewOpen(!globalOverviewOpen)} reset={resetLevel}/>}
+      {touch&&<MobileControls absEnabled={settings.absEnabled} toggleAbs={()=>updateSettings({absEnabled:!settings.absEnabled})} speedKmh={Math.abs(liveCarSpeed)*15} input={inputState} update={setInputState} onTouchInput={onTouchInput} readInput={readInput} car={currentCarId} layout={layoutStyle} editing={layoutDraft!==null} disabled={showSettings||showGuide||portrait||layoutDraft!==null} settings={()=>setShowSettings(true)} camera={cycleCamera} cameraMenu={()=>setCameraMenuOpen(v=>!v)} map={()=>setGlobalOverviewOpen(!globalOverviewOpen)} reset={resetLevel}/>}
+      {touch&&cameraMenuOpen&&<div className="mobile-camera-menu" data-ui-control>{cameraPresets.map(item=><button key={item.view} type="button" aria-pressed={cameraView===item.view} onClick={()=>{onCameraViewChange(item.view);setCameraMenuOpen(false);}}>{lang===Language.CN?item.cn:item.en}</button>)}</div>}
       {touch&&portrait&&!showSettings&&<div className="rotate-device" role="status"><strong>请横屏驾驶</strong><p>转动手机，展开方向盘和踏板。</p><button onClick={()=>setShowSettings(true)}>打开设置</button></div>}
       {showSettings && <SettingsPage saveMessage={saveMessage} onLayout={editLayout} settings={settings} update={updateSettings} car={currentCarId} level={level} openWorld={!!levelData?.openWorld} onCar={onChangeCar} onMap={onChangeMap} onTravel={onTravel} close={()=>setShowSettings(false)} reset={resetLevel} restart={restartLevel} exit={exitGame} lang={lang} setLang={setLang} capture={captureBinding} bind={setCaptureBinding} guide={()=>{setShowSettings(false);setShowGuide(true);}}/>}
       {layoutDraft!==null && <HudLayoutEditor rects={hudRects} width={hudViewport.w} height={hudViewport.h}

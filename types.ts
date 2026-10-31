@@ -58,6 +58,8 @@ export type CameraView =
   | 'SIDE_RIGHT'
   | 'HOOD'
   | 'REVERSE'
+  | 'ROAD_FRONT'
+  | 'ROAD_REAR'
   | 'ORBIT';
 export type DriveLayout = 'FWD' | 'RWD' | 'AWD';
 export type EnginePosition = 'FRONT' | 'MID';
@@ -484,6 +486,7 @@ export interface UserSettings {
   hoodCameraAdjustment: HoodCameraAdjustment;
   /** User eye and aim offsets; does not move the actual seat mesh. */
   driverSeatAdjustment?: import("./utils/driverSeat").DriverSeatAdjustment;
+  driverSeatAdjustments?: Partial<Record<CarType, import("./utils/driverSeat").DriverSeatAdjustment>>;
   /** Controllable body-height offset in mm, clamped to the current car's
    *  published total range. It moves the sprung body only; wheels stay on
    *  their contact patches. 0 = nominal. */

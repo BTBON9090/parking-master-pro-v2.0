@@ -8,6 +8,7 @@ const db=new Map<string,string>();
 let blocked='',backupFull=false;
 Object.defineProperty(globalThis,'localStorage',{configurable:true,value:{getItem:(k:string)=>{if(blocked==='all')throw Error('denied');return db.get(k)??null;},setItem:(k:string,v:string)=>{if(blocked==='all'||blocked===k||(backupFull&&k.endsWith('backup')))throw Error('quota');db.set(k,v);}}});
 const progress:GameProgress={schema:1,worldRevision:WORLD_REVISION,savedAt:1234,car:CarType.SUV,levelId:6,money:320,camera:'FOLLOW_FAR',pose:{x:850,y:500,rotation:0,elevation:-96},maps:{6:{completedSpots:['garage-1-bay-0-3']}}};
+for(const camera of ['ROAD_FRONT','ROAD_REAR'] as const)assert.equal(parseProgress(JSON.stringify({...progress,camera}))?.camera,camera,'route views are valid in saved progress');
 assert(saveProgress(progress));assert.deepEqual(loadProgress(),progress);
 const later={...progress,savedAt:2234,money:400};assert(saveProgress(later));
 db.set(PROGRESS_KEY,'{"interrupted":');assert.deepEqual(loadProgress(),progress,'corrupt primary uses last valid backup');

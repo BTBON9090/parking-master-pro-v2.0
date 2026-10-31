@@ -719,3 +719,42 @@ html,body,#root{overscroll-behavior:none}body{-webkit-touch-callout:none}button,
 
 .touch-hud .main-instruments.hud-positioned{top:auto!important;bottom:0!important}
 .touch-hud .main-instruments.hud-positioned>.instrument-scale{top:auto!important;bottom:0!important;transform-origin:bottom left!important}
+
+.live-seat{position:absolute;z-index:55;top:60px;left:50%;transform:translateX(-50%);pointer-events:auto;font-size:11px;color:#e9eee8}.live-seat>button{background:#14252ce8;border:1px solid #8da29c;border-radius:6px;padding:7px 12px}.live-seat-panel{width:min(260px,80vw);max-height:55vh;overflow:auto;margin-top:5px;padding:12px;background:#14252cf2;border:1px solid #81958c;border-radius:7px}.live-seat-panel h3{margin:0 0 4px}.live-seat-panel p{font-size:10px;line-height:1.35;margin:0 0 8px}.live-seat-panel .driver-seat-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:7px 0}.live-seat-panel input{width:115px}.training-hint-text{font-size:10px;line-height:1.3}.training-hint-text p{margin:2px 0}
+/* Compact mobile controls keep the mirrors and driving view clear. */
+.mobile-controls .mobile-topbar{display:grid;grid-template-columns:36px 36px 1fr 36px 36px;gap:2px}
+.mobile-controls .mobile-topbar button{width:36px;height:36px;padding:8px}
+.mobile-controls .mobile-topbar button:nth-child(3){grid-column:4}
+.mobile-controls .mobile-sideaux{display:flex;flex-direction:column;gap:2px}
+.mobile-controls .mobile-sideaux button{width:36px;height:36px;flex:1;padding:8px}
+.mobile-controls .mobile-bottomaux{position:absolute;top:auto;right:auto;bottom:4px;left:calc(50% + min(150px,14vw) + 5px);display:flex;gap:2px;transform:none}
+.mobile-controls .mobile-bottomaux button{width:34px;height:36px;min-width:34px;min-height:36px;padding:7px}
+.mobile-signal-buttons{position:absolute;bottom:calc(min(max(136px,(50vw - 124px)*.75),53vh - 10px) + 12px);left:8px;display:flex;gap:3px;pointer-events:auto}
+.mobile-controls .mobile-signal-buttons button{width:35px;height:34px;min-width:35px;min-height:34px;border-radius:8px}
+.steer-arc-inner{fill:none;stroke:#a7d5d0b8;stroke-width:2}
+.touch-hud #driving-hint-content{max-height:min(85px,20vh)}
+.mobile-camera-menu{position:absolute;z-index:70;top:42px;left:50%;transform:translateX(-50%);display:grid;grid-template-columns:repeat(2,minmax(105px,1fr));gap:3px;max-height:65vh;overflow:auto;padding:6px;background:#14252cf2;border:1px solid #81958c;border-radius:7px;pointer-events:auto}
+.mobile-camera-menu button{padding:8px;font-size:11px;text-align:left;border-radius:4px;color:#e7eee9}.mobile-camera-menu button[aria-pressed=true]{background:#eac56b;color:#17232c}
+.live-trailer{position:absolute;z-index:54;top:102px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:4px;pointer-events:auto;color:#e9eee8;font-size:11px}.live-trailer button{background:#14252ce8;border:1px solid #8da29c;border-radius:6px;padding:7px 12px}.live-trailer small{max-width:220px;padding:3px 6px;background:#14252ce8;border-radius:4px;text-align:center}
+:not(.touch-hud)>.side-mirror-frame{top:0!important}
+:not(.touch-hud)>.side-mirror-frame:has([data-mirror-glass=left]){left:0!important}
+:not(.touch-hud)>.side-mirror-frame:has([data-mirror-glass=right]){right:0!important}
+:not(.touch-hud)>.desktop-left-top{left:calc(50% - min(13.25vw,215px) - 205px)!important;top:0!important;transform:scale(.8);transform-origin:right top}
+:not(.touch-hud)>.desktop-right-top{right:calc(50% - min(13.25vw,215px) - 250px)!important;top:0!important;transform:scale(.8);transform-origin:left top}
+.live-seat{left:auto;right:12px;top:205px;transform:none}.live-seat>button{display:block;margin-left:auto}.live-seat-panel{margin-left:auto}
+.touch-hud .live-seat{top:calc(min(158px,18vw) / 2.65 + 8px);right:46px}
+:not(.touch-hud)>.desktop-left-top{left:auto!important;right:calc(50% + min(13.25vw,215px) + 8px)!important;transform-origin:right top}
+:not(.touch-hud)>.desktop-right-top{right:auto!important;left:calc(50% + min(13.25vw,215px) + 8px)!important;transform-origin:left top}
+:not(.touch-hud)>.desktop-right-top{transform:scale(.65)}
+:not(.touch-hud)>button[aria-label="关闭所有声音"],:not(.touch-hud)>button[aria-label="开启所有声音"]{top:38px!important;left:calc(50% - min(13.25vw,215px) - 190px)!important}
+:not(.touch-hud)>button[aria-label="打开全局俯瞰地图"]{top:38px!important;left:calc(50% - min(13.25vw,215px) - 142px)!important}
+.touch-hud #driving-hint-content{max-height:min(58px,15vh)}
+.touch-hud .live-seat{top:calc(min(158px,18vw) / 2.65 + min(158px,18vw) + 16px)}
+.touch-hud .live-seat{top:calc(min(158px,18vw) / 2.65 + min(158px,18vw) + 8px)}
+.touch-hud .live-seat-panel{position:absolute;right:0;bottom:calc(100% + 5px);max-height:min(45vh,calc(100vh - 90px));margin:0}
+.touch-hud .live-trailer{top:62px;left:calc(50% + 110px);transform:none}
+.touch-hud .live-seat-panel{padding:6px 9px}
+.touch-hud .live-seat-panel .driver-seat-controls.compact{padding:0;border:0}
+.touch-hud .live-seat-panel p{display:none}
+.touch-hud .live-seat-panel .driver-seat-row{min-height:30px;margin:0}
+.touch-hud .live-seat-panel .driver-seat-reset{min-height:27px;margin-top:3px;padding:3px 8px;font-size:10px}

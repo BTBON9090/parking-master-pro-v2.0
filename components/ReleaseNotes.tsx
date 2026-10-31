@@ -2,10 +2,10 @@ import React,{useEffect,useRef,useState} from 'react';
 import {APP_VERSION} from '../utils/releases';
 export const RELEASE_SEEN_KEY='parking-master-release-seen';
 const changes=[
- ['山路分块渲染','青岚山道路、路肩和标线分区渲染，减少远处路面在主画面和后视镜中的重复绘制。首次加载仍需要构建地图，实际表现取决于设备。'],
- ['山顶与隧道出口','调整山顶最后一段缓坡，将地下隧道出口改接城市北侧道路，并清理路缘和树木。'],
- ['运输起竖车动作修复','修复发射筒和支撑腿与活动轴分离的问题，新增外部观察镜头、音效、飞行环视及风格化蘑菇云；加宽轮胎并增加侧面储箱。'],
- ['驾校与城市','调整驾校 S 弯和标牌位置，改善树木避让；城市两条主街增加平缓起伏。'],
+ ['座椅和视角','驾驶时实时调整当前车辆的座椅，并分别保存；新增路线车头与车尾视角和触屏缩放。'],
+ ['驾驶与卡车','高速增加掉头路段；半挂卡车可停车手动分离，并倒车对准车厢后对接。'],
+ ['触控界面','调整后视镜、按钮和提示栏，增加固定刻度转向内圈与转向灯、雨刮操作。'],
+ ['车辆与演出','增加车底接触音和轻微损伤；运输起竖车采用分阶段支撑、点火、发射和收回演出。'],
 ];
 export function ReleaseNotes(){
  const [open,setOpen]=useState(()=>{try{return localStorage.getItem(RELEASE_SEEN_KEY)!==APP_VERSION;}catch{return true;}});

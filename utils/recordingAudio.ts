@@ -267,7 +267,7 @@ export function setRecordingAudioVisibility(hidden: boolean): void {
   if (ctx) applyMasterGain(ctx);
 }
 
-export function playRecordingImpact(strength = 1, cabin = false): void {
+export function playRecordingImpact(strength = 1, cabin = false, underbody = false): void {
   if (!status.ready || !ctx || !master) return;
   const first:AssetKey=Math.random()<.5?'metal1':'metal2',second:AssetKey=first==='metal1'?'metal2':'metal1';
   const now = ctx.currentTime;
@@ -275,7 +275,7 @@ export function playRecordingImpact(strength = 1, cabin = false): void {
     const buffer=buffers.get(key);if(!buffer||!ctx||!master)return;
     const source=ctx.createBufferSource(),gain=ctx.createGain(),filter=ctx.createBiquadFilter();
     source.buffer=buffer;source.playbackRate.value=.94+Math.random()*.12;
-    filter.type='lowpass';filter.frequency.value=cabin?Math.min(cutoff,900):cutoff;
+    filter.type='lowpass';filter.frequency.value=cabin?Math.min(cutoff,underbody?2400:900):cutoff;
     const start=now+delay,end=start+Math.min(.8,buffer.duration);
     gain.gain.setValueAtTime(Math.max(.001,level),start);gain.gain.exponentialRampToValueAtTime(.001,end);
     source.connect(filter);filter.connect(gain);gain.connect(master);

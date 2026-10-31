@@ -15,6 +15,17 @@ export function buildHighway():LevelData{
  for(let i=0;i<30;i++)out.spots.push({id:'service-'+i,x:7900+i*48,y:3530,width:34,height:80,rotation:Math.PI/2,occupied:false});
  road([[12800,1940],[14300,1990],[15800,1990],[17200,3000],[19000,5400],[21800,5600],[25000,3900],...merge(27000,2400)],150);
  road([[19000,5400],[16600,6700],[12000,8000],[7000,10200],...merge(5300,11860)],90);
+ // A marked turnaround joins the inner lanes. Construct it from the actual
+ // ring tangent so the existing connector logic opens the central barrier.
+ const turnIndex=ringSamples.reduce((best,p,i)=>Math.hypot(p.x-10500,p.z-1800)<Math.hypot(ringSamples[best].x-10500,ringSamples[best].z-1800)?i:best,0);
+ const turnPoint=ringSamples[turnIndex],turnTangent=ring.getTangentAt(turnIndex/1200),turnRadius=112.5;
+ const turnaround=Array.from({length:17},(_,i)=>{
+  const angle=Math.PI*i/16,along=turnRadius*Math.sin(angle),across=turnRadius*Math.cos(angle);
+  return [turnPoint.x+turnTangent.x*along-turnTangent.z*across,turnPoint.z+turnTangent.z*along+turnTangent.x*across];
+ });
+ road(turnaround,48);
+ out.streetSigns!.push({x:turnPoint.x-turnTangent.x*650-turnTangent.z*145,y:turnPoint.z-turnTangent.z*650+turnTangent.x*145,rotation:0,label:'前方掉头路段  减速让行',kind:'street'});
+ out.markings.push({type:'arrow-uturn',x:turnaround[0][0]-turnTangent.x*100,y:turnaround[0][1]-turnTangent.z*100,width:24,height:44,rotation:Math.atan2(turnTangent.z,turnTangent.x),color:'#f5e7ae'});
  out.slopeZones!.push({x:21000,y:1800,width:340,length:6500,peakHeight:220,rotation:0});
  // Broad overpass crosses the mainline; its 140 m approaches keep grades sane.
  out.elevatedRoads!.push({id:'motorway-overpass',x:14000,y:1800,width:3400,height:110,rotation:Math.PI/2,deckHeight:65,rampLength:1400});

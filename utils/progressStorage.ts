@@ -12,7 +12,7 @@ export interface GameProgress {
 }
 const finite = (x:unknown):x is number => typeof x==='number' && Number.isFinite(x);
 const strings = (x:unknown, limit=512):string[] => Array.isArray(x) ? [...new Set(x.filter(v=>typeof v==='string'&&v.length<180))].slice(0,limit) : [];
-const cameras:CameraView[]=['HOOD','FOLLOW_NEAR','FOLLOW_FAR','TOP','REVERSE','REAR_RIGHT','REAR_LEFT','FRONT_LEFT','FRONT_RIGHT','SIDE_LEFT','SIDE_RIGHT','ORBIT'];
+const cameras:CameraView[]=['HOOD','FOLLOW_NEAR','FOLLOW_FAR','TOP','REVERSE','REAR_RIGHT','REAR_LEFT','FRONT_LEFT','FRONT_RIGHT','SIDE_LEFT','SIDE_RIGHT','ROAD_FRONT','ROAD_REAR','ORBIT'];
 export function parseProgress(raw:string|null):GameProgress|null {
   try {
     if (!raw || raw.length>4_000_000) return null;

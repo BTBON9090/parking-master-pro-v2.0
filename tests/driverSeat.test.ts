@@ -9,6 +9,11 @@ const defaults={renderQuality:'auto',volume:.8,cabinVolume:.7,exteriorVolume:.85
 assert.deepEqual(restoreSettings(defaults,JSON.stringify({})).driverSeatAdjustment,DEFAULT_DRIVER_SEAT,'old settings use neutral seat');
 const chosen={forwardCm:12,heightCm:-8,pitchDeg:6};
 assert.deepEqual(restoreSettings(defaults,JSON.stringify({driverSeatAdjustment:chosen})).driverSeatAdjustment,chosen,'offsets persist across reload');
+assert.deepEqual(restoreSettings(defaults,JSON.stringify({driverSeatAdjustment:chosen}),CarType.SUV).driverSeatAdjustments,{[CarType.SUV]:chosen},'legacy setting migrates only to the active vehicle');
+const other={forwardCm:-7,heightCm:4,pitchDeg:-3};
+const saved=restoreSettings(defaults,JSON.stringify({driverSeatAdjustments:{[CarType.SUV]:chosen,[CarType.US22]:other,unknown:chosen}}),CarType.SUV);
+assert.deepEqual(saved.driverSeatAdjustments,{[CarType.SUV]:chosen,[CarType.US22]:other},'per-car adjustments survive reload without leaking to other vehicles');
+assert.equal(saved.driverSeatAdjustments?.[CarType.MINING],undefined);
 assert.deepEqual(normalizeDriverSeat({forwardCm:999,heightCm:-999,pitchDeg:NaN}),{forwardCm:50,heightCm:-40,pitchDeg:0},'out-of-range or invalid values are safe');
 assert.deepEqual(applyDriverSeatToCamera(tune,undefined),tune,'neutral seat preserves each car baseline');
 for(const id of [CarType.SUV,CarType.US22,CarType.MINING,CarType.TYPE100]){
