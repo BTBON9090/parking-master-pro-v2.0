@@ -51,16 +51,16 @@
   {
     "id": "MIDIBUS",
     "cases": 21,
-    "minSillClearanceCm": 6.203356475129489,
-    "maxAxleDriftMm": 3.552713678800501e-13,
-    "minSlopeTreadGapCm": 0.000863838169502853
+    "minSillClearanceCm": 6.2034161116465825,
+    "maxAxleDriftMm": 7.105427357601002e-13,
+    "minSlopeTreadGapCm": 0.0008602364197979032
   },
   {
     "id": "COACH",
     "cases": 21,
-    "minSillClearanceCm": 6.587667364816028,
+    "minSillClearanceCm": 19.08203777722509,
     "maxAxleDriftMm": 7.105427357601002e-13,
-    "minSlopeTreadGapCm": 0.0010469883743223515
+    "minSlopeTreadGapCm": 0.0010469883743056594
   },
   {
     "id": "VAN",
@@ -72,8 +72,8 @@
   {
     "id": "LIGHT_TRUCK",
     "cases": 21,
-    "minSillClearanceCm": 6.359892432463923,
+    "minSillClearanceCm": 6.35993315100519,
     "maxAxleDriftMm": 1.0658141036401503e-12,
-    "minSlopeTreadGapCm": 0.0009242717756098627
+    "minSlopeTreadGapCm": 0.0009204187410186795
   }
 ]

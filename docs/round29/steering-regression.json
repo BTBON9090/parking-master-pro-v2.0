@@ -1,5 +1,17 @@
 [
   {
+    "id": "CARGO_TRIKE",
+    "virtualFrontDeg": 40.51296765294873,
+    "rearInnerLimitDeg": 0,
+    "outerFrontRadiusM": 5.3000000000009635
+  },
+  {
+    "id": "DF41",
+    "virtualFrontDeg": 30.32160064087688,
+    "rearInnerLimitDeg": 18,
+    "outerFrontRadiusM": 16.00000000000527
+  },
+  {
     "id": "TYPE100",
     "virtualFrontDeg": 40.10704565915762,
     "rearInnerLimitDeg": 0,

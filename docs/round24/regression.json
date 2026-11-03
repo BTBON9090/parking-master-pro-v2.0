@@ -1,6 +1,36 @@
 {
   "pedals": [
     {
+      "id": "CARGO_TRIKE",
+      "throttle": 0.08,
+      "kmh": 3.949784332061287
+    },
+    {
+      "id": "CARGO_TRIKE",
+      "throttle": 0.15,
+      "kmh": 9.055464473874965
+    },
+    {
+      "id": "CARGO_TRIKE",
+      "throttle": 0.3,
+      "kmh": 15.854015221909728
+    },
+    {
+      "id": "DF41",
+      "throttle": 0.08,
+      "kmh": 3.7539512431452917
+    },
+    {
+      "id": "DF41",
+      "throttle": 0.15,
+      "kmh": 8.607517072480602
+    },
+    {
+      "id": "DF41",
+      "throttle": 0.3,
+      "kmh": 10.679767261904983
+    },
+    {
       "id": "TYPE100",
       "throttle": 0.08,
       "kmh": 4.15485178255785
@@ -288,17 +318,17 @@
     {
       "id": "COACH",
       "throttle": 0.08,
-      "kmh": 3.9373093921311977
+      "kmh": 3.9373484026729852
     },
     {
       "id": "COACH",
       "throttle": 0.15,
-      "kmh": 9.114749535345062
+      "kmh": 9.115043731123652
     },
     {
       "id": "COACH",
       "throttle": 0.3,
-      "kmh": 29.241412579053268
+      "kmh": 29.252484258380086
     },
     {
       "id": "VAN",
@@ -425,6 +455,16 @@
   ],
   "assets": [
     {
+      "id": "CARGO_TRIKE",
+      "markerAboveHub": 1.7588936980675243,
+      "blockedTriangles": 0
+    },
+    {
+      "id": "DF41",
+      "markerAboveHub": 1.7588936131598416,
+      "blockedTriangles": 0
+    },
+    {
       "id": "TYPE100",
       "markerAboveHub": 1.7588936131598416,
       "blockedTriangles": 0
@@ -536,6 +576,30 @@
     }
   ],
   "reversal": [
+    {
+      "id": "CARGO_TRIKE",
+      "direction": -1,
+      "maxStep": 0.01218196425407303,
+      "finalKmh": 15.852696023943732
+    },
+    {
+      "id": "CARGO_TRIKE",
+      "direction": 1,
+      "maxStep": 0.01218196425407303,
+      "finalKmh": -15.096454999856308
+    },
+    {
+      "id": "DF41",
+      "direction": -1,
+      "maxStep": 0.012749526549467038,
+      "finalKmh": 10.679767261904605
+    },
+    {
+      "id": "DF41",
+      "direction": 1,
+      "maxStep": 0.012749526549467038,
+      "finalKmh": -10.17438539256328
+    },
     {
       "id": "TYPE100",
       "direction": -1,
@@ -767,14 +831,14 @@
     {
       "id": "COACH",
       "direction": -1,
-      "maxStep": 0.012474275357480247,
-      "finalKmh": 26.72545963294153
+      "maxStep": 0.012471211028624474,
+      "finalKmh": 26.729490095740555
     },
     {
       "id": "COACH",
       "direction": 1,
-      "maxStep": 0.012474275357480247,
-      "finalKmh": -26.661495741617905
+      "maxStep": 0.012471211028624474,
+      "finalKmh": -26.66546627245447
     },
     {
       "id": "VAN",

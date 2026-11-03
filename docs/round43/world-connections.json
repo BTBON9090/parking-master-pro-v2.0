@@ -3,6 +3,6 @@
   "helixSamples": 2882,
   "maxStep": 0.09999993569958576,
   "portals": 4,
-  "tunnelSamples": 754,
+  "tunnelSamples": 745,
   "limits": "Numeric collision/support only; independent game view pending."
 }

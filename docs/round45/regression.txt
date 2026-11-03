@@ -1,0 +1,21 @@
+Round 44 regression PASS {
+  garage: {
+    centreSamples: 5764,
+    tyreSamples: 23056,
+    maxTyreHeightDifference: 1.052460199072783
+  },
+  ice: {
+    drySpeed: 1.6709090033718565,
+    iceSpeed: 0.1761619371151262,
+    driveSlip: 1.999998620639815,
+    dryYaw: 0.5145725673918764,
+    iceYaw: 0.060057519444098095
+  },
+  steering: {
+    independentKnuckles: 16,
+    front: [ 0.42888257112945505, 0.37458848853530996 ],
+    rear: [ -0.21582500792409928, -0.18631200505615342 ]
+  },
+  gateway: 'clear for a 2.5 m vehicle',
+  cinematic: 'moving lockout, 5s countdown, cancel, flight, exact local target, impact, return and disposal'
+}

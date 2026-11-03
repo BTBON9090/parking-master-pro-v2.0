@@ -9,8 +9,8 @@
     "slopes": 3
   },
   "shoulder": {
-    "edgeChecks": 2000,
-    "maxEdgeJumpCm": 0.04988282824342605
+    "edgeChecks": 2013,
+    "maxEdgeJumpCm": 0.021651875795214437
   },
   "roughnessRangeCm": 21.348773038025314,
   "sway": {

@@ -1,0 +1,42 @@
+
+> parking-master-pro-v2.0@0.27.1 mobile:sync
+> npm run build:client && cap sync
+
+
+> parking-master-pro-v2.0@0.27.1 build:client
+> node scripts/build-client.mjs
+
+vite v6.4.5 building for production...
+transforming...
+✓ 1828 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                     1.22 kB │ gzip:   0.63 kB
+dist/assets/index-D54guXPe.css     64.56 kB │ gzip:  15.03 kB
+dist/assets/web-D7wWhwul.js         0.19 kB │ gzip:   0.17 kB
+dist/assets/index-ChHutqKk.js   1,661.76 kB │ gzip: 500.47 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 4.20s
+✔ Copying web assets from dist to android/app/src/main/assets/public in 43.60ms
+✔ Creating capacitor.config.json in android/app/src/main/assets in 1.51ms
+✔ copy android in 52.98ms
+✔ Updating Android plugins in 1.96ms
+[info] Found 1 Capacitor plugin for android:
+       @capacitor/app-launcher@8.0.1
+✔ update android in 158.31ms
+✔ Copying web assets from dist to ios/App/App/public in 42.80ms
+✔ Creating capacitor.config.json in ios/App/App in 594.25μs
+✔ copy ios in 56.78ms
+✔ Updating iOS plugins in 1.52ms
+[info] All Capacitor plugins have a Package.swift file and will be included in Package.swift
+[info] Writing Package.swift
+[info] Found 1 Capacitor plugin for ios:
+       @capacitor/app-launcher@8.0.1
+✔ update ios in 16.99ms
+✔ copy web in 5.09ms
+✔ update web in 3.84ms
+[info] Sync finished in 0.322s

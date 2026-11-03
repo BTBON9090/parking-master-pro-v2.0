@@ -78,13 +78,13 @@
       "id": "MIDIBUS",
       "trackM": 1.8747999668121338,
       "maxRollDeg": 1.5944621005194055,
-      "minBodyClearanceCm": 19.194956479468388
+      "minBodyClearanceCm": 17.53775252506109
     },
     {
       "id": "COACH",
       "trackM": 2.193000078201294,
-      "maxRollDeg": 2.2108208072838487,
-      "minBodyClearanceCm": 22.826105792023696
+      "maxRollDeg": 2.0878385372797026,
+      "minBodyClearanceCm": 22.999750345414967
     },
     {
       "id": "VAN",
@@ -96,7 +96,7 @@
       "id": "LIGHT_TRUCK",
       "trackM": 1.960800051689148,
       "maxRollDeg": 1.9421302209033697,
-      "minBodyClearanceCm": 13.830797439815612
+      "minBodyClearanceCm": 13.830835415002767
     }
   ]
 }

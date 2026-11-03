@@ -1,6 +1,48 @@
 {
   "braking": [
     {
+      "id": "CARGO_TRIKE",
+      "hz": 30,
+      "startKmh": 65,
+      "meters": 23.82071000404271,
+      "seconds": 2.6333333333333333
+    },
+    {
+      "id": "CARGO_TRIKE",
+      "hz": 60,
+      "startKmh": 65,
+      "meters": 24.120087793311225,
+      "seconds": 2.65
+    },
+    {
+      "id": "CARGO_TRIKE",
+      "hz": 120,
+      "startKmh": 65,
+      "meters": 24.36754378705808,
+      "seconds": 2.658333333333333
+    },
+    {
+      "id": "DF41",
+      "hz": 30,
+      "startKmh": 80,
+      "meters": 34.2071431401705,
+      "seconds": 3.1
+    },
+    {
+      "id": "DF41",
+      "hz": 60,
+      "startKmh": 80,
+      "meters": 34.57051503313142,
+      "seconds": 3.0833333333333335
+    },
+    {
+      "id": "DF41",
+      "hz": 120,
+      "startKmh": 80,
+      "meters": 34.87194400440407,
+      "seconds": 3.091666666666667
+    },
+    {
       "id": "TYPE100",
       "hz": 30,
       "startKmh": 70,
@@ -403,21 +445,21 @@
       "id": "COACH",
       "hz": 30,
       "startKmh": 100,
-      "meters": 54.64369219115386,
+      "meters": 54.64969390499429,
       "seconds": 3.933333333333333
     },
     {
       "id": "COACH",
       "hz": 60,
       "startKmh": 100,
-      "meters": 55.159163529011295,
+      "meters": 55.162316963214195,
       "seconds": 3.95
     },
     {
       "id": "COACH",
       "hz": 120,
       "startKmh": 100,
-      "meters": 55.569017286821214,
+      "meters": 55.57062972238457,
       "seconds": 3.9583333333333335
     },
     {
@@ -464,6 +506,16 @@
     }
   ],
   "launch": [
+    {
+      "id": "CARGO_TRIKE",
+      "kmh": 15.840113733892002,
+      "headingChange": 16.508341390016493
+    },
+    {
+      "id": "DF41",
+      "kmh": 10.660222333551749,
+      "headingChange": 2.121761905144587
+    },
     {
       "id": "TYPE100",
       "kmh": 4.822605140645888,
@@ -561,8 +613,8 @@
     },
     {
       "id": "COACH",
-      "kmh": 24.03420403394789,
-      "headingChange": 13.761266515819292
+      "kmh": 24.033461214844355,
+      "headingChange": 13.752085378689223
     },
     {
       "id": "VAN",
@@ -600,7 +652,7 @@
     },
     {
       "id": "SEMI",
-      "triangles": 6900,
+      "triangles": 6761,
       "wheelMounts": 6
     },
     {

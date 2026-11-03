@@ -1,0 +1,15 @@
+[main 503aa9e] Publish 0.27.0 download metadata, online feature index and verification
+ 16 files changed, 409 insertions(+), 30 deletions(-)
+ create mode 100644 distribution/site/development-review.html
+ create mode 100644 distribution/site/features.html
+ create mode 100644 docs/round41/clients-ci.json
+ create mode 100644 docs/round41/clients-watch.txt
+ create mode 100644 docs/round41/cos-upload.txt
+ create mode 100644 docs/round41/cos-verification.json
+ create mode 100644 docs/round41/features-desktop.png
+ create mode 100644 docs/round41/features-mobile.png
+ create mode 100644 docs/round41/github-published.json
+ create mode 100644 docs/round41/mac-build.txt
+ create mode 100644 docs/round41/mac-package-check.json
+ create mode 100644 docs/round41/online-browser.json
+ create mode 100644 docs/round41/windows-package-check.json

@@ -1,0 +1,1 @@
+Release PASS: native-source fallback, bounded requests, trusted APK URLs, static downloads and older-WebView website fallback.

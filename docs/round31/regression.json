@@ -24,7 +24,7 @@
     },
     {
       "id": "SEMI",
-      "triangles": 6900,
+      "triangles": 6761,
       "tyres": 18,
       "panels": 4,
       "eye": [
@@ -89,19 +89,41 @@
       ]
     },
     {
+      "id": "CARGO_TRIKE",
+      "triangles": 4536,
+      "tyres": 3,
+      "panels": 10,
+      "eye": [
+        3.240000009536743,
+        19.900000190734865,
+        4.900467395782471
+      ]
+    },
+    {
+      "id": "DF41",
+      "triangles": 7916,
+      "tyres": 16,
+      "panels": 0,
+      "eye": [
+        7.500000447034836,
+        28.300000953674317,
+        64.19999599456787
+      ]
+    },
+    {
       "id": "TYPE100",
-      "triangles": 6732,
-      "tyres": 12,
+      "triangles": 5820,
+      "tyres": 0,
       "panels": 0,
       "eye": [
         5.500001311302185,
-        14.799999594688416,
+        14.800000918123132,
         15.24999919404533
       ]
     },
     {
       "id": "MINING",
-      "triangles": 3934,
+      "triangles": 4248,
       "tyres": 6,
       "panels": 0,
       "eye": [
@@ -112,7 +134,7 @@
     },
     {
       "id": "US22",
-      "triangles": 7978,
+      "triangles": 7552,
       "tyres": 22,
       "panels": 2,
       "eye": [

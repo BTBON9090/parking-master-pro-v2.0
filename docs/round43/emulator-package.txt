@@ -1,0 +1,143 @@
+Activity Resolver Table:
+  Non-Data Actions:
+      android.intent.action.MAIN:
+        f7523e6 cn.btbon.parkingmaster/.MainActivity filter fb48d27
+          Action: "android.intent.action.MAIN"
+          Category: "android.intent.category.LAUNCHER"
+
+Receiver Resolver Table:
+  Non-Data Actions:
+      androidx.profileinstaller.action.SAVE_PROFILE:
+        60c2bd4 cn.btbon.parkingmaster/androidx.profileinstaller.ProfileInstallReceiver filter 452d4c3
+          Action: "androidx.profileinstaller.action.SAVE_PROFILE"
+      androidx.profileinstaller.action.INSTALL_PROFILE:
+        60c2bd4 cn.btbon.parkingmaster/androidx.profileinstaller.ProfileInstallReceiver filter 281717d
+          Action: "androidx.profileinstaller.action.INSTALL_PROFILE"
+      androidx.profileinstaller.action.SKIP_FILE:
+        60c2bd4 cn.btbon.parkingmaster/androidx.profileinstaller.ProfileInstallReceiver filter 55f9872
+          Action: "androidx.profileinstaller.action.SKIP_FILE"
+      androidx.profileinstaller.action.BENCHMARK_OPERATION:
+        60c2bd4 cn.btbon.parkingmaster/androidx.profileinstaller.ProfileInstallReceiver filter 5ea3140
+          Action: "androidx.profileinstaller.action.BENCHMARK_OPERATION"
+
+Domain verification status:
+
+Permissions:
+  Permission [cn.btbon.parkingmaster.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION] (5545cea):
+    sourcePackage=cn.btbon.parkingmaster
+    uid=10225 gids=[] type=0 prot=signature
+    perm=PermissionInfo{354370 cn.btbon.parkingmaster.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION}
+    flags=0x0
+
+Registered ContentProviders:
+  cn.btbon.parkingmaster/androidx.startup.InitializationProvider:
+    Provider{9da06e9 cn.btbon.parkingmaster/androidx.startup.InitializationProvider}
+  cn.btbon.parkingmaster/androidx.core.content.FileProvider:
+    Provider{1261f6e cn.btbon.parkingmaster/androidx.core.content.FileProvider}
+
+ContentProvider Authorities:
+  [cn.btbon.parkingmaster.androidx-startup]:
+    Provider{9da06e9 cn.btbon.parkingmaster/androidx.startup.InitializationProvider}
+      applicationInfo=ApplicationInfo{370bdb cn.btbon.parkingmaster}
+  [cn.btbon.parkingmaster.fileprovider]:
+    Provider{1261f6e cn.btbon.parkingmaster/androidx.core.content.FileProvider}
+      applicationInfo=ApplicationInfo{36ef678 cn.btbon.parkingmaster}
+
+Key Set Manager:
+  [cn.btbon.parkingmaster]
+      Signing KeySets: 79
+
+Packages:
+  Package [cn.btbon.parkingmaster] (ec328a5):
+    appId=10225
+    pkg=Package{418c47a cn.btbon.parkingmaster}
+    codePath=/data/app/~~YzQLn4W0haVYSnyhPJecUg==/cn.btbon.parkingmaster-6FqJid-zifgjbVQG8cXczQ==
+    resourcePath=/data/app/~~YzQLn4W0haVYSnyhPJecUg==/cn.btbon.parkingmaster-6FqJid-zifgjbVQG8cXczQ==
+    legacyNativeLibraryDir=/data/app/~~YzQLn4W0haVYSnyhPJecUg==/cn.btbon.parkingmaster-6FqJid-zifgjbVQG8cXczQ==/lib
+    extractNativeLibs=false
+    primaryCpuAbi=null
+    secondaryCpuAbi=null
+    cpuAbiOverride=null
+    versionCode=2801 minSdk=24 targetSdk=36
+    minExtensionVersions=[]
+    versionName=0.28.1
+    hiddenApiEnforcementPolicy=2
+    usesNonSdkApi=false
+    splits=[base]
+    apkSigningVersion=2
+    flags=[ HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP KILL_AFTER_RESTORE ]
+    privateFlags=[ PRIVATE_FLAG_ACTIVITIES_RESIZE_MODE_RESIZEABLE_VIA_SDK_VERSION ALLOW_AUDIO_PLAYBACK_CAPTURE PRIVATE_FLAG_ALLOW_NATIVE_HEAP_POINTER_TAGGING ]
+    forceQueryable=false
+    pageSizeCompat=0
+    scannedAsStoppedSystemApp=false
+    supportsScreens=[small, medium, large, xlarge, resizeable, anyDensity]
+    timeStamp=2026-10-29 14:42:03
+    lastUpdateTime=2026-10-29 14:42:52
+    installerPackageName=com.google.android.packageinstaller
+    installerPackageUid=10113
+    initiatingPackageName=com.google.android.packageinstaller
+    originatingPackageName=cn.btbon.parkingmaster
+    packageSource=3
+    appMetadataFilePath=null
+    appMetadataSource=0
+    signatures=PackageSignatures{fab99bb version:2, signatures:[1f5169e], past signatures:[]}
+    installPermissionsFixed=false
+    pkgFlags=[ HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP KILL_AFTER_RESTORE ]
+    privatePkgFlags=[ PRIVATE_FLAG_ACTIVITIES_RESIZE_MODE_RESIZEABLE_VIA_SDK_VERSION ALLOW_AUDIO_PLAYBACK_CAPTURE PRIVATE_FLAG_ALLOW_NATIVE_HEAP_POINTER_TAGGING ]
+    apexModuleName=null
+    declared permissions:
+      cn.btbon.parkingmaster.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION: prot=signature
+    requested permissions:
+      android.permission.INTERNET
+      cn.btbon.parkingmaster.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+      android.permission.REQUEST_INSTALL_PACKAGES
+    install permissions:
+      android.permission.INTERNET: granted=true
+      cn.btbon.parkingmaster.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION: granted=true
+      android.permission.REQUEST_INSTALL_PACKAGES: granted=false, flags=[ USER_SET]
+    User 0: ceDataInode=353916 deDataInode=40963 installed=true hidden=false suspended=false distractionFlags=0 stopped=false notLaunched=false enabled=0 instant=false virtual=false quarantined=false
+      installReason=0
+      dataDir=/data/user/0/cn.btbon.parkingmaster
+      firstInstallTime=2026-10-27 09:58:56
+      uninstallReason=0
+      overlay paths:
+        /product/overlay/NavigationBarModeGestural/NavigationBarModeGesturalOverlay.apk
+        /data/resource-cache/com.android.systemui-neutral-218u.frro
+        /data/resource-cache/com.android.systemui-accent-aCwV.frro
+        /data/resource-cache/com.android.systemui-dynamic-IOg7.frro
+      legacy overlay paths:
+        /product/overlay/NavigationBarModeGestural/NavigationBarModeGesturalOverlay.apk
+      lastDisabledCaller: com.google.android.packageinstaller
+      gids=[3003]
+      runtime permissions:
+
+Queries:
+  system apps queryable: false
+  queries via forceQueryable:
+  queries via package name:
+  queries via component:
+    com.google.android.as.oss:
+      cn.btbon.parkingmaster
+    com.google.android.as:
+      cn.btbon.parkingmaster
+    com.google.android.settings.intelligence:
+      cn.btbon.parkingmaster
+    com.google.android.apps.accessibility.voiceaccess:
+      cn.btbon.parkingmaster
+  queryable via interaction:
+    User 0:
+      [com.android.server.telecom,com.android.dynsystem,android,com.android.keychain,com.android.emulator.multidisplay,com.android.inputdevices,com.android.location.fused,com.android.DeviceAsWebcam,com.android.settings,com.android.localtransport,com.android.providers.settings]:
+        cn.btbon.parkingmaster
+      com.google.android.gms:
+        cn.btbon.parkingmaster
+      com.google.android.inputmethod.latin:
+        cn.btbon.parkingmaster
+      cn.btbon.parkingmaster:
+        com.google.android.webview
+  queryable via uses-library:
+
+Dexopt state:
+  [cn.btbon.parkingmaster]
+    path: /data/app/~~YzQLn4W0haVYSnyhPJecUg==/cn.btbon.parkingmaster-6FqJid-zifgjbVQG8cXczQ==/base.apk
+      arm64: [status=verify] [reason=install] [primary-abi]
+        [location is /data/app/~~YzQLn4W0haVYSnyhPJecUg==/cn.btbon.parkingmaster-6FqJid-zifgjbVQG8cXczQ==/oat/arm64/base.odex]

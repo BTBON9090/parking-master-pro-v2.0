@@ -2,17 +2,17 @@
   "radar": [
     {
       "floor": -48,
-      "detected": 93,
+      "detected": 469,
       "guideElevation": -48
     },
     {
       "floor": -96,
-      "detected": 132,
+      "detected": 492,
       "guideElevation": -96
     },
     {
       "floor": -144,
-      "detected": 65,
+      "detected": 457,
       "guideElevation": -144
     }
   ],
